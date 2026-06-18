@@ -4,7 +4,7 @@
 - **Owner:** agent
 - **Created:** 2026-06-17
 - **Completed:** 2026-06-17
-- **Related:** ADR-0001
+- **Related:** ADR-0003
 
 ## Goal
 
@@ -16,7 +16,7 @@ without further human instruction.
 ## Plan / checklist
 
 - [x] Create `tasks/` lifecycle (README, TEMPLATE, todo/done dirs)
-- [x] Create `docs/adr/` (README, TEMPLATE) and record ADR-0001 for this workflow
+- [x] Create `docs/adr/` (README, TEMPLATE) and record ADR-0003 for this workflow
 - [x] Add bootstrap-tolerant CI verification pipeline (`.github/workflows/ci.yml`)
 - [x] Write root `CLAUDE.md` encoding the rules (continuous commits, task-first, ADRs, subagents, orchestration, docs upkeep)
 - [x] Add `docs/README.md` index
@@ -38,7 +38,7 @@ without further human instruction.
 Established the autonomous-agent operating model. Created:
 - `CLAUDE.md` — the six non-negotiable rules + orchestration model + verification table + repo map.
 - `tasks/` — task-first lifecycle (`todo/` → `done/`) with README and TEMPLATE.
-- `docs/adr/` — immutable decision log with README, TEMPLATE, and ADR-0001 (this decision).
+- `docs/adr/` — immutable decision log with README, TEMPLATE, and ADR-0003 (this decision).
 - `.github/workflows/ci.yml` — bootstrap-tolerant pipeline that auto-tightens as npm scripts appear.
 - `docs/README.md` — docs index.
 

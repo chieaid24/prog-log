@@ -1,4 +1,4 @@
-# 0001 — Adopt an autonomous agent workflow
+# 0003 — Adopt an autonomous agent workflow
 
 - **Status:** accepted
 - **Date:** 2026-06-17
