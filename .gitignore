@@ -1,1 +1,4 @@
 *:Zone.Identifier
+
+# git worktrees created under the repo (EnterWorktree / git worktree add)
+.claude/worktrees/

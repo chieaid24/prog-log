@@ -1,0 +1,19 @@
+{
+  "worktree": {
+    "bgIsolation": "none"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(pnpm *)",
+      "Bash(supabase *)",
+      "Bash(git *)",
+      "Bash(vitest *)",
+      "Bash(jest *)",
+      "Bash(tsc *)",
+      "Bash(eslint *)",
+      "Bash(vercel *)"
+    ]
+  }
+}
