@@ -1,0 +1,64 @@
+name: ci
+
+# Verification pipeline. Bootstrap-tolerant: until the Next.js app is scaffolded
+# (no package.json yet) the build/test steps are skipped and the job stays green.
+# Once package.json exists, every gate runs. Scripts are run only if defined, so the
+# pipeline grows automatically as the project adds lint/typecheck/test scripts.
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect app
+        id: detect
+        run: |
+          if [ -f package.json ]; then
+            echo "app=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "app=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No package.json yet — bootstrap phase, skipping build gates."
+          fi
+
+      - name: Setup Node
+        if: steps.detect.outputs.app == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        if: steps.detect.outputs.app == 'true'
+        run: npm ci
+
+      # Each gate runs only if the corresponding npm script exists, so the pipeline
+      # tightens as scripts are added without needing edits here.
+      - name: Lint
+        if: steps.detect.outputs.app == 'true'
+        run: npm run --if-present lint
+
+      - name: Typecheck
+        if: steps.detect.outputs.app == 'true'
+        run: npm run --if-present typecheck
+
+      - name: Test
+        if: steps.detect.outputs.app == 'true'
+        run: npm run --if-present test
+
+      - name: Build
+        if: steps.detect.outputs.app == 'true'
+        run: npm run --if-present build
