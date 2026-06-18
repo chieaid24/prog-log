@@ -2,7 +2,7 @@
 
 **Owner:** Aidan
 **Status:** Draft, ready to build
-**Goal:** A self-hosted daily work log that doubles as a portfolio project. Port the Notion prototype to a custom app with proper "on this day" anniversary logic, a contribution-style heatmap, and frictionless capture from a Discord bot and an Apple Shortcut. Must run entirely on free tiers.
+**Goal:** A self-hosted daily work log that doubles as a portfolio project. Port the Notion prototype to a custom app with a flexible Throwback feed (relative-age "insights"), a contribution-style heatmap, and frictionless capture from a Discord bot and an Apple Shortcut. Must run entirely on free tiers.
 
 ---
 
@@ -11,9 +11,9 @@
 Track which projects got worked on each day (Work, AI-M, Website, Turkish, Mandarin, etc.) with near-zero logging friction. The core unit is simple: **a project, a date, and a rough time commitment.** Most days are just "general work" with no extra text. Occasionally a day carries a **milestone** (a short line describing something notable), and rarely a longer **description**. Then answer two questions well:
 
 1. How did I spend my month? (days worked, time-commitment distribution, per-project breakdown)
-2. What did I accomplish N months/years ago today? (anniversary feed of milestones)
+2. What did I accomplish a while back? (Throwback feed of milestones)
 
-The Notion version covers daily logging and a milestone list. This build exists to nail the anniversary feed, give a real heatmap, and be hosted at on Vercel at log.aidanchien.com.
+The Notion version covers daily logging and a milestone list. This build exists to nail the Throwback feed, give a real heatmap, and be hosted at on Vercel at log.aidanchien.com.
 
 ### Design principle
 The project is the thing being tracked. Milestone and description are both optional and most entries have neither. Logging a normal day should be: pick project, pick time commitment, done.
@@ -26,7 +26,7 @@ The project is the thing being tracked. Milestone and description are both optio
 
 ## 2. Core concepts (data model)
 
-Two tables. Everything else is a query.
+Two tables, plus a one-row per-user settings record (timezone). Everything else is a query.
 
 ### `projects`
 The master list you log against. Archive instead of delete to preserve history.
@@ -53,7 +53,7 @@ One row per project worked on per day. Only project, date, and time commitment a
 | project_id | uuid | FK to projects, on delete cascade |
 | entry_date | date | default current_date |
 | time_spent | enum | small / medium / large (required) |
-| milestone | text | **optional**, null on most days. When present, this entry is an anniversary item. This is the headline text. |
+| milestone | text | **optional**, null on most days. When present, this entry is Throwback-eligible. This is the headline text. |
 | description | text | **optional**, deemphasized. Longer "what I actually did" detail, rarely filled. |
 | created_at | timestamptz | default now() |
 
@@ -83,15 +83,16 @@ create table entries (
   project_id  uuid not null references projects(id) on delete cascade,
   entry_date  date not null default current_date,
   time_spent  time_size not null,
-  milestone   text,         -- optional headline; non-null = anniversary item
+  milestone   text,         -- optional headline; non-null = Throwback-eligible
   description text,         -- optional, deemphasized detail
-  created_at  timestamptz not null default now()
+  created_at  timestamptz not null default now(),
+  unique (user_id, project_id, entry_date)   -- one Entry per project per day (ADR-0001)
 );
 
 create index entries_user_date_idx on entries (user_id, entry_date desc);
 create index entries_project_idx   on entries (project_id);
 create index entries_milestone_idx on entries (user_id, entry_date)
-  where milestone is not null;   -- partial index for the anniversary feed
+  where milestone is not null;   -- partial index for the Throwback feed
 ```
 
 ### Row Level Security
@@ -108,6 +109,53 @@ create policy "own entries" on entries
 ```
 
 Time-commitment-to-weight mapping for heatmaps and "intensity" scoring: small = 1, medium = 2, large = 3. Keep it in app code or a small SQL `case`, not a column.
+
+### Settings & the shared write path
+
+A one-row-per-user `app_settings` holds the timezone (default `America/Toronto`,
+changed manually — see ADR-0004). All capture paths resolve "today" through it.
+
+```sql
+create table app_settings (
+  user_id  uuid primary key references auth.users(id) default auth.uid(),
+  timezone text not null default 'America/Toronto'
+);
+alter table app_settings enable row level security;
+create policy "own settings" on app_settings
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+```
+
+Every capture path (web quick-add, Discord `/log`, Apple Shortcut) writes through one
+function so the one-per-(project, day) accumulate rule (ADR-0001) lives in exactly one
+place. It upserts: peak `time_spent` wins, and `milestone`/`description` are never
+nulled by a later bare re-log. `entry_date` is derived in the user's timezone. The
+browser calls it under RLS (`p_user` defaults to `auth.uid()`); the service-role
+capture routes pass the owner id explicitly.
+
+```sql
+create function log_entry(
+  p_project     uuid,
+  p_time        time_size,
+  p_milestone   text default null,
+  p_description text default null,
+  p_user        uuid default auth.uid()   -- service-role callers pass the owner id
+) returns entries language sql as $$
+  insert into entries (user_id, project_id, entry_date, time_spent, milestone, description)
+  values (
+    p_user, p_project,
+    (now() at time zone (select timezone from app_settings where user_id = p_user))::date,
+    p_time, p_milestone, p_description
+  )
+  on conflict (user_id, project_id, entry_date) do update set
+    time_spent  = greatest(entries.time_spent, excluded.time_spent),
+    milestone   = coalesce(excluded.milestone,   entries.milestone),
+    description = coalesce(excluded.description, entries.description)
+  returning *;
+$$;
+```
+
+`greatest()` on `time_spent` relies on the `time_size` enum being declared in
+ascending-effort order — do not reorder it.
 
 ---
 
@@ -130,10 +178,10 @@ where user_id = auth.uid()
 group by entry_date;
 ```
 
-Clicking a cell opens that day's entries and a quick-add form.
+Day boundaries follow the user's timezone (ADR-0004); cells bucket the summed weight into ~5 intensity levels. Clicking a cell opens that day's entries and a quick-add form.
 
 #### 3.1.2 Calendar view (project color banners)
-A month-grid view styled like Google Calendar. Each past day's cell shows one **color banner per distinct project worked that day**, using the project's `color`. Multiple projects in one day stack as multiple banners (cap the visible count, e.g. 3, then a "+N" overflow). This answers "what did I work on?" where the heatmap only answers "how much?".
+A month-grid view styled like Google Calendar. Each past day's cell shows one **color banner per distinct project worked that day**, using the project's `color`. Multiple projects in one day stack as multiple banners (cap the visible count, e.g. 3, then a "+N" overflow). This answers "what did I work on?" where the heatmap only answers "how much?". Project `color` is auto-assigned at create (§2), so every banner renders a real color.
 
 Per-day, per-project rollup that drives the banners:
 
@@ -213,45 +261,38 @@ group by p.name, e.time_spent
 order by p.name;
 ```
 
-### 3.4 Anniversaries / "on this day" (the headline feature)
-Surface milestones that fall on today's calendar day in prior months/years. A milestone is simply a non-null `milestone`.
+### 3.4 Throwbacks (the headline feature)
+A Throwback resurfaces a past Milestone with a human relative-age label ("3 months
+ago you shipped X", "2 years ago…"). It is intentionally loose — a varied,
+discovery-style insights feed, **not** a strict same-calendar-day rule (which sheds
+the Feb-29 / month-end clamping traps entirely). A Milestone is simply a non-null
+`milestone`.
 
-Exact "this day in history":
-
-```sql
-select e.milestone, e.entry_date, p.name as project_name,
-  (current_date - e.entry_date) as days_ago
-from entries e
-join projects p on p.id = e.project_id
-where e.user_id = auth.uid()
-  and e.milestone is not null
-  and extract(month from e.entry_date) = extract(month from current_date)
-  and extract(day   from e.entry_date) = extract(day   from current_date)
-  and e.entry_date < current_date
-order by e.entry_date desc;
-```
-
-"Round number" anniversaries (exactly 1, 3, 6, 12 months ago today), nicer for a daily digest:
+The candidate pool is every past Milestone, each with its humanized age (computed in
+the user's timezone):
 
 ```sql
-select e.milestone, e.entry_date, p.name as project_name
+select e.milestone, e.entry_date, p.name as project_name, p.color,
+  (((now() at time zone st.timezone)::date) - e.entry_date) as days_ago
 from entries e
-join projects p on p.id = e.project_id
+join projects p     on p.id = e.project_id
+cross join app_settings st
 where e.user_id = auth.uid()
+  and st.user_id = auth.uid()
   and e.milestone is not null
-  and e.entry_date = any (array[
-        current_date - interval '1 month',
-        current_date - interval '3 months',
-        current_date - interval '6 months',
-        current_date - interval '1 year'
-      ]::date[])
-order by e.entry_date desc;
+  and e.entry_date < ((now() at time zone st.timezone)::date);
 ```
 
-Wrap whichever version you pick in a Postgres view or a Supabase Edge Function so the frontend and the Discord digest share one source of truth.
+Selection is **date-seeded and stable per day**: a deterministic shuffle seeded by
+today's date picks the items, so the on-page feed and the morning Discord digest show
+the **same** throwbacks and refreshing never reshuffles. Defaults: the page shows up
+to **3**, the digest sends the top **1**; ages render to the nicest unit ("4 months
+ago", "1 year ago"); no bias toward round marks; an empty pool means no feed and a
+silent digest. One query/view plus a seeded pick = one source of truth for page and
+digest.
 
 ### 3.5 Archive (not delete)
-Toggling a project to `archived` removes it from the quick-add picker but keeps every entry. Old projects still appear in monthly breakdowns and anniversaries. Hard delete only via an explicit admin action.
+Toggling a project to `archived` removes it from the quick-add picker but keeps every entry. Old projects still appear in monthly breakdowns and Throwbacks. Hard delete only via an explicit admin action.
 
 ---
 
@@ -260,7 +301,7 @@ Toggling a project to `archived` removes it from the quick-add picker but keeps 
 ### 4.1 Discord bot (primary mobile capture)
 Slash command via Discord's Interactions Endpoint, not a Gateway websocket — Discord POSTs each interaction to your URL, so nothing runs 24/7 and it stays free.
 
-- **Where it runs:** a Supabase Edge Function (or a Next.js API route at `/api/discord`). Discord POSTs each interaction to that URL.
+- **Where it runs:** a Next.js API route at `/api/discord` on Vercel (ADR-0002). Discord POSTs each interaction to that URL.
 - **Auth:** verify the Ed25519 request signature against your app's public key (`X-Signature-Ed25519` + `X-Signature-Timestamp` headers) — Discord refuses to register an endpoint that fails this. Then restrict to your own Discord user id; ignore everyone else.
 - **Command:** a single `/log` slash command with typed options, so there's no syntax to memorize:
   - `project` — string, **autocomplete** from active project names.
@@ -269,63 +310,61 @@ Slash command via Discord's Interactions Endpoint, not a Gateway websocket — D
   - `description` — optional string, non-milestone detail.
 - **Reply within 3s:** the insert is fast, so answer inline (type 4) with an ephemeral confirmation. If you add slower work later, defer (type 5) and edit the response.
 - **PING handshake:** answer interaction type 1 (PING) with type 1 (PONG) — Discord pings on save and periodically.
-- **Autocomplete (optional):** project autocomplete arrives as a separate interaction (type 4); answer with type 8 and the active project names, or skip it for v1 and lean on the `ilike` fuzzy match below.
+- **Project resolution (never guess):** autocomplete supplies an exact active project (a separate type-4 interaction answered with type 8). A raw free-text submission that doesn't resolve to exactly one active project is rejected with an ephemeral error listing the closest names — the bot never silently logs to the wrong project.
 
-Edge Function sketch (Deno):
+Route handler sketch (Next.js App Router):
 
 ```ts
-// supabase/functions/discord/index.ts
-import { createClient } from "jsr:@supabase/supabase-js";
-import nacl from "npm:tweetnacl";
+// app/api/discord/route.ts  — Discord interactions endpoint (ADR-0002)
+import { createClient } from "@supabase/supabase-js";
+import nacl from "tweetnacl";
 
-const PUBLIC_KEY = Deno.env.get("DISCORD_PUBLIC_KEY")!;
+const PUBLIC_KEY = process.env.DISCORD_PUBLIC_KEY!;
+const OWNER = process.env.OWNER_USER_ID!;
 const hex = (h: string) => Uint8Array.from(h.match(/.{2}/g)!.map((b) => parseInt(b, 16)));
+const reply = (content: string) =>
+  Response.json({ type: 4, data: { content, flags: 64 } }); // flags 64 = ephemeral
 
-Deno.serve(async (req) => {
+export async function POST(req: Request) {
   const sig = req.headers.get("x-signature-ed25519");
   const ts  = req.headers.get("x-signature-timestamp");
-  const body = await req.text();
+  const body = await req.text();                          // raw body required to verify
   const ok = sig && ts && nacl.sign.detached.verify(
     new TextEncoder().encode(ts + body), hex(sig), hex(PUBLIC_KEY));
   if (!ok) return new Response("bad signature", { status: 401 });
 
   const i = JSON.parse(body);
-  if (i.type === 1) return Response.json({ type: 1 }); // PONG
+  if (i.type === 1) return Response.json({ type: 1 });    // PONG
 
   const userId = i.member?.user?.id ?? i.user?.id;
-  if (userId !== Deno.env.get("DISCORD_USER_ID"))
-    return Response.json({ type: 4, data: { content: "not authorized", flags: 64 } });
+  if (userId !== process.env.DISCORD_USER_ID) return reply("not authorized");
 
   const opt = Object.fromEntries((i.data.options ?? []).map((o: any) => [o.name, o.value]));
-  const time_spent =
-    { s: "small", m: "medium", l: "large" }[String(opt.time)[0]?.toLowerCase()] ?? "medium";
+  const db = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!  // service role, server-side only
-  );
+  // exact, case-insensitive resolution (ilike, no wildcards) — never guess
+  const { data: hit } = await db.from("projects")
+    .select("id, name").eq("user_id", OWNER).eq("status", "active")
+    .ilike("name", opt.project);
+  if (!hit || hit.length !== 1) {
+    const { data: near } = await db.from("projects")
+      .select("name").eq("user_id", OWNER).eq("status", "active")
+      .ilike("name", `%${opt.project}%`);
+    const hint = near?.length ? ` did you mean: ${near.map((p) => p.name).join(", ")}?` : "";
+    return reply(`no single active project matches "${opt.project}".${hint}`);
+  }
 
-  const { data: project } = await supabase
-    .from("projects").select("id, name")
-    .eq("user_id", Deno.env.get("OWNER_USER_ID"))
-    .ilike("name", `%${opt.project}%`).eq("status", "active").single();
-
-  await supabase.from("entries").insert({
-    user_id: Deno.env.get("OWNER_USER_ID"),
-    project_id: project?.id,
-    time_spent,
-    milestone:   opt.milestone   || null,
-    description: opt.description || null,
+  // one shared write path: upsert-accumulate in the user's timezone
+  await db.rpc("log_entry", {
+    p_project: hit[0].id, p_time: opt.time,
+    p_milestone: opt.milestone ?? null, p_description: opt.description ?? null,
+    p_user: OWNER,
   });
-
-  return Response.json({
-    type: 4,
-    data: { content: `logged ${project?.name ?? opt.project} · ${time_spent}`, flags: 64 },
-  });
-});
+  return reply(`logged ${hit[0].name} · ${opt.time}`);
+}
 ```
 
-Register the `/log` command once, then paste `<FN_URL>` into the app's **Interactions Endpoint URL** in the Discord Developer Portal:
+Register the `/log` command once, then paste your `https://log.aidanchien.com/api/discord` URL into the app's **Interactions Endpoint URL** in the Discord Developer Portal:
 
 ```
 PUT https://discord.com/api/v10/applications/<APP_ID>/commands
@@ -348,7 +387,7 @@ A Shortcut that:
 2. Optionally asks for a milestone line (skippable).
 3. Fires `Get Contents of URL` POST to `/api/log` with a bearer secret in the header and a JSON body.
 
-Server route validates the shared secret, resolves the project, inserts the row. Same insert path as the Discord bot. Put it behind a single-purpose secret, not your Supabase keys.
+Server route validates the shared secret, resolves the project (exact match, same rule as Discord), and writes via the shared `log_entry` upsert — same path as the Discord bot. Put it behind a single-purpose secret, not your Supabase keys.
 
 ---
 
@@ -368,7 +407,7 @@ Server route validates the shared secret, resolves the project, inserts the row.
 ### Free-tier watch-items
 - Supabase free projects pause after 7 days of no DB activity, with a ~30s cold start on wake. A daily login likely prevents it, but add a GitHub Actions cron (twice weekly) that runs a trivial query to keep the timer reset. ~15 lines of YAML.
 - Free tier caps that are irrelevant at this scale: 500 MB DB, 50k MAU, unlimited API requests. A year of daily entries is a few hundred rows.
-- Use the service role key only server-side (Edge Function / API route), never in the browser. The browser uses the anon key + RLS.
+- Use the service role key only server-side (API route), never in the browser. The browser uses the anon key + RLS.
 
 ---
 
@@ -378,16 +417,17 @@ Server route validates the shared secret, resolves the project, inserts the row.
                  ┌────────────────┐
   Apple Shortcut │  POST /api/log │──┐
                  └────────────────┘  │
-                                      ├──► Next.js API route / Supabase Edge Function
+                                      ├──► Next.js API route (Vercel)
    Discord  ──► webhook  /api/discord ┘            │ (verifies signature, resolves project)
                                                    ▼
                                              Supabase Postgres
                                              (projects, entries) ◄── RLS
                                                    ▲
    Browser (Next.js app on Vercel) ──── anon key ──┘
-   - heatmap, monthly breakdown, anniversaries, quick add
+   - heatmap, calendar, monthly breakdown, Throwbacks, quick add
 
    GitHub Actions cron ──► trivial query ──► keeps project awake
+   Vercel Cron ──► /api/cron/digest ──► Discord channel webhook (daily Throwback)
 ```
 
 ---
@@ -398,8 +438,8 @@ Server route validates the shared secret, resolves the project, inserts the row.
 2. **Auth + project CRUD.** Magic-link login. List / create / edit / archive projects. Active-only picker component.
 3. **Daily log core.** Quick-add form (project + time spent always visible, milestone optional, description tucked away), day detail view, the year heatmap.
 4. **Monthly breakdown.** Days-worked stat, time-commitment split, per-project stacked bar.
-5. **Anniversaries.** "On this day" feed as a Postgres view or Edge Function; render on the dashboard.
-6. **Discord capture.** Edge Function interactions endpoint, Ed25519 signature verification, the `/log` slash command with typed options, ephemeral confirmation reply.
+5. **Throwbacks.** Date-seeded insights feed (one shared query/view) with relative-age labels; render on the dashboard.
+6. **Discord capture.** `/api/discord` Next.js route, Ed25519 verification, the `/log` slash command, exact project resolution, writes via the shared `log_entry`, ephemeral confirm.
 7. **Apple Shortcut.** `/api/log` route + the Shortcut. Share-sheet / home-screen tap.
 8. **Polish + portfolio integration.** Theme to the space aesthetic, GitHub Actions keep-alive, optional public read-only "what I'm working on" page.
 
@@ -407,7 +447,7 @@ Server route validates the shared secret, resolves the project, inserts the row.
 
 ## 8. Stretch goals (post-v1)
 - Streaks (consecutive days logged) and per-project momentum.
-- Daily Discord digest: today's anniversaries posted each morning to a Discord channel webhook via a scheduled Edge Function.
+- Daily Discord digest: the day's Throwback posted each morning to a Discord channel webhook via a Vercel Cron job.
 - CSV / JSON export and import (also a clean migration path out of the Notion prototype).
 - A public, read-only "now" page driven by recent milestones and large-time-commitment entries, embedded in the portfolio.
 - Project aliases table so Discord project matching is forgiving (`aim`, `ai-m`, `mental health` all map to one project).
@@ -415,6 +455,6 @@ Server route validates the shared secret, resolves the project, inserts the row.
 ---
 
 ## 9. Open questions
-- One entry per project per day, or allow multiple sessions per project per day? (Schema already allows multiple; decide the UI default.)
-- Should a day support multiple milestones, or at most one per entry? (Currently one milestone per entry, multiple entries per day allowed.)
+- **Resolved — one Entry per (project, day)**, upsert-accumulate (ADR-0001), enforced by a unique constraint; all capture paths write via `log_entry`.
+- **Resolved — at most one milestone per Entry**, hence at most one per project per day. Different projects on the same day each carry their own.
 - Do learning projects (Turkish, Mandarin) want a streak view specifically, separate from work projects?
