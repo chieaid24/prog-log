@@ -30,8 +30,15 @@ branch did not create):
 Two problems: (1) **ADR-0001 number collides** — those are domain ADRs, this branch's 0001 is the
 autonomous-workflow ADR; (2) merging moves `main` HEAD + working tree while another agent uses it.
 The FF merge is non-destructive (preserves untracked files + the uncommitted PRD edit), but per the
-new "Finishing a worktree" escape clause this is surfaced rather than auto-merged. Awaiting decision
-on ADR renumbering + timing.
+new "Finishing a worktree" escape clause this is surfaced rather than auto-merged.
+
+**Resolution (decided):** renumber my workflow ADR 0001 → 0003 (done in commit f49a0e5); merge now.
+
+**Escalation:** before merging, the parallel agent also wrote an untracked **`CLAUDE.md`** and
+**`TASKS.md`** into `main` — a complete competing autonomous setup (its CLAUDE.md, a waved build
+plan, CONTEXT.md, domain ADRs). FF merge now refuses (would overwrite untracked `CLAUDE.md`).
+Auto-clobbering a peer's uncommitted work violates "never drop committed/human work", so per the
+escape clause this is surfaced for a reconcile decision rather than force-merged.
 
 ## Verification
 
