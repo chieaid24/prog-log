@@ -36,3 +36,4 @@ ls docs/adr | grep -oE '^[0-9]{4}' | sort -n | tail -1
 | [0001](0001-entry-is-one-per-project-per-day.md) | Entry grain is one-per-(project, day), upsert-accumulate | accepted |
 | [0002](0002-capture-runs-in-nextjs-api-routes.md) | Capture & digest run in Next.js API routes | accepted |
 | [0003](0003-adopt-autonomous-agent-workflow.md) | Adopt an autonomous agent workflow | accepted |
+| [0004](0004-dates-frozen-in-stored-user-timezone.md) | Dates computed in a stored user timezone, frozen at capture | accepted |

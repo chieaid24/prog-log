@@ -7,12 +7,13 @@ rough time commitment, with optional milestones. Doubles as a portfolio app.
 
 **Project**:
 The thing being tracked and logged against (e.g. Work, AI-M, Turkish). Has a
-category, a color, and an active/archived status. Archived (never deleted) to
-preserve history.
+category, a color (auto-assigned from a palette at create, overridable, never
+null), and an active/archived status. Archived (never deleted) to preserve history.
 _Avoid_: task, activity
 
 **Entry**:
 A record that a given Project was worked on a given day, at one Time Commitment.
+Its day is the calendar date in the user's timezone at capture, and is frozen.
 Exactly one Entry per (Project, day) — re-logging the same Project/day updates
 that Entry rather than creating a second one. Re-logging accumulates: it keeps
 the peak Time Commitment and never erases an existing Milestone or Description.
