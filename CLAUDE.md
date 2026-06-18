@@ -38,6 +38,14 @@ accepted — supersede, never edit. Link the ADR from its task. See [`docs/adr/R
 
 ### 4. Verify before calling anything done
 Never assert correctness — demonstrate it.
+- **Every feature ships with a test.** A task that builds or changes a feature is not done until
+  you have **written a test that exercises its Done gate and watched it pass** — unit for `lib/*`
+  helpers and queries, component/integration for UI, a request test for API routes (e.g. Discord
+  bad-signature → 401; `upsertEntry` keeps the peak `time_spent` and never erases a milestone).
+  Code with no test is an incomplete task — no exceptions for "small" changes. Paste the passing
+  output as the task's Verification evidence below.
+- Run the full gate green before a task moves to `done/` (and before any PR):
+  `npm run typecheck && npm run lint && npm run test && npm run build`.
 - Each task's **Verification** section states the concrete check and records real evidence
   (command output, logs, a screenshot) before it moves to `done/`.
 - CI (`.github/workflows/ci.yml`) runs lint → typecheck → test → build on every push/PR. It is
