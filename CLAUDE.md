@@ -23,6 +23,8 @@ Keep its checklist current as you go. When finished, fill in **Outcome** + **Ver
 Commit after **each logical unit of work**, automatically, without pausing to ask. Do not batch a
 day of work into one commit. Rules:
 - Work on a **feature branch**, never directly on `main`. Open a PR when the task is done.
+- When a worktree's work is done, **merge it back into `main` automatically** — don't wait to be
+  asked. See **[Finishing a worktree](#finishing-a-worktree)** below.
 - **Conventional Commits**, all lowercase, concise: `feat(scope): …`, `fix(scope): …`,
   `chore: …`, `docs: …`, `ci: …`.
 - Reference the task in the body: `task: 0007`.
@@ -54,6 +56,26 @@ Default to delegation. Fan out work instead of doing everything in one thread:
 - **Focused research** (API shapes, library choice) and **noisy investigation** (log trawls, broad
   greps) → a subagent that returns only the conclusion, keeping the lead's context clean.
 - The lead agent orchestrates (see below) and integrates; subagents execute.
+
+---
+
+## Finishing a worktree
+
+When work in a git worktree is complete — all its tasks are in `tasks/done/` and per-task
+verification passed — **merge it back into `main` automatically. Do not wait to be asked.**
+
+1. Confirm the branch is committed clean (`git status`).
+2. **Run the verification steps on the branch first** (CI gates / per-task checks). They must pass
+   before merging.
+3. **Merge into `main`, resolving any conflicts automatically** toward a correct integrated result:
+   keep the intent of both sides and never drop committed work. Prefer a fast-forward; otherwise a
+   merge commit. Preserve any uncommitted human changes in the `main` checkout.
+4. **Re-run the verification steps on `main` after the merge.** A clean branch can still break on
+   integration — the merge is not done until post-merge verification is green.
+5. Clean up: remove the worktree and delete the merged branch.
+
+Only stop and surface the situation if a conflict genuinely cannot be auto-resolved without losing
+intent. Otherwise this is hands-off.
 
 ---
 
