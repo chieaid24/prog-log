@@ -2,7 +2,7 @@
 
 **Owner:** Aidan
 **Status:** Draft, ready to build
-**Goal:** A self-hosted daily work log that doubles as a portfolio project. Port the Notion prototype to a custom app with proper "on this day" anniversary logic, a contribution-style heatmap, and frictionless capture from Telegram and an Apple Shortcut. Must run entirely on free tiers.
+**Goal:** A self-hosted daily work log that doubles as a portfolio project. Port the Notion prototype to a custom app with proper "on this day" anniversary logic, a contribution-style heatmap, and frictionless capture from a Discord bot and an Apple Shortcut. Must run entirely on free tiers.
 
 ---
 
@@ -248,7 +248,7 @@ where e.user_id = auth.uid()
 order by e.entry_date desc;
 ```
 
-Wrap whichever version you pick in a Postgres view or a Supabase Edge Function so the frontend and the Telegram digest share one source of truth.
+Wrap whichever version you pick in a Postgres view or a Supabase Edge Function so the frontend and the Discord digest share one source of truth.
 
 ### 3.5 Archive (not delete)
 Toggling a project to `archived` removes it from the quick-add picker but keeps every entry. Old projects still appear in monthly breakdowns and anniversaries. Hard delete only via an explicit admin action.
@@ -257,38 +257,48 @@ Toggling a project to `archived` removes it from the quick-add picker but keeps 
 
 ## 4. Capture layer (zero-friction logging)
 
-### 4.1 Telegram bot (primary mobile capture)
-Webhook style, not polling, so nothing runs 24/7 and it stays free.
+### 4.1 Discord bot (primary mobile capture)
+Slash command via Discord's Interactions Endpoint, not a Gateway websocket — Discord POSTs each interaction to your URL, so nothing runs 24/7 and it stays free.
 
-- **Where it runs:** a Supabase Edge Function (or a Next.js API route at `/api/telegram`). Telegram POSTs each message to that URL.
-- **Auth:** restrict to your own Telegram user id; ignore everything else. Set a webhook secret token and verify the `X-Telegram-Bot-Api-Secret-Token` header.
-- **Input formats:**
-  - Normal day: `project | time`  e.g. `work | m`
-  - With a milestone: prefix the text with `*` or `!`  e.g. `aim | m | * got RAG retrieval working end to end`
-  - With a description (non-milestone detail): plain text after the time  e.g. `work | l | spent the day on terraform drift`
-  - Time accepts s/m/l or small/medium/large. Project matched case-insensitively against active project names (fuzzy-match or alias table).
-- **v2, friendlier:** bot replies to a bare message with an inline keyboard of active projects, then time buttons, then asks "milestone? (optional)". More taps, zero memorization.
+- **Where it runs:** a Supabase Edge Function (or a Next.js API route at `/api/discord`). Discord POSTs each interaction to that URL.
+- **Auth:** verify the Ed25519 request signature against your app's public key (`X-Signature-Ed25519` + `X-Signature-Timestamp` headers) — Discord refuses to register an endpoint that fails this. Then restrict to your own Discord user id; ignore everyone else.
+- **Command:** a single `/log` slash command with typed options, so there's no syntax to memorize:
+  - `project` — string, **autocomplete** from active project names.
+  - `time` — choice: small / medium / large.
+  - `milestone` — optional string, the headline.
+  - `description` — optional string, non-milestone detail.
+- **Reply within 3s:** the insert is fast, so answer inline (type 4) with an ephemeral confirmation. If you add slower work later, defer (type 5) and edit the response.
+- **PING handshake:** answer interaction type 1 (PING) with type 1 (PONG) — Discord pings on save and periodically.
+- **Autocomplete (optional):** project autocomplete arrives as a separate interaction (type 4); answer with type 8 and the active project names, or skip it for v1 and lean on the `ilike` fuzzy match below.
 
 Edge Function sketch (Deno):
 
 ```ts
-// supabase/functions/telegram/index.ts
+// supabase/functions/discord/index.ts
 import { createClient } from "jsr:@supabase/supabase-js";
+import nacl from "npm:tweetnacl";
+
+const PUBLIC_KEY = Deno.env.get("DISCORD_PUBLIC_KEY")!;
+const hex = (h: string) => Uint8Array.from(h.match(/.{2}/g)!.map((b) => parseInt(b, 16)));
 
 Deno.serve(async (req) => {
-  if (req.headers.get("x-telegram-bot-api-secret-token") !== Deno.env.get("TG_SECRET"))
-    return new Response("forbidden", { status: 403 });
+  const sig = req.headers.get("x-signature-ed25519");
+  const ts  = req.headers.get("x-signature-timestamp");
+  const body = await req.text();
+  const ok = sig && ts && nacl.sign.detached.verify(
+    new TextEncoder().encode(ts + body), hex(sig), hex(PUBLIC_KEY));
+  if (!ok) return new Response("bad signature", { status: 401 });
 
-  const update = await req.json();
-  const msg = update.message;
-  if (!msg || msg.from.id !== Number(Deno.env.get("TG_USER_ID")))
-    return new Response("ok"); // ignore
+  const i = JSON.parse(body);
+  if (i.type === 1) return Response.json({ type: 1 }); // PONG
 
-  const [projRaw, timeRaw, ...rest] = msg.text.split("|").map((s: string) => s.trim());
-  const text = rest.join("|").trim();
-  const isMilestone = /^[*!]/.test(text);
-  const cleanText = text.replace(/^[*!]\s*/, "");
-  const time_spent = { s: "small", m: "medium", l: "large" }[timeRaw?.[0]?.toLowerCase()] ?? "medium";
+  const userId = i.member?.user?.id ?? i.user?.id;
+  if (userId !== Deno.env.get("DISCORD_USER_ID"))
+    return Response.json({ type: 4, data: { content: "not authorized", flags: 64 } });
+
+  const opt = Object.fromEntries((i.data.options ?? []).map((o: any) => [o.name, o.value]));
+  const time_spent =
+    { s: "small", m: "medium", l: "large" }[String(opt.time)[0]?.toLowerCase()] ?? "medium";
 
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
@@ -296,25 +306,41 @@ Deno.serve(async (req) => {
   );
 
   const { data: project } = await supabase
-    .from("projects").select("id")
+    .from("projects").select("id, name")
     .eq("user_id", Deno.env.get("OWNER_USER_ID"))
-    .ilike("name", `%${projRaw}%`).eq("status", "active").single();
+    .ilike("name", `%${opt.project}%`).eq("status", "active").single();
 
   await supabase.from("entries").insert({
     user_id: Deno.env.get("OWNER_USER_ID"),
     project_id: project?.id,
     time_spent,
-    milestone:   isMilestone && cleanText ? cleanText : null,
-    description: !isMilestone && cleanText ? cleanText : null,
+    milestone:   opt.milestone   || null,
+    description: opt.description || null,
   });
 
-  // reply via Telegram sendMessage API for confirmation
-  return new Response("ok");
+  return Response.json({
+    type: 4,
+    data: { content: `logged ${project?.name ?? opt.project} · ${time_spent}`, flags: 64 },
+  });
 });
 ```
 
-Register the webhook once:
-`https://api.telegram.org/bot<TOKEN>/setWebhook?url=<FN_URL>&secret_token=<TG_SECRET>`
+Register the `/log` command once, then paste `<FN_URL>` into the app's **Interactions Endpoint URL** in the Discord Developer Portal:
+
+```
+PUT https://discord.com/api/v10/applications/<APP_ID>/commands
+Authorization: Bot <BOT_TOKEN>
+
+[ { "name": "log", "description": "log a work entry", "type": 1, "options": [
+  { "name": "project", "type": 3, "description": "project", "required": true, "autocomplete": true },
+  { "name": "time", "type": 3, "description": "time spent", "required": true, "choices": [
+      { "name": "small", "value": "small" },
+      { "name": "medium", "value": "medium" },
+      { "name": "large", "value": "large" } ] },
+  { "name": "milestone", "type": 3, "description": "milestone (optional)", "required": false },
+  { "name": "description", "type": 3, "description": "detail (optional)", "required": false }
+] } ]
+```
 
 ### 4.2 Apple Shortcut (one-tap home screen capture)
 A Shortcut that:
@@ -322,7 +348,7 @@ A Shortcut that:
 2. Optionally asks for a milestone line (skippable).
 3. Fires `Get Contents of URL` POST to `/api/log` with a bearer secret in the header and a JSON body.
 
-Server route validates the shared secret, resolves the project, inserts the row. Same insert path as Telegram. Put it behind a single-purpose secret, not your Supabase keys.
+Server route validates the shared secret, resolves the project, inserts the row. Same insert path as the Discord bot. Put it behind a single-purpose secret, not your Supabase keys.
 
 ---
 
@@ -336,7 +362,7 @@ Server route validates the shared secret, resolves the project, inserts the row.
 | Auth | Supabase Auth, magic link | Single user; no password to manage |
 | Styling | Tailwind | Fast; theme to the space aesthetic |
 | Charts | Recharts or custom SVG | Heatmap is a custom SVG grid; bars via Recharts |
-| Capture | Telegram Bot API + Apple Shortcuts | Free, webhook-driven |
+| Capture | Discord Interactions API + Apple Shortcuts | Free, webhook-driven |
 | Keep-alive | GitHub Actions cron | Prevents Supabase free-tier pause |
 
 ### Free-tier watch-items
@@ -353,7 +379,7 @@ Server route validates the shared secret, resolves the project, inserts the row.
   Apple Shortcut │  POST /api/log │──┐
                  └────────────────┘  │
                                       ├──► Next.js API route / Supabase Edge Function
-   Telegram ──► webhook /api/telegram ┘            │ (validates secret, resolves project)
+   Discord  ──► webhook  /api/discord ┘            │ (verifies signature, resolves project)
                                                    ▼
                                              Supabase Postgres
                                              (projects, entries) ◄── RLS
@@ -373,7 +399,7 @@ Server route validates the shared secret, resolves the project, inserts the row.
 3. **Daily log core.** Quick-add form (project + time spent always visible, milestone optional, description tucked away), day detail view, the year heatmap.
 4. **Monthly breakdown.** Days-worked stat, time-commitment split, per-project stacked bar.
 5. **Anniversaries.** "On this day" feed as a Postgres view or Edge Function; render on the dashboard.
-6. **Telegram capture.** Edge Function webhook, secret validation, the `|` parse with `*`/`!` milestone marker, confirmation reply.
+6. **Discord capture.** Edge Function interactions endpoint, Ed25519 signature verification, the `/log` slash command with typed options, ephemeral confirmation reply.
 7. **Apple Shortcut.** `/api/log` route + the Shortcut. Share-sheet / home-screen tap.
 8. **Polish + portfolio integration.** Theme to the space aesthetic, GitHub Actions keep-alive, optional public read-only "what I'm working on" page.
 
@@ -381,10 +407,10 @@ Server route validates the shared secret, resolves the project, inserts the row.
 
 ## 8. Stretch goals (post-v1)
 - Streaks (consecutive days logged) and per-project momentum.
-- Daily Telegram digest: today's anniversaries pushed each morning via a scheduled Edge Function.
+- Daily Discord digest: today's anniversaries posted each morning to a Discord channel webhook via a scheduled Edge Function.
 - CSV / JSON export and import (also a clean migration path out of the Notion prototype).
 - A public, read-only "now" page driven by recent milestones and large-time-commitment entries, embedded in the portfolio.
-- Project aliases table so Telegram matching is forgiving (`aim`, `ai-m`, `mental health` all map to one project).
+- Project aliases table so Discord project matching is forgiving (`aim`, `ai-m`, `mental health` all map to one project).
 
 ---
 
