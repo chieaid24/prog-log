@@ -15,9 +15,9 @@ merging this worktree into `main`.
 
 - [x] Add a "Finishing a worktree" section to `CLAUDE.md` + pointer from rule 2
 - [x] Verify CLAUDE.md still coherent
-- [ ] Merge `worktree-autonomous-setup` into `main`, resolve conflicts automatically — **BLOCKED**
-- [ ] Run verification on `main` post-merge (yaml parse, file presence, git log)
-- [ ] Clean up worktree + branch
+- [x] Merge `worktree-autonomous-setup` into `main` (fast-forward) — blocker reconciled, see Outcome
+- [x] Run verification on `main` post-merge (yaml parse, file presence, git log)
+- [ ] Clean up worktree + branch — deferred (worktree may host an active session; remove on request)
 
 ## Blocker (2026-06-17)
 
@@ -48,4 +48,19 @@ escape clause this is surfaced for a reconcile decision rather than force-merged
 
 ## Outcome
 
-(Filled on completion.)
+Merged `worktree-autonomous-setup` into `main` via **fast-forward** (`fd828b8..47a179a`) — main was
+0 ahead / 8 behind, so no merge commit and no history rewrite. The two blockers were reconciled:
+
+1. **ADR number collision** — resolved upstream by renumbering the workflow ADR 0001 → 0003
+   (commit f49a0e5); the domain ADRs 0001/0002 are now the accepted entries in
+   `docs/adr/README.md`.
+2. **Competing CLAUDE.md / TASKS.md from the parallel agent** — the human chose **"merge both"**.
+   Realized as: the parallel session's *create-and-test gate* was folded into this CLAUDE.md
+   (rule 4 now requires a passing test per feature), and its waved build plan was ported into the
+   `tasks/` system as `tasks/PLAN.md` (the dependency-ordered backlog) with the two unblocked
+   foundation units seeded as `tasks/todo/0003` and `0004`. The redundant root `TASKS.md` was
+   removed; `CONTEXT.md` and the domain ADRs were kept. No committed or human work was dropped —
+   the uncommitted `worklog-prd (1).md` edit (Telegram→Discord) survived the FF and is committed
+   alongside.
+
+Deferred only the worktree/branch cleanup, since the worktree may still host an active session.
