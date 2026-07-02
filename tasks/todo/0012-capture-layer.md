@@ -21,7 +21,7 @@ pick.
       timezone) + shared capture resolution error copy
 - [x] `app/api/discord/route.ts` — 401 bad signature; PING→PONG; owner gate (commands and
       autocomplete); autocomplete type 8 ≤25 choices; `/log` resolve→upsertEntry→ephemeral
-- [ ] `app/api/log/route.ts` — constant-time bearer check; same resolve+upsert path; JSON
+- [x] `app/api/log/route.ts` — constant-time bearer check; same resolve+upsert path; JSON
       responses with did-you-mean hints
 - [ ] `app/api/cron/digest/route.ts` — CRON_SECRET gate; empty pool = silent `{sent:false}`;
       webhook post with humanized age; `{sent:true}`
