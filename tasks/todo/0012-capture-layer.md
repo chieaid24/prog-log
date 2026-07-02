@@ -16,10 +16,10 @@ pick.
 
 ## Plan / checklist
 
-- [ ] `lib/discord/verify.ts` — pure Ed25519 verification (tweetnacl), hex parsing hardened
-- [ ] `lib/discord/owner.ts` — admin-scoped owner fetches (active projects, throwback pool,
+- [x] `lib/discord/verify.ts` — pure Ed25519 verification (tweetnacl), hex parsing hardened
+- [x] `lib/discord/owner.ts` — admin-scoped owner fetches (active projects, throwback pool,
       timezone) + shared capture resolution error copy
-- [ ] `app/api/discord/route.ts` — 401 bad signature; PING→PONG; owner gate (commands and
+- [x] `app/api/discord/route.ts` — 401 bad signature; PING→PONG; owner gate (commands and
       autocomplete); autocomplete type 8 ≤25 choices; `/log` resolve→upsertEntry→ephemeral
 - [ ] `app/api/log/route.ts` — constant-time bearer check; same resolve+upsert path; JSON
       responses with did-you-mean hints
