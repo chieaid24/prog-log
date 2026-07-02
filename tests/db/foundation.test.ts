@@ -209,3 +209,41 @@ describe("timezone resolution (ADR-0004)", () => {
     expect(res.rows[0].got).toBe(res.rows[0].want);
   });
 });
+
+describe("log_entry explicit date (migration 3)", () => {
+  it("logs onto the supplied past day instead of today", async () => {
+    const user = await createUser(admin);
+    const project = await admin.query(
+      "insert into projects (user_id, name) values ($1, 'Backfill') returning id",
+      [user],
+    );
+    const res = await admin.query(
+      `select (log_entry($1, 'medium', null, null, $2, '2026-01-10'::date)).entry_date::text as d`,
+      [project.rows[0].id, user],
+    );
+    expect(res.rows[0].d).toBe("2026-01-10");
+  });
+
+  it("accumulates into an existing row on the explicit day", async () => {
+    const user = await createUser(admin);
+    const project = await admin.query(
+      "insert into projects (user_id, name) values ($1, 'Backfill2') returning id",
+      [user],
+    );
+    await admin.query(
+      "select log_entry($1, 'large', 'shipped', null, $2, '2026-01-10'::date)",
+      [project.rows[0].id, user],
+    );
+    const res = await admin.query(
+      `select (r).time_spent, (r).milestone from log_entry($1, 'small', null, null, $2, '2026-01-10'::date) r`,
+      [project.rows[0].id, user],
+    );
+    expect(res.rows[0].time_spent).toBe("large");
+    expect(res.rows[0].milestone).toBe("shipped");
+    const count = await admin.query(
+      "select count(*)::int as n from entries where user_id = $1",
+      [user],
+    );
+    expect(count.rows[0].n).toBe(1);
+  });
+});

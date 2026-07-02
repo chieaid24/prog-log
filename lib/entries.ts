@@ -17,6 +17,11 @@ export type UpsertEntryInput = {
    * auth.uid() and RLS rejects any spoofed value.
    */
   userId?: string;
+  /**
+   * Explicit Entry day (ISO date) — used when logging from a clicked calendar
+   * day. Omitted = today in the user's stored timezone (ADR-0004).
+   */
+  entryDate?: string;
 };
 
 export async function upsertEntry(db: Db, input: UpsertEntryInput): Promise<Entry> {
@@ -26,6 +31,7 @@ export async function upsertEntry(db: Db, input: UpsertEntryInput): Promise<Entr
     p_milestone: input.milestone ?? null,
     p_description: input.description ?? null,
     ...(input.userId ? { p_user: input.userId } : {}),
+    ...(input.entryDate ? { p_date: input.entryDate } : {}),
   });
   if (error) throw error;
   return data as Entry;

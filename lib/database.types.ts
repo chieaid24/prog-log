@@ -118,6 +118,7 @@ export type Database = {
           p_milestone?: string | null;
           p_description?: string | null;
           p_user?: string;
+          p_date?: string | null;
         };
         Returns: Database["public"]["Tables"]["entries"]["Row"];
       };

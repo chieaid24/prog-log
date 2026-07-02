@@ -9,6 +9,8 @@ export default defineConfig({
   },
   test: {
     passWithNoTests: true,
+    // Testing-library auto-cleanup between tests hooks into global afterEach.
+    globals: true,
     // Component tests opt into jsdom with a `// @vitest-environment jsdom`
     // docblock; everything else (lib, DB integration) runs in node.
     environment: "node",

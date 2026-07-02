@@ -1,0 +1,89 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { createProject, setProjectStatus } from "@/lib/projects";
+import { createClient } from "@/lib/supabase/server";
+import type { Project } from "@/lib/types";
+
+export type ProjectActionResult = { ok: true; project: Project } | { ok: false; error: string };
+
+const CATEGORIES = ["Work", "Research", "Personal", "Learning"] as const;
+
+/** Create (or dedupe-select) a Project — used inline from quick add and on /projects. */
+export async function createProjectAction(input: {
+  name: string;
+  category?: string;
+  color?: string;
+  description?: string;
+}): Promise<ProjectActionResult> {
+  const name = input.name?.trim();
+  if (!name) return { ok: false, error: "Project name is required." };
+  if (input.category && !CATEGORIES.includes(input.category as (typeof CATEGORIES)[number])) {
+    return { ok: false, error: "Unknown category." };
+  }
+
+  try {
+    const supabase = await createClient();
+    const project = await createProject(supabase, {
+      name,
+      category: input.category || null,
+      color: input.color || null,
+      description: input.description?.trim() || null,
+    });
+    revalidatePath("/", "layout");
+    return { ok: true, project };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Could not create the project." };
+  }
+}
+
+/** Archive / un-archive (never delete) — PRD 3.5. */
+export async function setProjectStatusAction(
+  projectId: string,
+  status: "active" | "archived",
+): Promise<ProjectActionResult> {
+  try {
+    const supabase = await createClient();
+    const project = await setProjectStatus(supabase, projectId, status);
+    revalidatePath("/", "layout");
+    return { ok: true, project };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Could not update the project." };
+  }
+}
+
+/** Edit name/category/color/description (B5 project management). */
+export async function updateProjectAction(
+  projectId: string,
+  patch: { name?: string; category?: string | null; color?: string | null; description?: string | null },
+): Promise<ProjectActionResult> {
+  const update: Record<string, string | null> = {};
+  if (patch.name !== undefined) {
+    const name = patch.name.trim();
+    if (!name) return { ok: false, error: "Project name is required." };
+    update.name = name;
+  }
+  if (patch.category !== undefined) {
+    if (patch.category && !CATEGORIES.includes(patch.category as (typeof CATEGORIES)[number])) {
+      return { ok: false, error: "Unknown category." };
+    }
+    update.category = patch.category;
+  }
+  if (patch.color !== undefined) update.color = patch.color;
+  if (patch.description !== undefined) update.description = patch.description;
+
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("projects")
+      .update(update)
+      .eq("id", projectId)
+      .select()
+      .single();
+    if (error) throw error;
+    revalidatePath("/", "layout");
+    return { ok: true, project: data };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Could not update the project." };
+  }
+}
