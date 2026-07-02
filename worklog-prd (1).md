@@ -18,6 +18,11 @@ The Notion version covers daily logging and a milestone list. This build exists 
 ### Design principle
 The project is the thing being tracked. Milestone and description are both optional and most entries have neither. Logging a normal day should be: pick project, pick time commitment, done.
 
+The first UI pass is intentionally exploratory. Build every visual view requested below rather
+than choosing one in advance; the owner will review them with real data and decide which to keep.
+Treat each view as a separable component so removing one later does not require redesigning the
+data model or the rest of the dashboard.
+
 ### Non-goals (v1)
 - Multi-user / team features. Single user (you), though the schema is multi-user-safe via RLS.
 - Exact hour tracking. Time is t-shirt-sized on purpose (Small / Medium / Large).
@@ -162,7 +167,11 @@ ascending-effort order — do not reorder it.
 ## 3. Features & the queries behind them
 
 ### 3.1 Daily log (the calendar / heatmap)
-The daily log offers **two toggleable views** over the same underlying entries: a **heatmap** for at-a-glance intensity, and a **calendar** for which projects each day belonged to.
+The daily log offers **two complete views** over the same underlying entries: a **heatmap** for
+at-a-glance intensity, and a **calendar** for which projects each day belonged to. **Build both in
+the first pass.** Do not substitute one for the other or remove one during implementation. They
+may be switchable with tabs or a segmented control, but both must be easy for the owner to find,
+exercise, and compare before deciding which to retain.
 
 #### 3.1.1 Heatmap view (overall hours worked)
 A GitHub-contribution-style year heatmap is the primary "days worked" view. Each cell's color intensity comes from summed time-commitment weight that day — a single monochrome scale, so it reads as *overall* effort regardless of project.
@@ -180,8 +189,20 @@ group by entry_date;
 
 Day boundaries follow the user's timezone (ADR-0004); cells bucket the summed weight into ~5 intensity levels. Clicking a cell opens that day's entries and a quick-add form.
 
-#### 3.1.2 Calendar view (project color banners)
-A month-grid view styled like Google Calendar. Each past day's cell shows one **color banner per distinct project worked that day**, using the project's `color`. Multiple projects in one day stack as multiple banners (cap the visible count, e.g. 3, then a "+N" overflow). This answers "what did I work on?" where the heatmap only answers "how much?". Project `color` is auto-assigned at create (§2), so every banner renders a real color.
+#### 3.1.2 Calendar view (Notion-inspired project cards)
+A clean **Notion Calendar-style month grid** is the first-pass visual target: a restrained white or
+theme-appropriate canvas, light cell borders, compact weekday and date labels, generous whitespace,
+and rounded entry cards inside each day. Match the reference's information density and quiet visual
+hierarchy rather than copying Notion branding or controls. Include clear previous/next month and
+Today navigation, visibly distinguish today, and show leading/trailing days from adjacent months
+in a muted style.
+
+Each past day's cell shows one compact **card per distinct project worked that day**, using the
+project's `color` as an accent while keeping text readable. A card shows at least the project name
+and summarized time commitment; it may include a small icon or category marker where useful.
+Multiple projects in one day stack as multiple cards (cap the visible count, e.g. 3, then a "+N"
+overflow). This answers "what did I work on?" where the heatmap only answers "how much?". Project
+`color` is auto-assigned at create (section 2), so every card renders a real accent color.
 
 Per-day, per-project rollup that drives the banners:
 
@@ -201,7 +222,11 @@ group by e.entry_date, p.id, p.name, p.color
 order by e.entry_date, weight desc;
 ```
 
-Order banners by `weight desc` so the day's dominant project sits on top. Clicking a day opens that day's entries and the quick-add form (same as a heatmap cell). The two views share the cell-click behavior; only the rendering differs.
+Order cards by `weight desc` so the day's dominant project sits on top. Clicking an empty area in a
+day opens quick add for that date; clicking a card opens that day's relevant entries. The heatmap
+and calendar retain consistent date-selection behavior even though their rendering differs. On
+small screens, preserve readability with a responsive calendar treatment (such as horizontal
+scrolling or an agenda fallback) rather than compressing cards into illegible cells.
 
 ### 3.2 Quick add
 The form should make the common case trivial:
@@ -260,6 +285,36 @@ where e.user_id = auth.uid()
 group by p.name, e.time_spent
 order by p.name;
 ```
+
+#### 3.3.1 Visual exploration and dashboard flair
+
+The implementation agent is explicitly encouraged to add visual character and propose additional
+graphs or charts that reveal interesting patterns in the available data. Build a small, curated set
+of polished experiments in the first pass so the owner can evaluate them in the actual product;
+do not stop at placeholders or merely describe alternatives. At minimum, add **two additional
+visualizations** beyond the required heatmap, calendar, and per-project stacked bar when the data
+supports them.
+
+Good candidates include:
+
+- a rolling effort or entries trend that answers whether activity is increasing or declining;
+- a project-share chart showing where time commitment went during the selected month;
+- a weekday pattern chart showing which days tend to be most active;
+- a milestone cadence or cumulative milestones chart;
+- project momentum, streak, or consistency indicators derived from logged days.
+
+The agent may choose other chart forms when they communicate the data more clearly. Each addition
+must state the question it answers, use real database data rather than mock values, share the app's
+project colors and visual system, include useful hover/focus details, and handle loading, empty,
+sparse, and dense states. Prefer readable comparisons over decorative chart types (for example,
+avoid 3D charts). Keep experiments modular so each can be retained, rearranged, or deleted after
+review without affecting capture, queries used by other views, or the core dashboard.
+
+Add restrained visual flair across the product through typography, spacing, color, subtle depth,
+micro-interactions, transitions, and well-designed empty states. The result should feel cohesive
+and portfolio-ready, not like an unstyled admin dashboard. Flair must not reduce accessibility:
+preserve keyboard operation, visible focus, sufficient contrast, reduced-motion support, and
+mobile usability.
 
 ### 3.4 Throwbacks (the headline feature)
 A Throwback resurfaces a past Milestone with a human relative-age label ("3 months
@@ -436,8 +491,12 @@ Server route validates the shared secret, resolves the project (exact match, sam
 
 1. **Foundation.** Supabase project, schema, enum, RLS, seed the 5 starter projects. Verify with the SQL editor.
 2. **Auth + project CRUD.** Magic-link login. List / create / edit / archive projects. Active-only picker component.
-3. **Daily log core.** Quick-add form (project + time spent always visible, milestone optional, description tucked away), day detail view, the year heatmap.
-4. **Monthly breakdown.** Days-worked stat, time-commitment split, per-project stacked bar.
+3. **Daily log core.** Quick-add form (project + time spent always visible, milestone optional,
+   description tucked away), day detail view, the year heatmap, and the complete Notion-inspired
+   month calendar. Build both visual views for owner review.
+4. **Monthly breakdown + visual exploration.** Days-worked stat, time-commitment split,
+   per-project stacked bar, and at least two additional real-data visualizations. Apply the shared
+   visual polish and keep every experiment modular for later selection.
 5. **Throwbacks.** Date-seeded insights feed (one shared query/view) with relative-age labels; render on the dashboard.
 6. **Discord capture.** `/api/discord` Next.js route, Ed25519 verification, the `/log` slash command, exact project resolution, writes via the shared `log_entry`, ephemeral confirm.
 7. **Apple Shortcut.** `/api/log` route + the Shortcut. Share-sheet / home-screen tap.
