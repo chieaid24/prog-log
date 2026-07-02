@@ -1,0 +1,92 @@
+"use client";
+
+import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
+import { createClient } from "@/lib/supabase/client";
+
+type SendState = { status: "idle" | "sending" | "sent" } | { status: "error"; message: string };
+
+function LoginForm() {
+  const [email, setEmail] = useState("");
+  const [state, setState] = useState<SendState>({ status: "idle" });
+  const searchParams = useSearchParams();
+  const confirmError = searchParams.get("error");
+
+  async function sendLink(event: React.FormEvent) {
+    event.preventDefault();
+    setState({ status: "sending" });
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/confirm`,
+      },
+    });
+    if (error) {
+      setState({ status: "error", message: error.message });
+    } else {
+      setState({ status: "sent" });
+    }
+  }
+
+  if (state.status === "sent") {
+    return (
+      <div className="text-center" role="status">
+        <p className="text-2xl">Check your inbox</p>
+        <p className="mt-2 text-sm text-muted">
+          A sign-in link is on its way to <span className="text-foreground">{email}</span>.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={sendLink} className="flex flex-col gap-4">
+      <label htmlFor="email" className="text-sm text-muted">
+        Email
+      </label>
+      <input
+        id="email"
+        type="email"
+        required
+        autoFocus
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="you@example.com"
+        className="rounded-lg border border-line bg-panel px-3 py-2 text-foreground placeholder:text-faint focus:border-line-strong"
+      />
+      <button
+        type="submit"
+        disabled={state.status === "sending"}
+        className="rounded-lg bg-accent px-3 py-2 font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-50"
+      >
+        {state.status === "sending" ? "Sending…" : "Send magic link"}
+      </button>
+      {state.status === "error" && (
+        <p className="text-sm text-danger" role="alert">
+          {state.message}
+        </p>
+      )}
+      {confirmError && state.status === "idle" && (
+        <p className="text-sm text-danger" role="alert">
+          Sign-in link was invalid or expired — request a new one.
+        </p>
+      )}
+    </form>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <main className="flex min-h-dvh items-center justify-center p-6">
+      <div className="w-full max-w-sm rounded-2xl border border-line bg-panel p-8 backdrop-blur">
+        <h1 className="mb-1 text-lg font-semibold tracking-tight">prog-log</h1>
+        <p className="mb-6 text-sm text-muted">Sign in with a magic link.</p>
+        <Suspense>
+          <LoginForm />
+        </Suspense>
+      </div>
+    </main>
+  );
+}
