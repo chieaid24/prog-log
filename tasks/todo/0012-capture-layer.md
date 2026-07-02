@@ -23,9 +23,9 @@ pick.
       autocomplete); autocomplete type 8 ≤25 choices; `/log` resolve→upsertEntry→ephemeral
 - [x] `app/api/log/route.ts` — constant-time bearer check; same resolve+upsert path; JSON
       responses with did-you-mean hints
-- [ ] `app/api/cron/digest/route.ts` — CRON_SECRET gate; empty pool = silent `{sent:false}`;
+- [x] `app/api/cron/digest/route.ts` — CRON_SECRET gate; empty pool = silent `{sent:false}`;
       webhook post with humanized age; `{sent:true}`
-- [ ] `vercel.json` — daily cron 12:00 UTC (= 08:00 America/Toronto)
+- [x] `vercel.json` — daily cron 12:00 UTC (= 08:00 America/Toronto)
 - [ ] `scripts/register-discord-command.mjs` — one-shot `/log` command registration
 - [ ] Request tests for all three routes (real tweetnacl keypair; mocked admin client + owner
       fetches; stubbed webhook fetch)
