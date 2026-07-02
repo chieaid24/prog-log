@@ -2,3 +2,23 @@
 
 # git worktrees created under the repo (EnterWorktree / git worktree add)
 .claude/worktrees/
+
+# dependencies
+/node_modules
+/coverage
+
+# next.js
+/.next/
+/out/
+*.tsbuildinfo
+next-env.d.ts
+
+# env files — .env.example IS committed
+.env*
+!.env.example
+
+# vercel
+.vercel
+
+# local test postgres data
+/.pgdata/
