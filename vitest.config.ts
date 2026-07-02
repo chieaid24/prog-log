@@ -13,6 +13,7 @@ export default defineConfig({
     // docblock; everything else (lib, DB integration) runs in node.
     environment: "node",
     setupFiles: ["./tests/setup.ts"],
+    globalSetup: ["./tests/db/global-setup.ts"],
     // DB integration tests share one embedded-postgres instance per run.
     fileParallelism: false,
     testTimeout: 30_000,

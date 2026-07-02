@@ -1,0 +1,36 @@
+# Supabase CLI local-stack config. `supabase start` / `supabase db reset` use
+# this when Docker is available; the automated test suite applies the same
+# migrations against an embedded Postgres 17 instead (see tests/db/).
+project_id = "prog-log"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public"]
+extra_search_path = ["public"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 17
+
+[studio]
+enabled = true
+port = 54323
+
+[inbucket]
+enabled = true
+port = 54324
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["https://log.aidanchien.com"]
+jwt_expiry = 3600
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = false
