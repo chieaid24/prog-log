@@ -5,6 +5,7 @@ Project documentation. Keeping these current is part of "done" — see `/CLAUDE.
 ## Contents
 
 - **[adr/](adr/)** — Architecture Decision Records: every non-trivial design choice and why.
+- **[`RUNBOOK.md`](RUNBOOK.md)** — go-live guide: every manual step and secret between this repo and the live product.
 - **[`/worklog-prd (1).md`](../worklog-prd%20(1).md)** — the product spec (source of truth for *what*).
 - **[`/tasks/`](../tasks/)** — the live work queue and completed-work log.
 

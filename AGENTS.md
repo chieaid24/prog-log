@@ -135,8 +135,10 @@ tasks/
 docs/
   adr/                 ← architecture decision records (+ TEMPLATE.md)
   README.md            ← docs index
+  RUNBOOK.md           ← go-live guide (accounts, secrets, wiring)
 .github/workflows/
   ci.yml               ← verification pipeline
+  keepalive.yml        ← supabase free-tier keep-alive ping
 ```
 
 ## Stack (from the PRD)
