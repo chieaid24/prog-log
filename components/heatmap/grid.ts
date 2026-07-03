@@ -48,5 +48,12 @@ export function buildHeatmapGrid(todayISO: string): HeatmapColumn[] {
     });
     prevMonth = month;
   }
+
+  // The grid usually opens mid-month, so column 0 is a stub of the previous
+  // month; if column 1 already introduces the next month the two labels sit
+  // one column apart and collide. Drop the stub's label.
+  if (columns[0]?.monthLabel && columns[1]?.monthLabel) {
+    columns[0].monthLabel = null;
+  }
   return columns;
 }
