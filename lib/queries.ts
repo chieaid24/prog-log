@@ -3,7 +3,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types";
 import { DEFAULT_TIMEZONE, daysBetween } from "./dates";
-import type { EntryWithProject, Project, ThrowbackItem } from "./types";
+import type { EntryWithProject, Project, ProjectAlias, ThrowbackItem } from "./types";
 
 export type Db = SupabaseClient<Database>;
 
@@ -27,6 +27,13 @@ export async function getAllProjects(db: Db): Promise<Project[]> {
     .select("*")
     .order("status") // 'active' < 'archived'
     .order("name");
+  if (error) throw error;
+  return data;
+}
+
+/** Every capture alias, alias order (ADR-0010). */
+export async function getProjectAliases(db: Db): Promise<ProjectAlias[]> {
+  const { data, error } = await db.from("project_aliases").select("*").order("alias");
   if (error) throw error;
   return data;
 }

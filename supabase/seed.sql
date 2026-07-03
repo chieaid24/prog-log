@@ -16,3 +16,10 @@ insert into projects (user_id, name, category, color, status) values
   ('00000000-0000-0000-0000-000000000001', 'Website',  'Personal', '#67e8f9', 'active'),
   ('00000000-0000-0000-0000-000000000001', 'Turkish',  'Learning', '#fbbf24', 'active'),
   ('00000000-0000-0000-0000-000000000001', 'Mandarin', 'Learning', '#f472b6', 'active');
+
+-- Example aliases (ADR-0010): forgiving capture matching for AI-M.
+insert into project_aliases (user_id, project_id, alias)
+select '00000000-0000-0000-0000-000000000001', id, a.alias
+from projects, (values ('aim'), ('mental health')) as a(alias)
+where user_id = '00000000-0000-0000-0000-000000000001' and name = 'AI-M'
+on conflict do nothing;

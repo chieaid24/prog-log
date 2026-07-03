@@ -1,18 +1,25 @@
 import type { Metadata } from "next";
 import { ProjectManager, type ProjectUsage } from "@/components/projects/project-manager";
 import { daysBetween, todayInTimeZone } from "@/lib/dates";
-import { getAllProjects, getUserTimezone } from "@/lib/queries";
+import { getAllProjects, getProjectAliases, getUserTimezone } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
+import type { ProjectAlias } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Projects" };
 export const dynamic = "force-dynamic";
 
 export default async function ProjectsPage() {
   const supabase = await createClient();
-  const [projects, timezone] = await Promise.all([
+  const [projects, timezone, aliasRows] = await Promise.all([
     getAllProjects(supabase),
     getUserTimezone(supabase),
+    getProjectAliases(supabase),
   ]);
+
+  const aliases: Record<string, ProjectAlias[]> = {};
+  for (const row of aliasRows) {
+    (aliases[row.project_id] ??= []).push(row);
+  }
 
   // Usage summary per project: count + last-logged age, from real Entries.
   const { data: entryRows, error } = await supabase
@@ -39,7 +46,7 @@ export default async function ProjectsPage() {
           Archive instead of deleting — history stays intact.
         </p>
       </header>
-      <ProjectManager projects={projects} usage={usage} />
+      <ProjectManager projects={projects} usage={usage} aliases={aliases} />
     </div>
   );
 }

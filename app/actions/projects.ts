@@ -1,11 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createProject, setProjectStatus } from "@/lib/projects";
+import { addAlias, createProject, removeAlias, setProjectStatus } from "@/lib/projects";
 import { createClient } from "@/lib/supabase/server";
-import type { Project } from "@/lib/types";
+import type { Project, ProjectAlias } from "@/lib/types";
 
 export type ProjectActionResult = { ok: true; project: Project } | { ok: false; error: string };
+export type AliasActionResult = { ok: true; alias?: ProjectAlias } | { ok: false; error: string };
 
 const CATEGORIES = ["Work", "Research", "Personal", "Learning"] as const;
 
@@ -49,6 +50,34 @@ export async function setProjectStatusAction(
     return { ok: true, project };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Could not update the project." };
+  }
+}
+
+/** Add a capture alias (ADR-0010) — `aim` logs to AI-M from Discord. */
+export async function addProjectAliasAction(
+  projectId: string,
+  alias: string,
+): Promise<AliasActionResult> {
+  if (!alias?.trim()) return { ok: false, error: "Alias cannot be empty." };
+  try {
+    const supabase = await createClient();
+    const row = await addAlias(supabase, projectId, alias);
+    revalidatePath("/projects");
+    return { ok: true, alias: row };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Could not add the alias." };
+  }
+}
+
+/** Remove a capture alias. */
+export async function removeProjectAliasAction(aliasId: string): Promise<AliasActionResult> {
+  try {
+    const supabase = await createClient();
+    await removeAlias(supabase, aliasId);
+    revalidatePath("/projects");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Could not remove the alias." };
   }
 }
 
