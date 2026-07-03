@@ -4,6 +4,7 @@ import Link from "next/link";
 import { DayDetail } from "@/components/day-detail/day-detail";
 import { MonthCalendar } from "@/components/calendar/month-calendar";
 import { QuickAddForm } from "@/components/quick-add/quick-add-form";
+import { ThrowbackFeed } from "@/components/throwback/throwback-feed";
 import { YearHeatmap } from "@/components/heatmap/year-heatmap";
 import { addDays, endOfMonth, startOfMonth, todayInTimeZone } from "@/lib/dates";
 import { getActiveProjects, getEntriesInRange, getUserTimezone } from "@/lib/queries";
@@ -124,7 +125,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
           <h2 className="mb-3 text-sm font-semibold tracking-tight">Log today</h2>
           <QuickAddForm projects={projects} />
         </section>
-        <section aria-label="Throwbacks" data-slot="throwback-feed" />
+        <ThrowbackFeed />
       </aside>
     </div>
   );
