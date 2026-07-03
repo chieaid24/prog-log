@@ -10,6 +10,7 @@ import {
   monthTicks,
   monthWindow,
   parseMonthParam,
+  shortDate,
   shortMonthLabel,
   TIME_RAMP,
   timeSplit,
@@ -105,6 +106,7 @@ describe("trend ticks", () => {
     ];
     expect(monthTicks(points)).toEqual(["2026-06-01", "2026-07-01"]);
     expect(shortMonthLabel("2026-06-01")).toBe("Jun");
+    expect(shortDate("2026-06-03")).toBe("Jun 3");
   });
 });
 

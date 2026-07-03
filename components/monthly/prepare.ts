@@ -175,6 +175,15 @@ export function shortMonthLabel(iso: string): string {
   );
 }
 
+/** "Jun 3" — compact date for in-month lists. */
+export function shortDate(iso: string): string {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "UTC",
+    month: "short",
+    day: "numeric",
+  }).format(parseISODate(iso));
+}
+
 export const WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 
 export type WeekdayRow = {
