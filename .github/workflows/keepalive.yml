@@ -1,0 +1,24 @@
+name: keepalive
+
+# Supabase free projects pause after ~7 days without DB activity (PRD section 5,
+# free-tier watch-items). This cron runs a trivial PostgREST query twice a week
+# to reset that timer. Anon key + RLS means it returns an empty list — the query
+# itself is the point. Requires two repo secrets:
+#   SUPABASE_URL      — https://YOUR-PROJECT-REF.supabase.co
+#   SUPABASE_ANON_KEY — the anon/publishable API key
+on:
+  schedule:
+    - cron: "17 9 * * 1,4" # Mon + Thu 09:17 UTC (off-hour to dodge cron congestion)
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Query one projects row through PostgREST
+        # --fail-with-body exits non-zero on any non-2xx, failing the run loudly.
+        run: |
+          curl --fail-with-body --silent --show-error \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+            "${{ secrets.SUPABASE_URL }}/rest/v1/projects?select=id&limit=1"
