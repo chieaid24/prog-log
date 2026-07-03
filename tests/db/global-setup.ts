@@ -15,8 +15,8 @@ declare module "vitest" {
 /**
  * Boots one embedded Postgres 17 for the whole test run, applies the Supabase
  * auth shim, every migration in supabase/migrations (sorted, same order the
- * Supabase CLI uses), post-migration grants mirroring Supabase's, and the
- * seed. Tests receive the connection string via inject("dbUrl").
+ * Supabase CLI uses), and the seed. Table grants come from the migrations
+ * themselves. Tests receive the connection string via inject("dbUrl").
  */
 export default async function setup(project: TestProject) {
   const dataDir = mkdtempSync(path.join(tmpdir(), "prog-log-pg-"));
@@ -45,14 +45,8 @@ export default async function setup(project: TestProject) {
       await client.query(readFileSync(path.join(migrationsDir, file), "utf8"));
     }
 
-    // Supabase grants table access to `authenticated` by default; RLS is the
-    // actual isolation boundary. Mirror that so RLS tests are meaningful.
-    await client.query(`
-      grant all on all tables in schema public to authenticated;
-      grant usage, select on all sequences in schema public to authenticated;
-      grant execute on all functions in schema public to authenticated;
-    `);
-
+    // No extra grants here: the role_grants migration carries the real
+    // table privileges, and the tests exercise exactly those.
     await client.query(readFileSync(path.join(root, "supabase/seed.sql"), "utf8"));
   } finally {
     await client.end();

@@ -2,8 +2,38 @@
 -- starter projects from PRD section 1. Dev-only — production starts empty and
 -- projects are created through the app.
 
-insert into auth.users (id, email)
-values ('00000000-0000-0000-0000-000000000001', 'dev@example.com')
+-- A GoTrue-complete user row: aud/role, confirmed email, empty-string token
+-- columns (GoTrue scans these as strings — NULLs break magic-link login), and
+-- a matching identities row. Password-less; sign in via magic link (mailpit).
+insert into auth.users (
+  instance_id, id, aud, role, email,
+  email_confirmed_at, created_at, updated_at, last_sign_in_at,
+  raw_app_meta_data, raw_user_meta_data, is_super_admin,
+  confirmation_token, recovery_token, email_change, email_change_token_new,
+  email_change_token_current, phone_change, phone_change_token, reauthentication_token
+)
+values (
+  '00000000-0000-0000-0000-000000000000',
+  '00000000-0000-0000-0000-000000000001',
+  'authenticated', 'authenticated', 'dev@example.com',
+  now(), now(), now(), null,
+  '{"provider": "email", "providers": ["email"]}', '{}', false,
+  '', '', '', '', '', '', '', ''
+)
+on conflict (id) do nothing;
+
+insert into auth.identities (
+  id, user_id, provider_id, provider, identity_data,
+  last_sign_in_at, created_at, updated_at
+)
+values (
+  '00000000-0000-0000-0000-000000000002',
+  '00000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0000-000000000001',
+  'email',
+  '{"sub": "00000000-0000-0000-0000-000000000001", "email": "dev@example.com", "email_verified": true}',
+  null, now(), now()
+)
 on conflict (id) do nothing;
 
 insert into app_settings (user_id, timezone)
