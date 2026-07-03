@@ -4,13 +4,15 @@
 // Archived Projects leave the pickers but keep every Entry in history views.
 import { useState, useTransition } from "react";
 import {
+  addProjectAliasAction,
   createProjectAction,
+  removeProjectAliasAction,
   setProjectStatusAction,
   updateProjectAction,
 } from "@/app/actions/projects";
 import { humanizeAge } from "@/lib/throwbacks";
 import { PROJECT_PALETTE } from "@/lib/palette";
-import type { Project } from "@/lib/types";
+import type { Project, ProjectAlias } from "@/lib/types";
 
 const CATEGORIES = ["Work", "Research", "Personal", "Learning"];
 
@@ -24,9 +26,11 @@ export type ProjectUsage = {
 type Props = {
   projects: Project[];
   usage: Record<string, ProjectUsage>;
+  /** Capture aliases (ADR-0010), keyed by project id. */
+  aliases?: Record<string, ProjectAlias[]>;
 };
 
-export function ProjectManager({ projects, usage }: Props) {
+export function ProjectManager({ projects, usage, aliases = {} }: Props) {
   const active = projects.filter((p) => p.status === "active");
   const archived = projects.filter((p) => p.status === "archived");
 
@@ -45,7 +49,7 @@ export function ProjectManager({ projects, usage }: Props) {
         ) : (
           <ul className="flex flex-col gap-2">
             {active.map((p) => (
-              <ProjectRow key={p.id} project={p} usage={usage[p.id]} />
+              <ProjectRow key={p.id} project={p} usage={usage[p.id]} aliases={aliases[p.id]} />
             ))}
           </ul>
         )}
@@ -68,7 +72,7 @@ export function ProjectManager({ projects, usage }: Props) {
             </p>
             <ul className="flex flex-col gap-2">
               {archived.map((p) => (
-                <ProjectRow key={p.id} project={p} usage={usage[p.id]} />
+                <ProjectRow key={p.id} project={p} usage={usage[p.id]} aliases={aliases[p.id]} />
               ))}
             </ul>
           </>
@@ -207,7 +211,15 @@ function CreateProjectForm() {
   );
 }
 
-function ProjectRow({ project, usage }: { project: Project; usage?: ProjectUsage }) {
+function ProjectRow({
+  project,
+  usage,
+  aliases,
+}: {
+  project: Project;
+  usage?: ProjectUsage;
+  aliases?: ProjectAlias[];
+}) {
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -273,7 +285,88 @@ function ProjectRow({ project, usage }: { project: Project; usage?: ProjectUsage
       {editing && (
         <EditProjectForm project={project} onSaved={() => setEditing(false)} />
       )}
+      {!archived && <AliasEditor project={project} aliases={aliases ?? []} />}
     </li>
+  );
+}
+
+/**
+ * Capture aliases (ADR-0010): extra names Discord and the Shortcut accept for
+ * this Project. Chips with remove, plus a small inline add form.
+ */
+function AliasEditor({ project, aliases }: { project: Project; aliases: ProjectAlias[] }) {
+  const [draft, setDraft] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  function add(event: React.FormEvent) {
+    event.preventDefault();
+    setError(null);
+    startTransition(async () => {
+      const result = await addProjectAliasAction(project.id, draft);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      setDraft("");
+    });
+  }
+
+  function remove(aliasId: string) {
+    setError(null);
+    startTransition(async () => {
+      const result = await removeProjectAliasAction(aliasId);
+      if (!result.ok) setError(result.error);
+    });
+  }
+
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-line pt-3">
+      <span className="text-xs text-faint" title="Extra names Discord and the Shortcut accept">
+        Aliases
+      </span>
+      {aliases.map((a) => (
+        <span
+          key={a.id}
+          className="inline-flex items-center gap-1 rounded-full border border-line px-2 py-0.5 text-xs text-muted"
+        >
+          {a.alias}
+          <button
+            type="button"
+            aria-label={`Remove alias ${a.alias}`}
+            onClick={() => remove(a.id)}
+            disabled={pending}
+            className="text-faint transition-colors hover:text-danger disabled:opacity-50"
+          >
+            &times;
+          </button>
+        </span>
+      ))}
+      <form onSubmit={add} aria-label={`Add alias for ${project.name}`} className="flex gap-1.5">
+        <input
+          value={draft}
+          onChange={(e) => {
+            setDraft(e.target.value);
+            setError(null);
+          }}
+          placeholder="add alias"
+          aria-label={`New alias for ${project.name}`}
+          className="w-28 rounded-full border border-dashed border-line bg-panel px-2.5 py-0.5 text-xs placeholder:text-faint"
+        />
+        <button
+          type="submit"
+          disabled={pending || draft.trim().length === 0}
+          className="rounded-full border border-line px-2.5 py-0.5 text-xs text-muted transition-colors hover:border-line-strong hover:text-foreground disabled:opacity-40"
+        >
+          Add
+        </button>
+      </form>
+      {error && (
+        <p role="alert" className="w-full text-xs text-danger">
+          {error}
+        </p>
+      )}
+    </div>
   );
 }
 

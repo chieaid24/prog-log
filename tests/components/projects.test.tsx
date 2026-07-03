@@ -3,16 +3,20 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ProjectManager } from "@/components/projects/project-manager";
-import type { Project } from "@/lib/types";
+import type { Project, ProjectAlias } from "@/lib/types";
 
 const createProjectAction = vi.fn();
 const setProjectStatusAction = vi.fn();
 const updateProjectAction = vi.fn();
+const addProjectAliasAction = vi.fn();
+const removeProjectAliasAction = vi.fn();
 
 vi.mock("@/app/actions/projects", () => ({
   createProjectAction: (...args: unknown[]) => createProjectAction(...args),
   setProjectStatusAction: (...args: unknown[]) => setProjectStatusAction(...args),
   updateProjectAction: (...args: unknown[]) => updateProjectAction(...args),
+  addProjectAliasAction: (...args: unknown[]) => addProjectAliasAction(...args),
+  removeProjectAliasAction: (...args: unknown[]) => removeProjectAliasAction(...args),
 }));
 
 function project(name: string, status: "active" | "archived" = "active"): Project {
@@ -34,10 +38,22 @@ const USAGE = {
   mandarin: { entries: 0, lastLoggedDaysAgo: null },
 };
 
+function aliasRow(text: string, projectId: string): ProjectAlias {
+  return {
+    id: `al-${text}`,
+    user_id: "u1",
+    project_id: projectId,
+    alias: text,
+    created_at: "2026-01-01T00:00:00Z",
+  };
+}
+
 beforeEach(() => {
   createProjectAction.mockReset();
   setProjectStatusAction.mockReset();
   updateProjectAction.mockReset();
+  addProjectAliasAction.mockReset();
+  removeProjectAliasAction.mockReset();
 });
 
 describe("project manager", () => {
@@ -124,5 +140,66 @@ describe("project manager", () => {
     await user.click(within(form).getByRole("button", { name: "Create" }));
 
     expect(createProjectAction).toHaveBeenCalledWith({ name: "Rocketry", color: "#67e8f9" });
+  });
+});
+
+describe("alias editor (ADR-0010)", () => {
+  it("renders alias chips for a project and adds a new one via the action", async () => {
+    addProjectAliasAction.mockResolvedValue({ ok: true, alias: aliasRow("mh", "turkish") });
+    const user = userEvent.setup();
+    render(
+      <ProjectManager
+        projects={[project("Turkish")]}
+        usage={USAGE}
+        aliases={{ turkish: [aliasRow("tr", "turkish")] }}
+      />,
+    );
+
+    expect(screen.getByText("tr")).toBeInTheDocument();
+
+    await user.type(screen.getByLabelText("New alias for Turkish"), "mh");
+    await user.click(screen.getByRole("button", { name: "Add" }));
+    expect(addProjectAliasAction).toHaveBeenCalledWith("turkish", "mh");
+  });
+
+  it("removes an alias via the action", async () => {
+    removeProjectAliasAction.mockResolvedValue({ ok: true });
+    const user = userEvent.setup();
+    render(
+      <ProjectManager
+        projects={[project("Turkish")]}
+        usage={USAGE}
+        aliases={{ turkish: [aliasRow("tr", "turkish")] }}
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Remove alias tr" }));
+    expect(removeProjectAliasAction).toHaveBeenCalledWith("al-tr");
+  });
+
+  it("surfaces a duplicate-alias error", async () => {
+    addProjectAliasAction.mockResolvedValue({
+      ok: false,
+      error: '"tr" is already an alias for one of your projects',
+    });
+    const user = userEvent.setup();
+    render(<ProjectManager projects={[project("Turkish")]} usage={USAGE} aliases={{}} />);
+
+    await user.type(screen.getByLabelText("New alias for Turkish"), "tr");
+    await user.click(screen.getByRole("button", { name: "Add" }));
+    expect(
+      await screen.findByText('"tr" is already an alias for one of your projects'),
+    ).toBeInTheDocument();
+  });
+
+  it("hides the alias editor on archived projects", () => {
+    render(
+      <ProjectManager
+        projects={[project("Mandarin", "archived")]}
+        usage={USAGE}
+        aliases={{ mandarin: [aliasRow("zh", "mandarin")] }}
+      />,
+    );
+    expect(screen.queryByLabelText("New alias for Mandarin")).not.toBeInTheDocument();
   });
 });
