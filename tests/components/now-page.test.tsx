@@ -95,4 +95,20 @@ describe("public now page", () => {
     expect(screen.getByText("Building quietly at the moment.")).toBeInTheDocument();
     expect(from).not.toHaveBeenCalled();
   });
+
+  it("falls back to the quiet state when the db is unreachable during the production build", async () => {
+    vi.stubEnv("NEXT_PHASE", "phase-production-build");
+    from.mockImplementation(() => {
+      throw new Error("fetch failed");
+    });
+    render(await NowPage());
+    expect(screen.getByText("Building quietly at the moment.")).toBeInTheDocument();
+  });
+
+  it("rethrows db errors outside the build so ISR keeps serving the last good page", async () => {
+    from.mockImplementation(() => {
+      throw new Error("fetch failed");
+    });
+    await expect(NowPage()).rejects.toThrow("fetch failed");
+  });
 });

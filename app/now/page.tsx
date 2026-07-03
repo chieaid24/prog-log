@@ -26,6 +26,19 @@ async function fetchNowProjects(): Promise<NowProject[]> {
   const owner = process.env.OWNER_USER_ID;
   if (!owner) return [];
 
+  try {
+    return await queryNowProjects(owner);
+  } catch (err) {
+    // The build must not require a reachable database: prerender falls back
+    // to the quiet state and ISR fills in real data at runtime. Outside the
+    // build, rethrow — Next keeps serving the last good page on revalidate
+    // errors, which beats silently publishing an empty one.
+    if (process.env.NEXT_PHASE === "phase-production-build") return [];
+    throw err;
+  }
+}
+
+async function queryNowProjects(owner: string): Promise<NowProject[]> {
   const admin = createAdminClient();
   const { data: settings } = await admin
     .from("app_settings")
