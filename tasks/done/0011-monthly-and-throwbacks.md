@@ -1,6 +1,6 @@
 # 0011 — Monthly breakdown + visual explorations + Throwback feed (B3 + B4)
 
-- **Status:** in progress
+- **Status:** done
 - **Owner:** agent fork (feat/v1-build run, worktree)
 - **Created:** 2026-07-02
 - **Related:** PRD §3.3, §3.3.1, §3.4, ADR-0005, ADR-0007, `tasks/PLAN.md` (B3, B4)
@@ -20,21 +20,21 @@ ages and a quiet empty state.
 - [x] Validate chart palettes with the dataviz validator (ordinal S/M/L ramp on dark
       surface; project palette adjacency) and record results + mitigations here
 - [x] Pure data-prep helpers (`components/monthly/prepare.ts`) + unit tests
-- [ ] Stat tiles + Time Commitment split (ordinal ramp, no chart-junk)
-- [ ] Per-project stacked bar (Recharts, horizontal; S/M/L ordinal shades; project rows
+- [x] Stat tiles + Time Commitment split (ordinal ramp, no chart-junk)
+- [x] Per-project stacked bar (Recharts, horizontal; S/M/L ordinal shades; project rows
       labeled by name with entity color dot; 2px surface gaps; tooltip with exact counts)
-- [ ] Effort trend (90 days ending today; faint daily bars + 2px rolling-average line;
+- [x] Effort trend (90 days ending today; faint daily bars + 2px rolling-average line;
       answers "is my effort rising or falling?")
-- [ ] Weekday pattern (displayed month; answers "which days do I actually work?")
-- [ ] Project share bar (month; answers "where did the month's effort go?"; entity
+- [x] Weekday pattern (displayed month; answers "which days do I actually work?")
+- [x] Project share bar (month; answers "where did the month's effort go?"; entity
       colors, direct labels, top-6 + Other fold)
-- [ ] Milestones list for the month (date + project chip + Milestone text)
-- [ ] `/monthly` page: ?month=YYYY-MM param, prev/next/this-month nav, one fetch,
+- [x] Milestones list for the month (date + project chip + Milestone text)
+- [x] `/monthly` page: ?month=YYYY-MM param, prev/next/this-month nav, one fetch,
       timezone-correct default month, empty states
-- [ ] `<ThrowbackFeed/>`: stable pick via lib/throwbacks, age labels, project chips,
+- [x] `<ThrowbackFeed/>`: stable pick via lib/throwbacks, age labels, project chips,
       quiet empty state; component tests
-- [ ] Component tests (mock @/lib/queries + @/lib/supabase/server; fixed dates only)
-- [ ] Verification (below)
+- [x] Component tests (mock @/lib/queries + @/lib/supabase/server; fixed dates only)
+- [x] Verification (below)
 
 ## Palette validation (dataviz validator, dark mode, surface `#070a13`)
 
@@ -75,11 +75,38 @@ from task 0006; it is not a chart series palette, so it is not re-picked here):
 
 ## Verification
 
-`npm run test && npm run typecheck && npm run lint && npm run build` all exit 0 in the
-worktree; summaries pasted here. Chart correctness pinned by unit tests on the prepared
-series (not SVG internals); feed stability pinned against `pickThrowbacks` for a fixed
-date.
+Full gate in the worktree (2026-07-03), all exit 0:
+
+```
+npm run typecheck   → tsc --noEmit, clean
+npm run lint        → eslint ., clean
+npm run test        → Test Files  12 passed (12) / Tests  108 passed (108)
+npm run build       → compiled; └ ƒ /monthly  111 kB  214 kB
+```
+
+Chart correctness pinned by unit tests on the prepared series
+(`tests/lib/monthly-prepare.test.ts`, 24 tests — never SVG internals) plus component
+tests (`tests/components/monthly.test.tsx`, 12 tests): stat tiles + split numbers,
+stacked bar mirrored in the accessible table, share segments direct-labeled, only the
+peak weekday labeled, trend bars = logged days with latest rolling average, milestone
+rows in order, and the page test proving one union-range fetch
+(`getEntriesInRange({}, "2026-03-23", "2026-06-20")` for May + 90-day trend), the
+month param honored, and the timezone-correct default month with quiet empty states.
+Feed stability pinned against `pickThrowbacks` for a fixed date
+(`tests/components/throwback-feed.test.tsx`, 3 tests): rendered top-3 equals the
+library pick in order (the digest contract), stable across re-renders, quiet empty
+state.
 
 ## Outcome
 
-(Filled on completion.)
+`/monthly` answers "how did I spend my month?" with stat tiles + Time Commitment split
+meter, the per-project stacked bar (Recharts, identity in row labels with entity color
+dots, validated S/M/L ordinal ramp fills, 1px surface strokes), a 90-day effort trend
+(custom SVG: faint daily bars + 2px trailing 7-day average line), the weekday pattern
+(peak selectively labeled), the project share bar (entity colors, direct labels, top-6
++ Other fold) and the month's Milestones list — every chart modular under
+`components/monthly/`, prepared by pure helpers in `prepare.ts`, empty/sparse/dense
+safe, with sr-only tables/labels for screen readers. `<ThrowbackFeed/>`
+(`components/throwback/throwback-feed.tsx`) is a self-contained server component the
+dashboard slots into its `data-slot="throwback-feed"` placeholder: date-seeded stable
+top-3 with humanized ages and project chips. Commits `c838119`, `fc09c64`, `1a1bc3d`.
