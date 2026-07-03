@@ -22,3 +22,7 @@ next-env.d.ts
 
 # local test postgres data
 /.pgdata/
+
+# supabase cli local artifacts
+supabase/.branches/
+supabase/.temp/

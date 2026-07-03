@@ -19,7 +19,7 @@ vi.mock("next/navigation", () => ({ redirect }));
 import { GET } from "@/app/auth/confirm/route";
 import type { NextRequest } from "next/server";
 
-function get(query: string): Promise<Response> {
+function get(query: string) {
   return GET(new Request(`http://localhost/auth/confirm?${query}`) as unknown as NextRequest);
 }
 
