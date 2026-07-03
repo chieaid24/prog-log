@@ -95,6 +95,21 @@ export async function getThrowbackPool(db: Db, todayISO: string): Promise<Throwb
   }));
 }
 
+/**
+ * Every Entry's (date, project) pair, all time — the lean feed for streak and
+ * momentum math (ADR-0011: streaks reach past the heatmap's year window).
+ */
+export async function getEntryDatesWithProject(
+  db: Db,
+): Promise<Array<{ entry_date: string; project_id: string }>> {
+  const { data, error } = await db
+    .from("entries")
+    .select("entry_date, project_id")
+    .order("entry_date");
+  if (error) throw error;
+  return data;
+}
+
 /** The stored user timezone (ADR-0004), defaulting when no row exists yet. */
 export async function getUserTimezone(db: Db): Promise<string> {
   const { data, error } = await db.from("app_settings").select("timezone").maybeSingle();

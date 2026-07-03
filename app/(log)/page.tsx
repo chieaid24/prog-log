@@ -4,6 +4,7 @@ import Link from "next/link";
 import { DayDetail } from "@/components/day-detail/day-detail";
 import { MonthCalendar } from "@/components/calendar/month-calendar";
 import { QuickAddForm } from "@/components/quick-add/quick-add-form";
+import { MomentumPanel } from "@/components/streak/momentum-panel";
 import { ThrowbackFeed } from "@/components/throwback/throwback-feed";
 import { YearHeatmap } from "@/components/heatmap/year-heatmap";
 import { addDays, endOfMonth, startOfMonth, todayInTimeZone } from "@/lib/dates";
@@ -126,6 +127,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
           <QuickAddForm projects={projects} />
         </section>
         <ThrowbackFeed />
+        <MomentumPanel />
       </aside>
     </div>
   );
