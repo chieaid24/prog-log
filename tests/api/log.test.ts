@@ -3,19 +3,20 @@
 // the write asserted absent on every rejection.
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { bearerMatches } from "@/lib/capture";
-import type { Project } from "@/lib/types";
+import type { Project, ProjectAlias } from "@/lib/types";
 
-const { ADMIN, upsertEntry, getOwnerActiveProjects } = vi.hoisted(() => ({
+const { ADMIN, upsertEntry, getOwnerActiveProjects, getOwnerAliases } = vi.hoisted(() => ({
   ADMIN: { admin: true },
   upsertEntry: vi.fn(),
   getOwnerActiveProjects: vi.fn(),
+  getOwnerAliases: vi.fn(),
 }));
 
 vi.mock("@/lib/supabase/admin", () => ({ createAdminClient: () => ADMIN }));
 vi.mock("@/lib/entries", () => ({ upsertEntry }));
 vi.mock("@/lib/discord/owner", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/discord/owner")>();
-  return { ...actual, getOwnerActiveProjects };
+  return { ...actual, getOwnerActiveProjects, getOwnerAliases };
 });
 
 import { POST } from "@/app/api/log/route";
@@ -39,6 +40,16 @@ function project(name: string): Project {
 
 const PROJECTS = [project("AI-M"), project("Turkish"), project("Work")];
 
+function aliasRow(text: string, projectId: string): ProjectAlias {
+  return {
+    id: `al-${text}`,
+    user_id: OWNER_USER_ID,
+    project_id: projectId,
+    alias: text,
+    created_at: "2026-01-01T00:00:00Z",
+  };
+}
+
 function post(body: unknown, bearer: string | null = SECRET): Promise<Response> {
   return POST(
     new Request("http://localhost/api/log", {
@@ -57,6 +68,7 @@ beforeEach(() => {
   vi.stubEnv("OWNER_USER_ID", OWNER_USER_ID);
   upsertEntry.mockReset().mockResolvedValue({ id: "e1", entry_date: "2026-07-02" });
   getOwnerActiveProjects.mockReset().mockResolvedValue(PROJECTS);
+  getOwnerAliases.mockReset().mockResolvedValue([]);
 });
 
 describe("bearerMatches", () => {
@@ -104,6 +116,26 @@ describe("valid capture", () => {
     const json = await res.json();
     expect(json.ok).toBe(true);
     expect(json.message).toBe("logged Work - large");
+  });
+});
+
+describe("alias resolution (ADR-0010)", () => {
+  it("resolves an alias to its project and confirms with the canonical name", async () => {
+    getOwnerAliases.mockResolvedValue([aliasRow("aim", "id-ai-m")]);
+    const res = await post({ project: "AIM", time: "medium" });
+    expect(res.status).toBe(200);
+    expect(upsertEntry).toHaveBeenCalledWith(
+      ADMIN,
+      expect.objectContaining({ projectId: "id-ai-m" }),
+    );
+    expect((await res.json()).message).toBe("logged AI-M - medium");
+  });
+
+  it("stays ambiguous when an alias collides with another project's name", async () => {
+    getOwnerAliases.mockResolvedValue([aliasRow("work", "id-turkish")]);
+    const res = await post({ project: "work", time: "small" });
+    expect(res.status).toBe(404);
+    expect(upsertEntry).not.toHaveBeenCalled();
   });
 });
 

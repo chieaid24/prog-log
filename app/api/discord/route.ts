@@ -2,10 +2,10 @@
 // interaction here: PING handshakes, /log commands, and project autocomplete.
 // Ed25519 signature first, owner gate second, and every write goes through
 // upsertEntry — the single shared write path (ADR-0001).
-import { getOwnerActiveProjects, noMatchMessage } from "@/lib/discord/owner";
+import { getOwnerActiveProjects, getOwnerAliases, noMatchMessage } from "@/lib/discord/owner";
 import { verifyDiscordSignature } from "@/lib/discord/verify";
 import { upsertEntry } from "@/lib/entries";
-import { resolveProject } from "@/lib/projects";
+import { resolveProjectWithAliases } from "@/lib/projects";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { TIME_SIZES, type TimeSize } from "@/lib/types";
 
@@ -81,16 +81,31 @@ export async function POST(req: Request): Promise<Response> {
   return new Response("unsupported interaction type", { status: 400 });
 }
 
-/** Project-name choices filtered from the owner's active Projects. */
+/**
+ * Project-name choices from the owner's active Projects — an alias hit
+ * surfaces its Project under the canonical name (ADR-0010: aliases are input
+ * sugar, never output vocabulary).
+ */
 async function handleAutocomplete(interaction: Interaction): Promise<Response> {
   const focused = (interaction.data?.options ?? []).find((o) => o.focused);
   if (!focused || focused.name !== "project") {
     return Response.json({ type: AUTOCOMPLETE_RESULT, data: { choices: [] } });
   }
   const typed = String(focused.value ?? "").trim().toLowerCase();
-  const projects = await getOwnerActiveProjects(createAdminClient(), ownerId());
+  const db = createAdminClient();
+  const [projects, aliases] = await Promise.all([
+    getOwnerActiveProjects(db, ownerId()),
+    getOwnerAliases(db, ownerId()),
+  ]);
+  const aliasHit = new Set(
+    aliases
+      .filter((a) => typed.length > 0 && a.alias.toLowerCase().includes(typed))
+      .map((a) => a.project_id),
+  );
   const choices = projects
-    .filter((p) => typed.length === 0 || p.name.toLowerCase().includes(typed))
+    .filter(
+      (p) => typed.length === 0 || p.name.toLowerCase().includes(typed) || aliasHit.has(p.id),
+    )
     .slice(0, MAX_CHOICES)
     .map((p) => ({ name: p.name, value: p.name }));
   return Response.json({ type: AUTOCOMPLETE_RESULT, data: { choices } });
@@ -110,8 +125,11 @@ async function handleLogCommand(interaction: Interaction): Promise<Response> {
   }
 
   const db = createAdminClient();
-  const projects = await getOwnerActiveProjects(db, ownerId());
-  const resolution = resolveProject(projects, opts.project ?? "");
+  const [projects, aliases] = await Promise.all([
+    getOwnerActiveProjects(db, ownerId()),
+    getOwnerAliases(db, ownerId()),
+  ]);
+  const resolution = resolveProjectWithAliases(projects, aliases, opts.project ?? "");
   if (resolution.status !== "match") {
     return reply(noMatchMessage(opts.project ?? "", resolution.near));
   }

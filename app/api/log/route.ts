@@ -3,9 +3,9 @@
 // Discord, and the write goes through upsertEntry — the single shared write
 // path (ADR-0001).
 import { bearerMatches } from "@/lib/capture";
-import { getOwnerActiveProjects, noMatchMessage } from "@/lib/discord/owner";
+import { getOwnerActiveProjects, getOwnerAliases, noMatchMessage } from "@/lib/discord/owner";
 import { upsertEntry } from "@/lib/entries";
-import { resolveProject } from "@/lib/projects";
+import { resolveProjectWithAliases } from "@/lib/projects";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { TIME_SIZES, type TimeSize } from "@/lib/types";
 
@@ -49,8 +49,11 @@ export async function POST(req: Request): Promise<Response> {
 
   const db = createAdminClient();
   const ownerId = process.env.OWNER_USER_ID ?? "";
-  const projects = await getOwnerActiveProjects(db, ownerId);
-  const resolution = resolveProject(projects, rawProject);
+  const [projects, aliases] = await Promise.all([
+    getOwnerActiveProjects(db, ownerId),
+    getOwnerAliases(db, ownerId),
+  ]);
+  const resolution = resolveProjectWithAliases(projects, aliases, rawProject);
   if (resolution.status !== "match") {
     return Response.json(
       { error: noMatchMessage(rawProject, resolution.near) },

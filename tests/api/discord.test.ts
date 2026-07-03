@@ -3,19 +3,20 @@
 // spied upsertEntry — asserting the route never writes on any rejection path.
 import nacl from "tweetnacl";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Project } from "@/lib/types";
+import type { Project, ProjectAlias } from "@/lib/types";
 
-const { ADMIN, upsertEntry, getOwnerActiveProjects } = vi.hoisted(() => ({
+const { ADMIN, upsertEntry, getOwnerActiveProjects, getOwnerAliases } = vi.hoisted(() => ({
   ADMIN: { admin: true },
   upsertEntry: vi.fn(),
   getOwnerActiveProjects: vi.fn(),
+  getOwnerAliases: vi.fn(),
 }));
 
 vi.mock("@/lib/supabase/admin", () => ({ createAdminClient: () => ADMIN }));
 vi.mock("@/lib/entries", () => ({ upsertEntry }));
 vi.mock("@/lib/discord/owner", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/discord/owner")>();
-  return { ...actual, getOwnerActiveProjects };
+  return { ...actual, getOwnerActiveProjects, getOwnerAliases };
 });
 
 import { POST } from "@/app/api/discord/route";
@@ -68,6 +69,16 @@ function project(name: string): Project {
 
 const PROJECTS = [project("AI-M"), project("Turkish"), project("Work")];
 
+function aliasRow(text: string, projectId: string): ProjectAlias {
+  return {
+    id: `al-${text}`,
+    user_id: OWNER_USER_ID,
+    project_id: projectId,
+    alias: text,
+    created_at: "2026-01-01T00:00:00Z",
+  };
+}
+
 function logCommand(
   options: Record<string, string>,
   userId: string = OWNER_DISCORD_ID,
@@ -99,6 +110,7 @@ beforeEach(() => {
   vi.stubEnv("OWNER_USER_ID", OWNER_USER_ID);
   upsertEntry.mockReset().mockResolvedValue({});
   getOwnerActiveProjects.mockReset().mockResolvedValue(PROJECTS);
+  getOwnerAliases.mockReset().mockResolvedValue([]);
 });
 
 describe("signature check", () => {
@@ -180,6 +192,36 @@ describe("autocomplete", () => {
     const res = await post(autocomplete("project"));
     const json = await res.json();
     expect(json.data.choices).toHaveLength(25);
+  });
+
+  it("surfaces an alias hit under the canonical project name (ADR-0010)", async () => {
+    getOwnerAliases.mockResolvedValue([aliasRow("mental health", "id-ai-m")]);
+    const res = await post(autocomplete("mental"));
+    expect(await res.json()).toEqual({
+      type: 8,
+      data: { choices: [{ name: "AI-M", value: "AI-M" }] },
+    });
+  });
+});
+
+describe("/log via alias (ADR-0010)", () => {
+  it("resolves an alias and confirms with the canonical name", async () => {
+    getOwnerAliases.mockResolvedValue([aliasRow("aim", "id-ai-m")]);
+    const res = await post(logCommand({ project: "aim", time: "large" }));
+    expect(upsertEntry).toHaveBeenCalledWith(
+      ADMIN,
+      expect.objectContaining({ projectId: "id-ai-m", timeSpent: "large" }),
+    );
+    const json = await res.json();
+    expect(json.data.content).toContain("logged AI-M - large");
+  });
+
+  it("stays ambiguous when an alias collides with another project's name", async () => {
+    getOwnerAliases.mockResolvedValue([aliasRow("work", "id-turkish")]);
+    const res = await post(logCommand({ project: "work", time: "small" }));
+    const json = await res.json();
+    expect(json.data.content).toContain("no single active project matches");
+    expect(upsertEntry).not.toHaveBeenCalled();
   });
 });
 
