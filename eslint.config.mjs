@@ -18,6 +18,8 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      // Agent worktrees carry whole checkouts (incl. their own .next builds).
+      ".claude/**",
     ],
   },
 ];

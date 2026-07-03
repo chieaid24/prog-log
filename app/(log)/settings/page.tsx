@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { signOut } from "@/app/actions/auth";
+import { DataSection } from "@/components/settings/data-section";
 import { TimezoneForm } from "@/components/settings/timezone-form";
 import { getUserTimezone } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
@@ -21,6 +22,11 @@ export default async function SettingsPage() {
       <section aria-label="Timezone" className="rounded-xl border border-line bg-panel p-5">
         <h2 className="mb-3 text-sm font-medium text-muted">Timezone</h2>
         <TimezoneForm current={timezone} timezones={listTimeZones()} />
+      </section>
+
+      <section aria-label="Data" className="rounded-xl border border-line bg-panel p-5">
+        <h2 className="mb-3 text-sm font-medium text-muted">Data</h2>
+        <DataSection />
       </section>
 
       <section aria-label="Account" className="rounded-xl border border-line bg-panel p-5">
