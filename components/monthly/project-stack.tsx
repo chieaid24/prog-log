@@ -25,20 +25,21 @@ const ROW_HEIGHT = 34;
 const LABEL_WIDTH = 138;
 
 type TickProps = {
-  x?: number;
-  y?: number;
-  payload?: { value?: string };
+  x?: number | string;
+  y?: number | string;
+  payload?: { value?: number | string };
 };
 
 /** Row label: entity color dot + Project name. */
 function projectTick(rows: StackRow[]) {
   function ProjectTick({ x = 0, y = 0, payload }: TickProps) {
-    const row = rows.find((r) => r.name === payload?.value);
+    const name = String(payload?.value ?? "");
+    const row = rows.find((r) => r.name === name);
     return (
-      <g transform={`translate(${x},${y})`}>
+      <g transform={`translate(${Number(x)},${Number(y)})`}>
         <circle cx={-LABEL_WIDTH + 10} cy={0} r={3} fill={row?.color ?? CHART_TEXT} />
         <text x={-LABEL_WIDTH + 20} y={0} dy={3.5} fill={CHART_TEXT} fontSize={12}>
-          {truncate(payload?.value ?? "")}
+          {truncate(name)}
         </text>
       </g>
     );
