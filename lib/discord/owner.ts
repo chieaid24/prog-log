@@ -3,7 +3,7 @@
 // never reuse the RLS-shaped helpers in lib/queries with the admin client.
 import { DEFAULT_TIMEZONE, daysBetween } from "@/lib/dates";
 import type { Db } from "@/lib/queries";
-import type { Project, ThrowbackItem } from "@/lib/types";
+import type { Project, ProjectAlias, ThrowbackItem } from "@/lib/types";
 
 /** The owner's active Projects, name order — capture resolution candidates. */
 export async function getOwnerActiveProjects(db: Db, ownerId: string): Promise<Project[]> {
@@ -13,6 +13,16 @@ export async function getOwnerActiveProjects(db: Db, ownerId: string): Promise<P
     .eq("user_id", ownerId)
     .eq("status", "active")
     .order("name");
+  if (error) throw error;
+  return data;
+}
+
+/** The owner's Project aliases (ADR-0010) — capture resolution sugar. */
+export async function getOwnerAliases(db: Db, ownerId: string): Promise<ProjectAlias[]> {
+  const { data, error } = await db
+    .from("project_aliases")
+    .select("*")
+    .eq("user_id", ownerId);
   if (error) throw error;
   return data;
 }

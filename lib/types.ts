@@ -24,6 +24,8 @@ export const TIME_LABEL: Record<TimeSize, string> = {
 export type Project = Tables<"projects">;
 export type Entry = Tables<"entries">;
 export type AppSettings = Tables<"app_settings">;
+/** An extra name resolving to one Project during capture (ADR-0010). */
+export type ProjectAlias = Tables<"project_aliases">;
 
 /** An Entry joined with the Project it belongs to (feed and day views). */
 export type EntryWithProject = Entry & {
