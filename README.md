@@ -7,6 +7,8 @@ breakdowns, streaks — and Throwbacks: past milestones resurfacing on their ann
 Live at **[log.aidanchien.com](https://log.aidanchien.com)** · public snapshot at
 [`/now`](https://log.aidanchien.com/now).
 
+![The daily log: effort-weighted year heatmap, quick add, Throwbacks, Momentum](docs/screenshot-dashboard.png)
+
 ## What it does
 
 - **Zero-friction capture.** Pick a Project, tap a Time Commitment (S/M/L), done —
@@ -39,7 +41,8 @@ npm run typecheck && npm run lint && npm run test && npm run build
 ```
 
 Tests (unit, component, request, and DB integration against an embedded Postgres) need no
-external services. A full local stack is `npx supabase start` (Docker).
+external services. A full local stack is `npx supabase start` (Docker); seed it with demo
+history via `psql "$DB_URL" -f scripts/dev-data.sql`.
 
 ## Repo tour
 
