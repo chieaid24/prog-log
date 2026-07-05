@@ -4,8 +4,6 @@ A self-hosted daily work log with an "on this day" anniversary feed. Log what yo
 on in two taps; the log pays you back with a contribution-style heatmap, monthly
 breakdowns, streaks — and Throwbacks: past milestones resurfacing on their anniversaries.
 
-Live at **[log.aidanchien.com](https://log.aidanchien.com)** · public snapshot at
-[`/now`](https://log.aidanchien.com/now).
 
 ![The daily log: effort-weighted year heatmap, quick add, Throwbacks, Momentum](docs/screenshot-dashboard.png)
 
