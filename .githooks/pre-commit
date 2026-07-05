@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Local pre-commit gate — mirrors the fast half of the CI `test` job so failures
+# are caught before they reach a PR. Runs lint + typecheck (the full test + build
+# gate runs in CI, too slow for every commit). Zero dependencies: a tracked hook,
+# not Husky. Enable once per clone with:  git config core.hooksPath .githooks
+set -euo pipefail
+
+# No app yet (bootstrap phase) -> nothing to gate.
+[ -f package.json ] || exit 0
+
+run_if_present() {
+  local script="$1"
+  if node -e "process.exit(require('./package.json').scripts?.['$script'] ? 0 : 1)" 2>/dev/null; then
+    echo "pre-commit: npm run $script"
+    npm run --silent "$script"
+  fi
+}
+
+run_if_present lint
+run_if_present typecheck

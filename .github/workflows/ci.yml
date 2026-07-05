@@ -19,7 +19,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  verify:
+  # Job id is `test` so it is the required status check for branch protection
+  # (the parallel-agent issues queue keys the merge gate on a check named `test`).
+  # It still runs the full gate below (lint, typecheck, test, build).
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
