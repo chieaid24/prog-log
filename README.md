@@ -54,6 +54,7 @@ history via `psql "$DB_URL" -f scripts/dev-data.sql`.
 | `docs/adr/` | architecture decision records (the "why" ledger) |
 | `lib/` | data layer: shared write path, rollups, streaks, throwbacks |
 | `app/api/` | capture surfaces: Discord, Apple Shortcut, digest cron, export |
-| `tasks/` | the autonomous-agent work queue this repo was built with |
+| `PRODUCT.md` · `DESIGN.md` | strategic + visual design system agents build to |
 
-Built autonomously by agents following [`CLAUDE.md`](CLAUDE.md); a human reviews.
+Built autonomously by agents following [`CLAUDE.md`](CLAUDE.md), tracking work in **GitHub
+Issues**; a human reviews.
