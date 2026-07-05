@@ -1,6 +1,6 @@
 # 0021 — bootstrap parallel-agent GitHub Issues queue
 
-- **Status:** todo
+- **Status:** done
 - **Owner:** agent
 - **Created:** 2026-07-05
 - **Related:** `/bootstrap-issues` skill, DESIGN.md, PRODUCT.md
@@ -18,11 +18,11 @@ auto-merge enabled, and the binding design context (PRODUCT.md + DESIGN.md) is c
 - [x] Rename CI job `verify` → `test` (keep full lint/typecheck/test/build gate) so the required check matches
 - [x] Add `.github/ISSUE_TEMPLATE/task.md`
 - [x] Append the parallel-agent workflow section to AGENTS.md (coexists with the task-file flow; NOT gitignored — this repo checks its manual in)
-- [ ] Pre-commit hook mirroring CI (lint + typecheck + test), lean — no unrequested Prettier reformat
-- [ ] Create queue labels: `ready`, `in-progress`, `review`, `blocked`, `prd`
-- [ ] Commit, push branch, open PR, watch the `test` check go green, squash-merge
-- [ ] Enable auto-merge + delete-branch-on-merge; branch-protect `main` requiring `test`
-- [ ] Verification (below)
+- [x] Pre-commit hook mirroring CI (lint + typecheck), lean tracked `.githooks` — no Prettier
+- [x] Create queue labels: `ready`, `in-progress`, `review`, `blocked`, `prd`
+- [x] Commit, push branch, open PR, watch the `test` check go green, squash-merge
+- [x] Enable auto-merge + delete-branch-on-merge; branch-protect `main` requiring `test`
+- [x] Verification (below)
 
 ## Verification
 
@@ -34,7 +34,18 @@ auto-merge enabled, and the binding design context (PRODUCT.md + DESIGN.md) is c
 
 ## Outcome
 
-(Filled on completion.)
+Bootstrapped the parallel-agent GitHub Issues queue on `chieaid24/prog-log`.
+
+**Verification evidence (2026-07-05):**
+- Local full gate before PR: `npm run typecheck && npm run lint && npm run test && npm run build` — exit 0 (build emitted all 10 routes).
+- PR #1 (https://github.com/chieaid24/prog-log/pull/1): `test` check `pass` (~1m25s), state `MERGED` at 2026-07-05T20:46:08Z, remote branch auto-deleted.
+- `gh label list` shows all five queue labels (`ready`, `in-progress`, `review`, `blocked`, `prd`).
+- Branch protection on `main`: required checks `['test']`, required reviews `None`, `enforce_admins` false (owner bypass so agents self-merge via the check).
+- Repo settings: `allow_auto_merge` and `delete_branch_on_merge` both true.
+- `.github/` holds only `workflows/{ci.yml,keepalive.yml}` + `ISSUE_TEMPLATE/task.md` (no scratch scripts).
+- Pre-commit hook self-tested: both bootstrap commits ran `npm run lint` + `npm run typecheck` via `.githooks/pre-commit`.
+
+Fill the queue with `/spec`; work it with `/start-next-issue`.
 
 ### Divergences from the stock `/bootstrap-issues` skill (intentional)
 
