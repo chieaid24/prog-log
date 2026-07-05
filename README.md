@@ -38,6 +38,7 @@ npm ci
 cp .env.example .env.local   # see docs/RUNBOOK.md for every value
 npm run dev                  # http://localhost:3000
 npm run typecheck && npm run lint && npm run test && npm run build
+git config core.hooksPath .githooks   # once per clone: enable the pre-commit gate (lint + typecheck)
 ```
 
 Tests (unit, component, request, and DB integration against an embedded Postgres) need no
