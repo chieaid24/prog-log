@@ -53,6 +53,3 @@ history via `psql "$DB_URL" -f scripts/dev-data.sql`.
 | `lib/` | data layer: shared write path, rollups, streaks, throwbacks |
 | `app/api/` | capture surfaces: Discord, Apple Shortcut, digest cron, export |
 | `PRODUCT.md` · `DESIGN.md` | strategic + visual design system agents build to |
-
-Built autonomously by agents following [`CLAUDE.md`](CLAUDE.md), tracking work in **GitHub
-Issues**; a human reviews.
