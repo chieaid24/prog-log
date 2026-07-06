@@ -19,24 +19,24 @@ export async function ThrowbackFeed() {
   return (
     <section
       aria-labelledby="throwback-feed-title"
-      className="rounded-2xl border border-line bg-panel p-4"
+      className="rounded-xl border border-border bg-surface p-4"
     >
       <h2
         id="throwback-feed-title"
-        className="text-sm font-semibold tracking-tight text-foreground"
+        className="text-sm font-semibold tracking-tight text-ink"
       >
         Throwbacks
       </h2>
       {items.length === 0 ? (
-        <p className="mt-3 text-sm text-faint">
+        <p className="mt-3 text-sm text-ink-faint">
           Milestones you log will resurface here on future days.
         </p>
       ) : (
-        <ol className="mt-3 flex flex-col divide-y divide-line">
+        <ol className="mt-3 flex flex-col divide-y divide-border">
           {items.map((item) => (
             <li key={item.entryId} className="flex flex-col gap-1.5 py-3 first:pt-0 last:pb-0">
-              <p className="text-xs font-medium text-accent">{humanizeAge(item.daysAgo)}</p>
-              <p className="text-sm leading-snug text-foreground">{item.milestone}</p>
+              <p className="font-mono text-xs font-medium text-frog-green-strong">{humanizeAge(item.daysAgo)}</p>
+              <p className="text-sm leading-snug text-ink">{item.milestone}</p>
               <div className="flex items-center gap-2">
                 <ProjectChip name={item.projectName} color={item.color} />
               </div>

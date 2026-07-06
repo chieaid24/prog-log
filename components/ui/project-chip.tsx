@@ -5,11 +5,11 @@ type Props = {
   color: string | null;
 };
 
-const FALLBACK_DOT = "#5c6478"; // --faint
+const FALLBACK_DOT = "var(--ink-faint)";
 
 export function ProjectChip({ name, color }: Props) {
   return (
-    <span className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-line bg-panel-raised px-2 py-0.5 text-xs text-muted">
+    <span className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border bg-surface px-2 py-0.5 text-xs text-ink-muted">
       <span
         aria-hidden
         className="size-1.5 shrink-0 rounded-full"

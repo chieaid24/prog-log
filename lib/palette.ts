@@ -1,18 +1,21 @@
-// Project accent palette — a "space" set that reads on the app's dark canvas.
+// Project identity palette: ten muted colors that read as small dots on the
+// warm paper canvas (DESIGN.md). Deliberately skips the frog-green band
+// (~hue 130-170) so project identity never competes with the one accent.
+// Values are sRGB hex renderings of oklch picks (L 0.60-0.70, C 0.09-0.13).
 // Every Project gets a color at create (glossary: never null); users can
 // override later.
 
 export const PROJECT_PALETTE: readonly string[] = [
-  "#7c8cf8", // indigo drift
-  "#c084fc", // nebula violet
-  "#67e8f9", // ion cyan
-  "#fbbf24", // solar amber
-  "#f472b6", // plasma pink
-  "#34d399", // aurora green
-  "#fb923c", // mars orange
-  "#a3e635", // comet lime
-  "#38bdf8", // sky signal
-  "#f87171", // red giant
+  "#bd6254", // clay        oklch(0.60 0.12 30)
+  "#ca7d44", // terracotta  oklch(0.66 0.12 55)
+  "#be9946", // ochre       oklch(0.70 0.11 85)
+  "#87904e", // olive       oklch(0.63 0.09 115)
+  "#339797", // teal        oklch(0.62 0.09 195)
+  "#4796c0", // sky         oklch(0.64 0.10 235)
+  "#6d7ac2", // periwinkle  oklch(0.60 0.11 275)
+  "#906eb5", // violet      oklch(0.60 0.11 305)
+  "#af6ca0", // orchid      oklch(0.62 0.11 335)
+  "#bf5b76", // raspberry   oklch(0.60 0.13 5)
 ];
 
 /**

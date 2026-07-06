@@ -1,9 +1,11 @@
 "use client";
 
 // Year heatmap (PRD 3.1.1): one SVG, week columns Sunday-first, cell
-// intensity = summed Time Commitment weight bucketed into 5 levels. Cells are
-// keyboard-operable and select a day (?day=) shared with the calendar view.
+// intensity = summed Time Commitment weight bucketed onto the heat ramp.
+// Cells are keyboard-operable and select a day (?day=) shared with the
+// calendar view.
 import { useRouter } from "next/navigation";
+import { Frog } from "@/components/ui/frog";
 import { humanDate } from "@/lib/dates";
 import { intensityLevel } from "@/lib/rollups";
 import type { HeatmapCell } from "@/lib/types";
@@ -15,13 +17,12 @@ const STEP = CELL + GAP;
 const TOP = 18; // month label row
 const LEFT = 30; // weekday gutter
 
-/** 5-step fill scale derived from --accent (#7c8cf8) on the dark canvas. */
+/** The DESIGN.md heat ramp: one hue climbing in lightness, heat-0..3. */
 export const LEVEL_FILL = [
-  "rgba(148, 163, 199, 0.10)",
-  "rgba(124, 140, 248, 0.28)",
-  "rgba(124, 140, 248, 0.50)",
-  "rgba(124, 140, 248, 0.74)",
-  "#7c8cf8",
+  "var(--heat-0)",
+  "var(--heat-1)",
+  "var(--heat-2)",
+  "var(--heat-3)",
 ] as const;
 
 type Props = {
@@ -57,7 +58,7 @@ export function YearHeatmap({ cells, todayISO, selectedDay }: Props) {
                 key={`m-${col.weekStart}`}
                 x={LEFT + x * STEP}
                 y={11}
-                className="fill-[var(--muted)] text-[10px]"
+                className="fill-[var(--ink-muted)] font-mono text-[10px]"
               >
                 {col.monthLabel}
               </text>
@@ -68,7 +69,7 @@ export function YearHeatmap({ cells, todayISO, selectedDay }: Props) {
               key={label}
               x={0}
               y={TOP + (1 + i * 2) * STEP + 9}
-              className="fill-[var(--faint)] text-[9px]"
+              className="fill-[var(--ink-faint)] font-mono text-[9px]"
             >
               {label}
             </text>
@@ -78,8 +79,8 @@ export function YearHeatmap({ cells, todayISO, selectedDay }: Props) {
               const cell = byDate.get(day);
               const level = intensityLevel(cell?.weight ?? 0);
               const label = cell
-                ? `${humanDate(day)} — ${cell.entries} ${cell.entries === 1 ? "entry" : "entries"}, weight ${cell.weight}`
-                : `${humanDate(day)} — no entries`;
+                ? `${humanDate(day)}: ${cell.entries} ${cell.entries === 1 ? "entry" : "entries"}, weight ${cell.weight}`
+                : `${humanDate(day)}: no entries`;
               const selected = day === selectedDay;
               return (
                 <rect
@@ -90,7 +91,7 @@ export function YearHeatmap({ cells, todayISO, selectedDay }: Props) {
                   height={CELL}
                   rx={2.5}
                   fill={LEVEL_FILL[level]}
-                  stroke={selected ? "#e8ebf4" : "transparent"}
+                  stroke={selected ? "var(--ink)" : "transparent"}
                   strokeWidth={selected ? 1.5 : 0}
                   data-date={day}
                   data-level={level}
@@ -114,11 +115,19 @@ export function YearHeatmap({ cells, todayISO, selectedDay }: Props) {
           )}
         </svg>
       </div>
-      <div className="mt-1 flex items-center justify-between">
-        <p className="text-xs text-faint">
-          {hasAny ? "" : "Nothing logged yet — your year fills in from the first entry."}
-        </p>
-        <div className="flex items-center gap-1 text-xs text-faint" aria-hidden="true">
+      <div className="mt-1 flex items-center justify-between gap-3">
+        {hasAny ? (
+          <span />
+        ) : (
+          <p className="flex items-center gap-2.5 text-xs text-ink-muted">
+            <Frog size={28} />
+            Nothing logged yet. Ferdy is waiting for your first Entry.
+          </p>
+        )}
+        <div
+          className="flex items-center gap-1 font-mono text-xs text-ink-faint"
+          aria-hidden="true"
+        >
           <span className="mr-1">Less</span>
           {LEVEL_FILL.map((fill) => (
             <span

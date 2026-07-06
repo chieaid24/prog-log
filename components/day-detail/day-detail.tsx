@@ -32,53 +32,53 @@ export function DayDetail({ date, entries, projects, closeHref }: Props) {
   return (
     <section
       aria-label={`Entries for ${humanDate(date)}`}
-      className="rounded-2xl border border-line bg-panel p-4"
+      className="rounded-xl border border-border bg-surface p-4"
     >
       <header className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold tracking-tight">{humanDate(date)}</h3>
+        <h3 className="font-mono text-sm font-semibold tracking-tight">{humanDate(date)}</h3>
         <button
           type="button"
           onClick={() => router.push(closeHref, { scroll: false })}
           aria-label="Close day detail"
-          className="rounded-md px-2 py-1 text-sm text-faint transition-colors hover:bg-panel-raised hover:text-foreground"
+          className="rounded-md px-2 py-1 text-sm text-ink-faint transition-colors hover:bg-surface-sunken hover:text-ink"
         >
           ✕
         </button>
       </header>
 
       {entries.length === 0 ? (
-        <p className="mb-4 text-sm text-faint">Nothing logged this day.</p>
+        <p className="mb-4 text-sm text-ink-faint">Nothing logged this day.</p>
       ) : (
-        <ul className="mb-4 flex flex-col gap-2">
+        <ul className="mb-4 flex flex-col divide-y divide-border">
           {entries.map((entry) => (
             <li
               key={entry.id}
-              className="rounded-lg border border-line bg-panel px-3 py-2"
+              className="py-2.5 first:pt-0 last:pb-0"
               data-testid="day-entry"
             >
               <div className="flex items-center gap-2">
                 <span
                   className="h-2.5 w-2.5 shrink-0 rounded-full"
-                  style={{ backgroundColor: entry.project.color ?? "var(--accent)" }}
+                  style={{ backgroundColor: entry.project.color ?? "var(--ink-faint)" }}
                   aria-hidden="true"
                 />
                 <span className="min-w-0 flex-1 truncate text-sm font-medium">
                   {entry.project.name}
                 </span>
-                <span className="text-xs text-muted">{TIME_LABEL[entry.time_spent]}</span>
+                <span className="font-mono text-xs text-ink-muted">{TIME_LABEL[entry.time_spent]}</span>
                 <button
                   type="button"
                   onClick={() => remove(entry.id, entry.project.name)}
                   disabled={pending}
                   aria-label={`Delete ${entry.project.name} entry`}
-                  className="rounded-md px-1.5 py-0.5 text-xs text-faint transition-colors hover:bg-panel-raised hover:text-danger disabled:opacity-50"
+                  className="rounded-md px-1.5 py-0.5 text-xs text-ink-faint transition-colors hover:bg-surface-sunken hover:text-danger-red disabled:opacity-50"
                 >
                   Delete
                 </button>
               </div>
               {entry.milestone && (
                 <p className="mt-1.5 flex items-start gap-1.5 text-sm">
-                  <span aria-label="Milestone" title="Milestone" className="text-amber-300">
+                  <span aria-label="Milestone" title="Milestone" className="text-frog-green-strong">
                     ✦
                   </span>
                   <span>{entry.milestone}</span>
@@ -86,10 +86,10 @@ export function DayDetail({ date, entries, projects, closeHref }: Props) {
               )}
               {entry.description && (
                 <details className="mt-1">
-                  <summary className="cursor-pointer text-xs text-faint transition-colors hover:text-muted">
+                  <summary className="cursor-pointer text-xs text-ink-faint transition-colors hover:text-ink-muted">
                     detail
                   </summary>
-                  <p className="mt-1 whitespace-pre-wrap text-sm text-muted">
+                  <p className="mt-1 whitespace-pre-wrap text-sm text-ink-muted">
                     {entry.description}
                   </p>
                 </details>

@@ -64,7 +64,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
         <div
           role="tablist"
           aria-label="Daily log view"
-          className="grid w-fit grid-cols-2 gap-1 rounded-lg border border-line bg-panel p-1 text-sm"
+          className="grid w-fit grid-cols-2 gap-1 rounded-lg bg-surface-sunken p-1 text-sm"
         >
           <Link
             role="tab"
@@ -72,8 +72,8 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
             href={`/?view=heatmap${dayQuery}`}
             className={`rounded-md px-4 py-1.5 transition-colors ${
               view === "heatmap"
-                ? "bg-accent-soft font-medium text-accent"
-                : "text-muted hover:text-foreground"
+                ? "border border-border bg-surface font-medium text-ink"
+                : "border border-transparent text-ink-muted hover:text-ink"
             }`}
           >
             Heatmap
@@ -84,8 +84,8 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
             href={`/?view=calendar${monthQuery}${dayQuery}`}
             className={`rounded-md px-4 py-1.5 transition-colors ${
               view === "calendar"
-                ? "bg-accent-soft font-medium text-accent"
-                : "text-muted hover:text-foreground"
+                ? "border border-border bg-surface font-medium text-ink"
+                : "border border-transparent text-ink-muted hover:text-ink"
             }`}
           >
             Calendar
@@ -94,7 +94,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
 
         <section
           aria-label={view === "heatmap" ? "Year heatmap" : "Month calendar"}
-          className="rounded-2xl border border-line bg-panel p-4"
+          className="rounded-xl border border-border bg-surface p-4"
         >
           {view === "heatmap" ? (
             <YearHeatmap cells={heatmapCells} todayISO={today} selectedDay={selectedDay} />
@@ -121,7 +121,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
       <aside className="flex flex-col gap-6">
         <section
           aria-label="Log today"
-          className="rounded-2xl border border-line bg-panel p-4"
+          className="rounded-xl border border-border bg-surface p-4"
         >
           <h2 className="mb-3 text-sm font-semibold tracking-tight">Log today</h2>
           <QuickAddForm projects={projects} />
