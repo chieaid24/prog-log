@@ -107,13 +107,13 @@ describe("project manager", () => {
     const nameInput = within(form).getByLabelText("Name");
     await user.clear(nameInput);
     await user.type(nameInput, "Turkce");
-    await user.click(within(form).getByRole("radio", { name: "Color #f472b6" }));
+    await user.click(within(form).getByRole("radio", { name: "Color #bf5b76" }));
     await user.click(within(form).getByRole("button", { name: "Save" }));
 
     expect(updateProjectAction).toHaveBeenCalledWith("turkish", {
       name: "Turkce",
       category: "Learning",
-      color: "#f472b6",
+      color: "#bf5b76",
     });
   });
 
@@ -136,10 +136,10 @@ describe("project manager", () => {
 
     const form = screen.getByRole("form", { name: "Create project" });
     await user.type(within(form).getByLabelText("New project"), "Rocketry");
-    await user.click(within(form).getByRole("radio", { name: "Color #67e8f9" }));
+    await user.click(within(form).getByRole("radio", { name: "Color #339797" }));
     await user.click(within(form).getByRole("button", { name: "Create" }));
 
-    expect(createProjectAction).toHaveBeenCalledWith({ name: "Rocketry", color: "#67e8f9" });
+    expect(createProjectAction).toHaveBeenCalledWith({ name: "Rocketry", color: "#339797" });
   });
 });
 
