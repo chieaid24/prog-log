@@ -39,14 +39,14 @@ export function DataSection() {
         <div className="flex gap-3">
           <a
             href="/api/export?format=csv"
-            className="rounded-lg border border-border px-4 py-2 text-sm text-ink-muted transition-colors hover:border-border-strong hover:text-ink"
+            className="rounded-lg border border-border px-4 py-2 text-sm text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:py-3"
             download
           >
             Download CSV
           </a>
           <a
             href="/api/export?format=json"
-            className="rounded-lg border border-border px-4 py-2 text-sm text-ink-muted transition-colors hover:border-border-strong hover:text-ink"
+            className="rounded-lg border border-border px-4 py-2 text-sm text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:py-3"
             download
           >
             Download JSON
@@ -63,7 +63,7 @@ export function DataSection() {
         <div className="flex items-center gap-3">
           <label
             htmlFor="import-file"
-            className="cursor-pointer rounded-lg border border-dashed border-border px-4 py-2 text-sm text-ink-muted transition-colors hover:border-border-strong hover:text-ink"
+            className="cursor-pointer rounded-lg border border-dashed border-border px-4 py-2 text-sm text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:py-3"
           >
             {fileName ?? "Choose CSV or JSON…"}
           </label>
@@ -82,7 +82,7 @@ export function DataSection() {
           <button
             type="submit"
             disabled={pending || !fileName}
-            className="rounded-lg bg-frog-green px-4 py-2 text-sm font-semibold text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-40"
+            className="rounded-lg bg-frog-green px-4 py-2 text-sm font-semibold text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-40 pointer-coarse:py-3"
           >
             {pending ? "Importing…" : "Import"}
           </button>

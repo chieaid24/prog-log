@@ -95,7 +95,7 @@ function PalettePicker({
   allowAuto?: boolean;
 }) {
   return (
-    <div role="radiogroup" aria-label={label} className="flex items-center gap-1.5">
+    <div role="radiogroup" aria-label={label} className="flex flex-wrap items-center gap-1.5">
       {allowAuto && (
         <button
           type="button"
@@ -104,7 +104,7 @@ function PalettePicker({
           aria-label="Auto color"
           title="Auto: picks the least-used palette color"
           onClick={() => onChange("")}
-          className={`grid h-6 w-6 place-items-center rounded-full border border-border-strong text-[9px] font-semibold text-ink-muted transition-transform hover:scale-110 ${
+          className={`grid h-6 w-6 place-items-center rounded-full border border-border-strong text-[9px] font-semibold text-ink-muted transition-transform hover:scale-110 pointer-coarse:h-11 pointer-coarse:w-11 pointer-coarse:text-xs ${
             color === "" ? "ring-2 ring-ink ring-offset-2 ring-offset-paper" : ""
           }`}
         >
@@ -119,7 +119,7 @@ function PalettePicker({
           aria-checked={color === c}
           aria-label={`Color ${c}`}
           onClick={() => onChange(c)}
-          className={`h-6 w-6 rounded-full transition-transform hover:scale-110 ${
+          className={`h-6 w-6 rounded-full transition-transform hover:scale-110 pointer-coarse:h-11 pointer-coarse:w-11 ${
             color === c ? "ring-2 ring-ink ring-offset-2 ring-offset-paper" : ""
           }`}
           style={{ backgroundColor: c }}
@@ -170,7 +170,8 @@ function CreateProjectForm() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Project name"
-          className="rounded-lg border border-border bg-surface px-3 py-2 text-sm placeholder:text-ink-faint focus:border-frog-green"
+          autoComplete="off"
+          className="rounded-lg border border-border bg-surface px-3 py-2 text-sm placeholder:text-ink-faint focus:border-frog-green pointer-coarse:py-3 pointer-coarse:text-base"
         />
       </div>
       <div className="flex flex-col gap-1.5">
@@ -181,7 +182,7 @@ function CreateProjectForm() {
           id="np-category"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="rounded-lg border border-border bg-surface px-3 py-2 text-sm focus:border-frog-green"
+          className="rounded-lg border border-border bg-surface px-3 py-2 text-sm focus:border-frog-green pointer-coarse:py-3 pointer-coarse:text-base"
         >
           <option value="">No category</option>
           {CATEGORIES.map((c) => (
@@ -198,7 +199,7 @@ function CreateProjectForm() {
       <button
         type="submit"
         disabled={pending || name.trim().length === 0}
-        className="rounded-lg bg-frog-green px-4 py-2 text-sm font-semibold text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-40"
+        className="rounded-lg bg-frog-green px-4 py-2 text-sm font-semibold text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-40 pointer-coarse:py-3"
       >
         {pending ? "Creating…" : "Create"}
       </button>
@@ -263,7 +264,7 @@ function ProjectRow({
           <button
             type="button"
             onClick={() => setEditing((v) => !v)}
-            className="rounded-lg border border-border px-3 py-1.5 text-xs text-ink-muted transition-colors hover:border-border-strong hover:text-ink"
+            className="rounded-lg border border-border px-3 py-1.5 text-xs text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:px-4 pointer-coarse:py-3"
           >
             {editing ? "Close" : "Edit"}
           </button>
@@ -271,7 +272,7 @@ function ProjectRow({
             type="button"
             onClick={toggleStatus}
             disabled={pending}
-            className="rounded-lg border border-border px-3 py-1.5 text-xs text-ink-muted transition-colors hover:border-border-strong hover:text-ink disabled:opacity-50"
+            className="rounded-lg border border-border px-3 py-1.5 text-xs text-ink-muted transition-colors hover:border-border-strong hover:text-ink disabled:opacity-50 pointer-coarse:px-4 pointer-coarse:py-3"
           >
             {archived ? "Restore" : "Archive"}
           </button>
@@ -336,7 +337,7 @@ function AliasEditor({ project, aliases }: { project: Project; aliases: ProjectA
             aria-label={`Remove alias ${a.alias}`}
             onClick={() => remove(a.id)}
             disabled={pending}
-            className="text-ink-faint transition-colors hover:text-danger-red disabled:opacity-50"
+            className="tap rounded-full px-1 text-ink-faint transition-colors hover:text-danger-red disabled:opacity-50"
           >
             &times;
           </button>
@@ -351,12 +352,14 @@ function AliasEditor({ project, aliases }: { project: Project; aliases: ProjectA
           }}
           placeholder="add alias"
           aria-label={`New alias for ${project.name}`}
-          className="w-28 rounded-full border border-dashed border-border bg-surface px-2.5 py-0.5 text-xs placeholder:text-ink-faint focus:border-frog-green"
+          autoComplete="off"
+          enterKeyHint="done"
+          className="w-28 rounded-full border border-dashed border-border bg-surface px-2.5 py-0.5 text-xs placeholder:text-ink-faint focus:border-frog-green pointer-coarse:w-40 pointer-coarse:py-2 pointer-coarse:text-base"
         />
         <button
           type="submit"
           disabled={pending || draft.trim().length === 0}
-          className="rounded-full border border-border px-2.5 py-0.5 text-xs text-ink-muted transition-colors hover:border-border-strong hover:text-ink disabled:opacity-40"
+          className="rounded-full border border-border px-2.5 py-0.5 text-xs text-ink-muted transition-colors hover:border-border-strong hover:text-ink disabled:opacity-40 pointer-coarse:px-4 pointer-coarse:py-2.5"
         >
           Add
         </button>
@@ -408,7 +411,8 @@ function EditProjectForm({ project, onSaved }: { project: Project; onSaved: () =
           id={`edit-name-${project.id}`}
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm focus:border-frog-green"
+          autoComplete="off"
+          className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm focus:border-frog-green pointer-coarse:py-3 pointer-coarse:text-base"
         />
       </div>
       <div className="flex flex-col gap-1.5">
@@ -419,7 +423,7 @@ function EditProjectForm({ project, onSaved }: { project: Project; onSaved: () =
           id={`edit-cat-${project.id}`}
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm focus:border-frog-green"
+          className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm focus:border-frog-green pointer-coarse:py-3 pointer-coarse:text-base"
         >
           <option value="">No category</option>
           {CATEGORIES.map((c) => (
@@ -436,7 +440,7 @@ function EditProjectForm({ project, onSaved }: { project: Project; onSaved: () =
       <button
         type="submit"
         disabled={pending || name.trim().length === 0}
-        className="rounded-lg bg-frog-green px-4 py-1.5 text-sm font-semibold text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-40"
+        className="rounded-lg bg-frog-green px-4 py-1.5 text-sm font-semibold text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-40 pointer-coarse:py-3"
       >
         {pending ? "Saving…" : "Save"}
       </button>

@@ -96,7 +96,10 @@ export function ProjectStack({ rows }: Props) {
         <p className="mt-3 text-sm text-ink-faint">No Entries this month.</p>
       ) : (
         <>
-          <div aria-hidden style={{ height: rows.length * ROW_HEIGHT + 30 }} className="mt-2">
+          {/* The 138px label gutter plus bars needs ~30rem to breathe; on
+              narrower screens the chart scrolls in its own container. */}
+          <div className="mt-2 overflow-x-auto overscroll-x-contain">
+          <div aria-hidden style={{ height: rows.length * ROW_HEIGHT + 30 }} className="min-w-[30rem]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={rows}
@@ -138,6 +141,7 @@ export function ProjectStack({ rows }: Props) {
                 ))}
               </BarChart>
             </ResponsiveContainer>
+          </div>
           </div>
           <p className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-muted">
             {TIME_SIZES.map((t) => (

@@ -79,7 +79,7 @@ export default async function NowPage() {
   const projects = await fetchNowProjects();
 
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-col gap-8 px-6 py-12">
+    <main className="mx-auto flex w-full max-w-2xl flex-col gap-8 py-12 pl-[max(1.5rem,env(safe-area-inset-left))] pr-[max(1.5rem,env(safe-area-inset-right))]">
       <header className="flex flex-col gap-3">
         <Frog size={44} title="Ferdy, a pixel frog sitting on a log" />
         <h1 className="text-3xl font-bold tracking-tight text-ink">What I&rsquo;m working on</h1>

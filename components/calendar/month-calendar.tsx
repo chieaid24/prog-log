@@ -54,20 +54,20 @@ export function MonthCalendar({ monthStart, todayISO, cards, selectedDay }: Prop
           <Link
             href={monthHref(addMonths(monthStart, -1))}
             aria-label="Previous month"
-            className="rounded-md border border-border bg-surface px-2 py-1 text-ink-muted transition-colors hover:border-border-strong hover:text-ink"
+            className="rounded-md border border-border bg-surface px-2 py-1 text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:px-3 pointer-coarse:py-2.5"
           >
             ←
           </Link>
           <Link
             href={monthHref(todayISO)}
-            className="rounded-md border border-border bg-surface px-2 py-1 text-ink-muted transition-colors hover:border-border-strong hover:text-ink"
+            className="rounded-md border border-border bg-surface px-2 py-1 text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:px-3 pointer-coarse:py-2.5"
           >
             Today
           </Link>
           <Link
             href={monthHref(addMonths(monthStart, 1))}
             aria-label="Next month"
-            className="rounded-md border border-border bg-surface px-2 py-1 text-ink-muted transition-colors hover:border-border-strong hover:text-ink"
+            className="rounded-md border border-border bg-surface px-2 py-1 text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:px-3 pointer-coarse:py-2.5"
           >
             →
           </Link>
@@ -103,7 +103,7 @@ export function MonthCalendar({ monthStart, todayISO, cards, selectedDay }: Prop
                     <Link
                       href={dayHref(monthStart, day)}
                       aria-label={`Open ${day}`}
-                      className={`flex h-6 w-6 items-center justify-center rounded-full font-mono text-xs transition-colors hover:bg-surface-sunken ${
+                      className={`tap flex h-6 w-6 items-center justify-center rounded-full font-mono text-xs transition-colors hover:bg-surface-sunken ${
                         isToday
                           ? "bg-ink font-semibold text-paper hover:bg-ink"
                           : inMonth
@@ -120,7 +120,7 @@ export function MonthCalendar({ monthStart, todayISO, cards, selectedDay }: Prop
                         key={card.projectId}
                         href={dayHref(monthStart, day)}
                         data-testid="calendar-card"
-                        className="group flex items-center gap-1.5 rounded-md px-1.5 py-1 transition-colors hover:bg-surface-sunken"
+                        className="group flex items-center gap-1.5 rounded-md px-1.5 py-1 transition-colors hover:bg-surface-sunken pointer-coarse:py-1.5"
                       >
                         <span
                           className="size-1.5 shrink-0 rounded-full"
@@ -147,7 +147,7 @@ export function MonthCalendar({ monthStart, todayISO, cards, selectedDay }: Prop
                     {overflow > 0 && (
                       <Link
                         href={dayHref(monthStart, day)}
-                        className="rounded px-1.5 font-mono text-[10px] text-ink-faint transition-colors hover:text-ink-muted"
+                        className="rounded px-1.5 py-0.5 font-mono text-[10px] text-ink-faint transition-colors hover:text-ink-muted pointer-coarse:py-1"
                       >
                         +{overflow} more
                       </Link>

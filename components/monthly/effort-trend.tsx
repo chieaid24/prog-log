@@ -59,9 +59,13 @@ export function EffortTrend({ points }: Props) {
         <p className="mt-3 text-sm text-ink-faint">Nothing logged in the last 90 days.</p>
       ) : (
         <>
+          {/* 90 daily bars need real width to stay legible: on narrow
+              screens the chart keeps a minimum width and scrolls inside
+              its own container instead of squeezing. */}
+          <div className="mt-2 overflow-x-auto overscroll-x-contain">
           <svg
             viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-            className="mt-2 w-full"
+            className="w-full min-w-[560px]"
             role="img"
             aria-label={`Daily effort weight for the last ${points.length} days with a 7-day rolling average, currently ${latest?.rolling.toFixed(1) ?? "0"}`}
           >
@@ -107,6 +111,7 @@ export function EffortTrend({ points }: Props) {
               );
             })}
           </svg>
+          </div>
           <p className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-muted">
             <span className="inline-flex items-center gap-1.5">
               <span aria-hidden className="h-2 w-2 rounded-sm" style={{ background: BAR_COLOR }} />

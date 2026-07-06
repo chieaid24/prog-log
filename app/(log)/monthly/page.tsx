@@ -69,7 +69,7 @@ export default async function MonthlyPage({ searchParams }: { searchParams: Sear
         {!nav.isCurrentMonth && (
           <Link
             href="/monthly"
-            className="rounded-lg px-3 py-1.5 text-sm text-ink-muted transition-colors hover:bg-surface-sunken hover:text-ink"
+            className="rounded-lg px-3 py-1.5 text-sm text-ink-muted transition-colors hover:bg-surface-sunken hover:text-ink pointer-coarse:py-2.5"
           >
             This month
           </Link>
@@ -77,14 +77,14 @@ export default async function MonthlyPage({ searchParams }: { searchParams: Sear
         <Link
           aria-label="Previous month"
           href={`/monthly?month=${nav.prev}`}
-          className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-ink-muted transition-colors hover:border-border-strong hover:text-ink"
+          className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:px-4 pointer-coarse:py-2.5"
         >
           &larr;
         </Link>
         <Link
           aria-label="Next month"
           href={`/monthly?month=${nav.next}`}
-          className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-ink-muted transition-colors hover:border-border-strong hover:text-ink"
+          className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:px-4 pointer-coarse:py-2.5"
         >
           &rarr;
         </Link>

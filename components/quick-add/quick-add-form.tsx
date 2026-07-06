@@ -111,7 +111,7 @@ export function QuickAddForm({ projects: initialProjects, date, onLogged }: Prop
           id="qa-project"
           value={creating ? NEW_PROJECT : projectId}
           onChange={(e) => selectProject(e.target.value)}
-          className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-ink focus:border-frog-green"
+          className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-ink focus:border-frog-green pointer-coarse:py-3 pointer-coarse:text-base"
         >
           <option value="" disabled>
             Select project…
@@ -136,7 +136,8 @@ export function QuickAddForm({ projects: initialProjects, date, onLogged }: Prop
             onChange={(e) => setNewName(e.target.value)}
             placeholder="e.g. Rocketry"
             autoFocus
-            className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm placeholder:text-ink-faint focus:border-frog-green"
+            autoComplete="off"
+            className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm placeholder:text-ink-faint focus:border-frog-green pointer-coarse:py-3 pointer-coarse:text-base"
           />
           <label htmlFor="qa-new-category" className="text-xs font-medium text-ink-muted">
             Category (optional)
@@ -145,7 +146,7 @@ export function QuickAddForm({ projects: initialProjects, date, onLogged }: Prop
             id="qa-new-category"
             value={newCategory}
             onChange={(e) => setNewCategory(e.target.value)}
-            className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm focus:border-frog-green"
+            className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm focus:border-frog-green pointer-coarse:py-3 pointer-coarse:text-base"
           >
             <option value="">No category</option>
             {CATEGORIES.map((c) => (
@@ -158,7 +159,7 @@ export function QuickAddForm({ projects: initialProjects, date, onLogged }: Prop
             type="button"
             onClick={createInline}
             disabled={pending || newName.trim().length === 0}
-            className="mt-1 rounded-lg bg-frog-green-soft px-3 py-1.5 text-sm font-medium text-frog-green-strong transition-colors hover:bg-frog-green hover:text-on-green disabled:opacity-50"
+            className="mt-1 rounded-lg bg-frog-green-soft px-3 py-1.5 text-sm font-medium text-frog-green-strong transition-colors hover:bg-frog-green hover:text-on-green disabled:opacity-50 pointer-coarse:py-3"
           >
             Create &amp; select
           </button>
@@ -176,7 +177,7 @@ export function QuickAddForm({ projects: initialProjects, date, onLogged }: Prop
               aria-pressed={timeSpent === t}
               aria-label={TIME_LABEL[t]}
               title={TIME_LABEL[t]}
-              className={`rounded-md px-2 py-1.5 font-mono text-sm font-medium transition-colors ${
+              className={`rounded-md px-2 py-1.5 font-mono text-sm font-medium transition-colors pointer-coarse:py-3 ${
                 timeSpent === t
                   ? "bg-frog-green font-semibold text-on-green"
                   : "text-ink-muted hover:text-ink"
@@ -197,7 +198,9 @@ export function QuickAddForm({ projects: initialProjects, date, onLogged }: Prop
           value={milestone}
           onChange={(e) => setMilestone(e.target.value)}
           placeholder="Something notable today?"
-          className="rounded-lg border border-border bg-surface px-3 py-2 text-sm placeholder:text-ink-faint focus:border-frog-green"
+          enterKeyHint="done"
+          autoComplete="off"
+          className="rounded-lg border border-border bg-surface px-3 py-2 text-sm placeholder:text-ink-faint focus:border-frog-green pointer-coarse:py-3 pointer-coarse:text-base"
         />
       </div>
 
@@ -212,14 +215,14 @@ export function QuickAddForm({ projects: initialProjects, date, onLogged }: Prop
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
             placeholder="What actually happened (rarely needed)"
-            className="resize-y rounded-lg border border-border bg-surface px-3 py-2 text-sm placeholder:text-ink-faint focus:border-frog-green"
+            className="resize-y rounded-lg border border-border bg-surface px-3 py-2 text-sm placeholder:text-ink-faint focus:border-frog-green pointer-coarse:text-base"
           />
         </div>
       ) : (
         <button
           type="button"
           onClick={() => setShowDetail(true)}
-          className="self-start text-xs text-ink-faint transition-colors hover:text-ink-muted"
+          className="tap self-start rounded-md text-xs text-ink-faint transition-colors hover:text-ink-muted"
         >
           + add detail
         </button>
@@ -228,7 +231,7 @@ export function QuickAddForm({ projects: initialProjects, date, onLogged }: Prop
       <button
         type="submit"
         disabled={pending || !projectId || !timeSpent}
-        className="rounded-lg bg-frog-green px-3 py-2 text-sm font-semibold text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-40"
+        className="rounded-lg bg-frog-green px-3 py-2 text-sm font-semibold text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-40 pointer-coarse:py-3"
       >
         {pending ? "Logging…" : "Log it"}
       </button>

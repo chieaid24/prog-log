@@ -6,15 +6,18 @@
 // calendar view.
 import { useRouter } from "next/navigation";
 import { Frog } from "@/components/ui/frog";
+import { useCoarsePointer } from "@/components/ui/use-coarse-pointer";
 import { humanDate } from "@/lib/dates";
 import { intensityLevel } from "@/lib/rollups";
 import type { HeatmapCell } from "@/lib/types";
 import { buildHeatmapGrid } from "./grid";
 
-const CELL = 12;
-const GAP = 3;
-const STEP = CELL + GAP;
-const TOP = 18; // month label row
+// Touch devices get bigger cells: a year of 44px squares would be ~2600px of
+// sideways scrolling, so cells scale to the WCAG 2.5.8 24px minimum-with-
+// spacing instead, and the calendar view carries the full-size tap targets
+// for the same day-selection action.
+const FINE = { cell: 12, gap: 3, top: 18 };
+const COARSE = { cell: 22, gap: 6, top: 20 };
 const LEFT = 30; // weekday gutter
 
 /** The DESIGN.md heat ramp: one hue climbing in lightness, heat-0..3. */
@@ -33,6 +36,9 @@ type Props = {
 
 export function YearHeatmap({ cells, todayISO, selectedDay }: Props) {
   const router = useRouter();
+  const coarse = useCoarsePointer();
+  const { cell: CELL, gap: GAP, top: TOP } = coarse ? COARSE : FINE;
+  const STEP = CELL + GAP;
   const byDate = new Map(cells.map((c) => [c.date, c]));
   const columns = buildHeatmapGrid(todayISO);
   const width = LEFT + columns.length * STEP;
@@ -45,7 +51,7 @@ export function YearHeatmap({ cells, todayISO, selectedDay }: Props) {
 
   return (
     <div>
-      <div className="overflow-x-auto pb-1" data-testid="heatmap-scroll">
+      <div className="overflow-x-auto overscroll-x-contain pb-1" data-testid="heatmap-scroll">
         <svg
           width={width}
           height={height}
@@ -68,7 +74,7 @@ export function YearHeatmap({ cells, todayISO, selectedDay }: Props) {
             <text
               key={label}
               x={0}
-              y={TOP + (1 + i * 2) * STEP + 9}
+              y={TOP + (1 + i * 2) * STEP + Math.round(CELL * 0.75)}
               className="fill-[var(--ink-faint)] font-mono text-[9px]"
             >
               {label}
