@@ -28,7 +28,7 @@ export async function importEntriesAction(formData: FormData): Promise<ImportRes
     return { ok: false, error: "Choose a CSV or JSON export file first." };
   }
   if (file.size > MAX_IMPORT_BYTES) {
-    return { ok: false, error: "File is larger than 5 MB — that is not a prog-log export." };
+    return { ok: false, error: "File is larger than 5 MB; that is not a prog-log export." };
   }
 
   const supabase = await createClient();

@@ -39,11 +39,11 @@ export function ProjectManager({ projects, usage, aliases = {} }: Props) {
       <CreateProjectForm />
 
       <section aria-label="Active projects" className="flex flex-col gap-2">
-        <h2 className="text-sm font-medium text-muted">
-          Active <span className="text-faint">({active.length})</span>
+        <h2 className="text-sm font-medium text-ink-muted">
+          Active <span className="text-ink-faint">({active.length})</span>
         </h2>
         {active.length === 0 ? (
-          <p className="rounded-xl border border-line bg-panel p-6 text-sm text-muted">
+          <p className="rounded-xl border border-border bg-surface p-6 text-sm text-ink-muted">
             No active projects. Create one above to start logging.
           </p>
         ) : (
@@ -56,17 +56,17 @@ export function ProjectManager({ projects, usage, aliases = {} }: Props) {
       </section>
 
       <section aria-label="Archived projects" className="flex flex-col gap-2">
-        <h2 className="text-sm font-medium text-muted">
-          Archived <span className="text-faint">({archived.length})</span>
+        <h2 className="text-sm font-medium text-ink-muted">
+          Archived <span className="text-ink-faint">({archived.length})</span>
         </h2>
         {archived.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-line bg-panel p-6 text-sm text-muted">
+          <p className="rounded-xl border border-dashed border-border bg-surface p-6 text-sm text-ink-muted">
             Nothing archived yet. Archiving hides a project from the pickers while its entries
             stay in the monthly breakdown and Throwbacks.
           </p>
         ) : (
           <>
-            <p className="text-xs text-faint">
+            <p className="text-xs text-ink-faint">
               Archived projects stay in the monthly breakdown and Throwbacks; they just leave
               the pickers.
             </p>
@@ -102,10 +102,10 @@ function PalettePicker({
           role="radio"
           aria-checked={color === ""}
           aria-label="Auto color"
-          title="Auto — picks the least-used palette color"
+          title="Auto: picks the least-used palette color"
           onClick={() => onChange("")}
-          className={`grid h-6 w-6 place-items-center rounded-full border border-line-strong text-[9px] font-semibold text-muted transition-transform hover:scale-110 ${
-            color === "" ? "ring-2 ring-foreground ring-offset-2 ring-offset-background" : ""
+          className={`grid h-6 w-6 place-items-center rounded-full border border-border-strong text-[9px] font-semibold text-ink-muted transition-transform hover:scale-110 ${
+            color === "" ? "ring-2 ring-ink ring-offset-2 ring-offset-paper" : ""
           }`}
         >
           A
@@ -120,7 +120,7 @@ function PalettePicker({
           aria-label={`Color ${c}`}
           onClick={() => onChange(c)}
           className={`h-6 w-6 rounded-full transition-transform hover:scale-110 ${
-            color === c ? "ring-2 ring-foreground ring-offset-2 ring-offset-background" : ""
+            color === c ? "ring-2 ring-ink ring-offset-2 ring-offset-paper" : ""
           }`}
           style={{ backgroundColor: c }}
         />
@@ -159,10 +159,10 @@ function CreateProjectForm() {
     <form
       onSubmit={submit}
       aria-label="Create project"
-      className="flex flex-wrap items-end gap-3 rounded-xl border border-line bg-panel p-4"
+      className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-surface p-4"
     >
       <div className="flex min-w-40 flex-1 flex-col gap-1.5">
-        <label htmlFor="np-name" className="text-xs font-medium text-muted">
+        <label htmlFor="np-name" className="text-xs font-medium text-ink-muted">
           New project
         </label>
         <input
@@ -170,18 +170,18 @@ function CreateProjectForm() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Project name"
-          className="rounded-lg border border-line bg-panel px-3 py-2 text-sm placeholder:text-faint"
+          className="rounded-lg border border-border bg-surface px-3 py-2 text-sm placeholder:text-ink-faint focus:border-frog-green"
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="np-category" className="text-xs font-medium text-muted">
+        <label htmlFor="np-category" className="text-xs font-medium text-ink-muted">
           Category
         </label>
         <select
           id="np-category"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="rounded-lg border border-line bg-panel px-3 py-2 text-sm"
+          className="rounded-lg border border-border bg-surface px-3 py-2 text-sm focus:border-frog-green"
         >
           <option value="">No category</option>
           {CATEGORIES.map((c) => (
@@ -192,18 +192,18 @@ function CreateProjectForm() {
         </select>
       </div>
       <div className="flex flex-col gap-1.5 pb-1">
-        <span className="text-xs font-medium text-muted">Color</span>
+        <span className="text-xs font-medium text-ink-muted">Color</span>
         <PalettePicker label="New project color" color={color} onChange={setColor} allowAuto />
       </div>
       <button
         type="submit"
         disabled={pending || name.trim().length === 0}
-        className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-background transition-opacity hover:opacity-90 disabled:opacity-40"
+        className="rounded-lg bg-frog-green px-4 py-2 text-sm font-semibold text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-40"
       >
         {pending ? "Creating…" : "Create"}
       </button>
       {error && (
-        <p role="alert" className="w-full text-sm text-danger">
+        <p role="alert" className="w-full text-sm text-danger-red">
           {error}
         </p>
       )}
@@ -238,7 +238,7 @@ function ProjectRow({
 
   return (
     <li
-      className={`rounded-xl border border-line bg-panel p-4 transition-colors ${
+      className={`rounded-xl border border-border bg-surface p-4 transition-colors ${
         archived ? "opacity-70" : ""
       }`}
     >
@@ -246,15 +246,15 @@ function ProjectRow({
         <span
           aria-hidden
           className="h-3 w-3 shrink-0 rounded-full"
-          style={{ backgroundColor: project.color ?? "#5c6478" }}
+          style={{ backgroundColor: project.color ?? "var(--ink-faint)" }}
         />
         <span className="font-medium">{project.name}</span>
         {project.category && (
-          <span className="rounded-full border border-line px-2 py-0.5 text-xs text-muted">
+          <span className="rounded-full border border-border px-2 py-0.5 text-xs text-ink-muted">
             {project.category}
           </span>
         )}
-        <span className="text-xs text-faint">
+        <span className="font-mono text-xs text-ink-faint">
           {usage && usage.entries > 0
             ? `${usage.entries} ${usage.entries === 1 ? "entry" : "entries"} · last logged ${humanizeAge(usage.lastLoggedDaysAgo ?? 0)}`
             : "never logged"}
@@ -263,7 +263,7 @@ function ProjectRow({
           <button
             type="button"
             onClick={() => setEditing((v) => !v)}
-            className="rounded-lg border border-line px-3 py-1.5 text-xs text-muted transition-colors hover:border-line-strong hover:text-foreground"
+            className="rounded-lg border border-border px-3 py-1.5 text-xs text-ink-muted transition-colors hover:border-border-strong hover:text-ink"
           >
             {editing ? "Close" : "Edit"}
           </button>
@@ -271,14 +271,14 @@ function ProjectRow({
             type="button"
             onClick={toggleStatus}
             disabled={pending}
-            className="rounded-lg border border-line px-3 py-1.5 text-xs text-muted transition-colors hover:border-line-strong hover:text-foreground disabled:opacity-50"
+            className="rounded-lg border border-border px-3 py-1.5 text-xs text-ink-muted transition-colors hover:border-border-strong hover:text-ink disabled:opacity-50"
           >
             {archived ? "Restore" : "Archive"}
           </button>
         </span>
       </div>
       {error && (
-        <p role="alert" className="mt-2 text-sm text-danger">
+        <p role="alert" className="mt-2 text-sm text-danger-red">
           {error}
         </p>
       )}
@@ -321,14 +321,14 @@ function AliasEditor({ project, aliases }: { project: Project; aliases: ProjectA
   }
 
   return (
-    <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-line pt-3">
-      <span className="text-xs text-faint" title="Extra names Discord and the Shortcut accept">
+    <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
+      <span className="text-xs text-ink-faint" title="Extra names Discord and the Shortcut accept">
         Aliases
       </span>
       {aliases.map((a) => (
         <span
           key={a.id}
-          className="inline-flex items-center gap-1 rounded-full border border-line px-2 py-0.5 text-xs text-muted"
+          className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-xs text-ink-muted"
         >
           {a.alias}
           <button
@@ -336,7 +336,7 @@ function AliasEditor({ project, aliases }: { project: Project; aliases: ProjectA
             aria-label={`Remove alias ${a.alias}`}
             onClick={() => remove(a.id)}
             disabled={pending}
-            className="text-faint transition-colors hover:text-danger disabled:opacity-50"
+            className="text-ink-faint transition-colors hover:text-danger-red disabled:opacity-50"
           >
             &times;
           </button>
@@ -351,18 +351,18 @@ function AliasEditor({ project, aliases }: { project: Project; aliases: ProjectA
           }}
           placeholder="add alias"
           aria-label={`New alias for ${project.name}`}
-          className="w-28 rounded-full border border-dashed border-line bg-panel px-2.5 py-0.5 text-xs placeholder:text-faint"
+          className="w-28 rounded-full border border-dashed border-border bg-surface px-2.5 py-0.5 text-xs placeholder:text-ink-faint focus:border-frog-green"
         />
         <button
           type="submit"
           disabled={pending || draft.trim().length === 0}
-          className="rounded-full border border-line px-2.5 py-0.5 text-xs text-muted transition-colors hover:border-line-strong hover:text-foreground disabled:opacity-40"
+          className="rounded-full border border-border px-2.5 py-0.5 text-xs text-ink-muted transition-colors hover:border-border-strong hover:text-ink disabled:opacity-40"
         >
           Add
         </button>
       </form>
       {error && (
-        <p role="alert" className="w-full text-xs text-danger">
+        <p role="alert" className="w-full text-xs text-danger-red">
           {error}
         </p>
       )}
@@ -398,28 +398,28 @@ function EditProjectForm({ project, onSaved }: { project: Project; onSaved: () =
     <form
       onSubmit={submit}
       aria-label={`Edit ${project.name}`}
-      className="mt-3 flex flex-wrap items-end gap-3 border-t border-line pt-3"
+      className="mt-3 flex flex-wrap items-end gap-3 border-t border-border pt-3"
     >
       <div className="flex min-w-40 flex-1 flex-col gap-1.5">
-        <label htmlFor={`edit-name-${project.id}`} className="text-xs font-medium text-muted">
+        <label htmlFor={`edit-name-${project.id}`} className="text-xs font-medium text-ink-muted">
           Name
         </label>
         <input
           id={`edit-name-${project.id}`}
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="rounded-lg border border-line bg-panel px-3 py-1.5 text-sm"
+          className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm focus:border-frog-green"
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor={`edit-cat-${project.id}`} className="text-xs font-medium text-muted">
+        <label htmlFor={`edit-cat-${project.id}`} className="text-xs font-medium text-ink-muted">
           Category
         </label>
         <select
           id={`edit-cat-${project.id}`}
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="rounded-lg border border-line bg-panel px-3 py-1.5 text-sm"
+          className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm focus:border-frog-green"
         >
           <option value="">No category</option>
           {CATEGORIES.map((c) => (
@@ -430,18 +430,18 @@ function EditProjectForm({ project, onSaved }: { project: Project; onSaved: () =
         </select>
       </div>
       <div className="flex flex-col gap-1.5 pb-1">
-        <span className="text-xs font-medium text-muted">Color</span>
+        <span className="text-xs font-medium text-ink-muted">Color</span>
         <PalettePicker label="Project color" color={color} onChange={setColor} />
       </div>
       <button
         type="submit"
         disabled={pending || name.trim().length === 0}
-        className="rounded-lg bg-accent px-4 py-1.5 text-sm font-semibold text-background transition-opacity hover:opacity-90 disabled:opacity-40"
+        className="rounded-lg bg-frog-green px-4 py-1.5 text-sm font-semibold text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-40"
       >
         {pending ? "Saving…" : "Save"}
       </button>
       {error && (
-        <p role="alert" className="w-full text-sm text-danger">
+        <p role="alert" className="w-full text-sm text-danger-red">
           {error}
         </p>
       )}

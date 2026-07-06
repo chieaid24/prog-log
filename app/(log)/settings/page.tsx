@@ -16,25 +16,25 @@ export default async function SettingsPage() {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
       <header>
-        <h1 className="text-xl font-semibold tracking-tight">Settings</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-ink">Settings</h1>
       </header>
 
-      <section aria-label="Timezone" className="rounded-xl border border-line bg-panel p-5">
-        <h2 className="mb-3 text-sm font-medium text-muted">Timezone</h2>
+      <section aria-label="Timezone" className="rounded-xl border border-border bg-surface p-5">
+        <h2 className="mb-3 text-sm font-medium text-ink-muted">Timezone</h2>
         <TimezoneForm current={timezone} timezones={listTimeZones()} />
       </section>
 
-      <section aria-label="Data" className="rounded-xl border border-line bg-panel p-5">
-        <h2 className="mb-3 text-sm font-medium text-muted">Data</h2>
+      <section aria-label="Data" className="rounded-xl border border-border bg-surface p-5">
+        <h2 className="mb-3 text-sm font-medium text-ink-muted">Data</h2>
         <DataSection />
       </section>
 
-      <section aria-label="Account" className="rounded-xl border border-line bg-panel p-5">
-        <h2 className="mb-3 text-sm font-medium text-muted">Account</h2>
+      <section aria-label="Account" className="rounded-xl border border-border bg-surface p-5">
+        <h2 className="mb-3 text-sm font-medium text-ink-muted">Account</h2>
         <form action={signOut}>
           <button
             type="submit"
-            className="rounded-lg border border-line px-4 py-2 text-sm text-muted transition-colors hover:border-line-strong hover:text-foreground"
+            className="rounded-lg border border-border px-4 py-2 text-sm text-ink-muted transition-colors hover:border-border-strong hover:text-ink"
           >
             Sign out
           </button>

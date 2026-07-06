@@ -76,7 +76,7 @@ export function MonthCalendar({ monthStart, todayISO, cards, selectedDay }: Prop
 
       <div className="overflow-x-auto">
         <div className="min-w-[640px]">
-          <div className="grid grid-cols-7 border-b border-line pb-1">
+          <div className="grid grid-cols-7 border-b border-border pb-1">
             {WEEKDAYS.map((w) => (
               <div key={w} className="px-2 text-right font-mono text-[11px] font-medium text-ink-faint">
                 {w}

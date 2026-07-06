@@ -31,22 +31,22 @@ export function DataSection() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
-        <h3 className="text-sm text-foreground">Export</h3>
-        <p className="max-w-md text-xs text-faint">
+        <h3 className="text-sm text-ink">Export</h3>
+        <p className="max-w-md text-xs text-ink-faint">
           Every Entry, yours to take anywhere. CSV opens in a spreadsheet; JSON keeps Project
           colors and categories for a full restore.
         </p>
         <div className="flex gap-3">
           <a
             href="/api/export?format=csv"
-            className="rounded-lg border border-line px-4 py-2 text-sm text-muted transition-colors hover:border-line-strong hover:text-foreground"
+            className="rounded-lg border border-border px-4 py-2 text-sm text-ink-muted transition-colors hover:border-border-strong hover:text-ink"
             download
           >
             Download CSV
           </a>
           <a
             href="/api/export?format=json"
-            className="rounded-lg border border-line px-4 py-2 text-sm text-muted transition-colors hover:border-line-strong hover:text-foreground"
+            className="rounded-lg border border-border px-4 py-2 text-sm text-ink-muted transition-colors hover:border-border-strong hover:text-ink"
             download
           >
             Download JSON
@@ -55,15 +55,15 @@ export function DataSection() {
       </div>
 
       <form onSubmit={submit} aria-label="Import entries" className="flex flex-col gap-2">
-        <h3 className="text-sm text-foreground">Import</h3>
-        <p className="max-w-md text-xs text-faint">
+        <h3 className="text-sm text-ink">Import</h3>
+        <p className="max-w-md text-xs text-ink-faint">
           Bring data in from a prog-log export or a Notion CSV. Rows land through the same
           write path as every log: re-importing never shrinks a day or erases a Milestone.
         </p>
         <div className="flex items-center gap-3">
           <label
             htmlFor="import-file"
-            className="cursor-pointer rounded-lg border border-dashed border-line px-4 py-2 text-sm text-muted transition-colors hover:border-line-strong hover:text-foreground"
+            className="cursor-pointer rounded-lg border border-dashed border-border px-4 py-2 text-sm text-ink-muted transition-colors hover:border-border-strong hover:text-ink"
           >
             {fileName ?? "Choose CSV or JSON…"}
           </label>
@@ -82,16 +82,16 @@ export function DataSection() {
           <button
             type="submit"
             disabled={pending || !fileName}
-            className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-background transition-opacity hover:opacity-90 disabled:opacity-40"
+            className="rounded-lg bg-frog-green px-4 py-2 text-sm font-semibold text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-40"
           >
             {pending ? "Importing…" : "Import"}
           </button>
         </div>
         <div aria-live="polite" className="text-sm">
-          {result?.ok === false && <p className="text-danger">{result.error}</p>}
+          {result?.ok === false && <p className="text-danger-red">{result.error}</p>}
           {result?.ok === true && (
             <div className="flex flex-col gap-1">
-              <p className="text-success">
+              <p className="text-frog-green-strong">
                 Imported {result.imported} {result.imported === 1 ? "entry" : "entries"}
                 {result.projectsCreated > 0 &&
                   `, created ${result.projectsCreated} ${
@@ -100,7 +100,7 @@ export function DataSection() {
                 .
               </p>
               {result.failed.length > 0 && (
-                <ul className="text-xs text-danger">
+                <ul className="text-xs text-danger-red">
                   {result.failed.slice(0, 5).map((f) => (
                     <li key={`${f.line}-${f.message}`}>
                       line {f.line}: {f.message}
