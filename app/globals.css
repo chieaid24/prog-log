@@ -1,86 +1,102 @@
 @import "tailwindcss";
 
-/* Space-aesthetic design tokens. Every view builds from these — keep the set
-   small and semantic so components stay consistent. */
+/* Warm-paper design tokens (DESIGN.md is the source of truth). Every neutral
+   is tinted warm (hue ~80-95); frog green is the single accent and it means
+   "your effort, here". Keep the set small and semantic. */
 :root {
-  --background: #070a13;
-  --foreground: #e8ebf4;
-  --muted: #98a0b6;
-  --faint: #5c6478;
-  --panel: rgba(148, 163, 199, 0.055);
-  --panel-raised: rgba(148, 163, 199, 0.09);
-  --line: rgba(148, 163, 199, 0.14);
-  --line-strong: rgba(148, 163, 199, 0.26);
-  --accent: #7c8cf8;
-  --accent-soft: rgba(124, 140, 248, 0.16);
-  --danger: #f87171;
-  --success: #34d399;
+  --paper: oklch(0.972 0.008 95);
+  --surface: oklch(0.995 0.004 95);
+  --surface-sunken: oklch(0.945 0.01 95);
+  --ink: oklch(0.27 0.012 80);
+  --ink-muted: oklch(0.52 0.012 85);
+  --ink-faint: oklch(0.68 0.01 90);
+  --border: oklch(0.9 0.008 95);
+  --border-strong: oklch(0.83 0.01 90);
+  --frog-green: oklch(0.62 0.13 148);
+  --frog-green-strong: oklch(0.54 0.13 148);
+  --frog-green-soft: oklch(0.93 0.045 148);
+  --on-green: oklch(0.99 0.004 95);
+  --log-brown: oklch(0.5 0.06 60);
+  --warning-amber: oklch(0.76 0.12 75);
+  --danger-red: oklch(0.58 0.17 27);
+  --heat-0: oklch(0.93 0.006 95);
+  --heat-1: oklch(0.85 0.05 148);
+  --heat-2: oklch(0.72 0.1 148);
+  --heat-3: oklch(0.6 0.14 148);
+  /* The one shadow in the system: floating surfaces only (The Flat-Paper Rule). */
+  --overlay-shadow:
+    0 1px 2px oklch(0.27 0.01 80 / 0.05), 0 8px 24px oklch(0.27 0.01 80 / 0.1);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-muted: var(--muted);
-  --color-faint: var(--faint);
-  --color-panel: var(--panel);
-  --color-panel-raised: var(--panel-raised);
-  --color-line: var(--line);
-  --color-line-strong: var(--line-strong);
-  --color-accent: var(--accent);
-  --color-accent-soft: var(--accent-soft);
-  --color-danger: var(--danger);
-  --color-success: var(--success);
-  --font-sans: var(--font-geist-sans);
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-frog-green: var(--frog-green);
+  --color-frog-green-strong: var(--frog-green-strong);
+  --color-frog-green-soft: var(--frog-green-soft);
+  --color-on-green: var(--on-green);
+  --color-log-brown: var(--log-brown);
+  --color-warning-amber: var(--warning-amber);
+  --color-danger-red: var(--danger-red);
+  --color-heat-0: var(--heat-0);
+  --color-heat-1: var(--heat-1);
+  --color-heat-2: var(--heat-2);
+  --color-heat-3: var(--heat-3);
+  --shadow-overlay: var(--overlay-shadow);
+  --font-sans: var(--font-hanken-grotesk);
   --font-mono: var(--font-geist-mono);
 }
 
 html {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--paper);
+  color: var(--ink);
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   min-height: 100dvh;
-  position: relative;
-}
-
-/* Fixed starfield: layered radial-gradient "star" sheets, far subtler than
-   content. Pure CSS, zero requests, no motion. */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background-image:
-    radial-gradient(1px 1px at 12% 24%, rgba(232, 235, 244, 0.55) 50%, transparent 51%),
-    radial-gradient(1px 1px at 78% 9%, rgba(232, 235, 244, 0.4) 50%, transparent 51%),
-    radial-gradient(1.5px 1.5px at 44% 63%, rgba(167, 180, 220, 0.4) 50%, transparent 51%),
-    radial-gradient(1px 1px at 91% 47%, rgba(232, 235, 244, 0.35) 50%, transparent 51%),
-    radial-gradient(1px 1px at 27% 86%, rgba(232, 235, 244, 0.3) 50%, transparent 51%),
-    radial-gradient(1.5px 1.5px at 63% 33%, rgba(196, 181, 253, 0.3) 50%, transparent 51%),
-    radial-gradient(1px 1px at 8% 58%, rgba(232, 235, 244, 0.25) 50%, transparent 51%),
-    radial-gradient(1px 1px at 55% 92%, rgba(167, 180, 220, 0.3) 50%, transparent 51%),
-    radial-gradient(1px 1px at 86% 76%, rgba(232, 235, 244, 0.3) 50%, transparent 51%),
-    radial-gradient(2px 2px at 34% 8%, rgba(124, 140, 248, 0.25) 50%, transparent 51%),
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(124, 140, 248, 0.08), transparent);
-  background-size:
-    997px 823px, 997px 823px, 887px 761px, 887px 761px, 811px 677px, 811px 677px,
-    733px 599px, 733px 599px, 653px 521px, 653px 521px, 100% 100%;
 }
 
 /* Visible keyboard focus everywhere; never remove, only restyle. */
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--frog-green);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
 ::selection {
-  background: var(--accent-soft);
+  background: var(--frog-green-soft);
+}
+
+/* The frog is 8-bit: keep its pixels crisp at any size. */
+.pixel-art {
+  image-rendering: pixelated;
+}
+
+/* Ferdy's idle blink: eyes vanish for a beat every few seconds. The eyelid
+   underneath is plain body green, so hiding the eye layer reads as a blink. */
+@keyframes frog-blink {
+  0%,
+  94%,
+  100% {
+    opacity: 1;
+  }
+  95%,
+  99% {
+    opacity: 0;
+  }
+}
+
+.frog-eyes {
+  animation: frog-blink 7s step-end infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -90,5 +106,9 @@ body::before {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .frog-eyes {
+    animation: none;
   }
 }
