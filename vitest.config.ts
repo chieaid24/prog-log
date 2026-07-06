@@ -10,7 +10,7 @@ export default defineConfig({
   test: {
     passWithNoTests: true,
     // Never pick up test copies inside agent worktrees checked out under .claude/.
-    exclude: ["**/node_modules/**", "**/.claude/**", "**/.next/**"],
+    exclude: ["**/node_modules/**", "**/.claude/**", "**/.worktrees/**", "**/.next/**"],
     // Testing-library auto-cleanup between tests hooks into global afterEach.
     globals: true,
     // Component tests opt into jsdom with a `// @vitest-environment jsdom`
