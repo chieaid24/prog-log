@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist_Mono, Hanken_Grotesk } from "next/font/google";
 import "./globals.css";
 
@@ -20,6 +20,22 @@ export const metadata: Metadata = {
     template: "%s · prog-log",
   },
   description: "A daily work log: projects, time commitments, milestones and throwbacks.",
+  applicationName: "prog-log",
+  appleWebApp: {
+    capable: true,
+    title: "prog-log",
+    statusBarStyle: "default",
+  },
+};
+
+// Mobile viewport: zoom stays enabled (accessibility), viewport-fit=cover so
+// safe-area insets are exposed for the notch/home indicator, theme-color
+// matches the paper surface (#f7f6f0 = oklch(0.972 0.008 95)).
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#f7f6f0",
 };
 
 export default function RootLayout({
