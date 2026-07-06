@@ -1,0 +1,52 @@
+ok   / @320: no horizontal overflow
+ok   /monthly @320: no horizontal overflow
+ok   /projects @320: no horizontal overflow
+ok   /settings @320: no horizontal overflow
+ok   / @360: no horizontal overflow
+ok   /monthly @360: no horizontal overflow
+ok   /projects @360: no horizontal overflow
+ok   /settings @360: no horizontal overflow
+ok   / @390: no horizontal overflow
+ok   /monthly @390: no horizontal overflow
+ok   /projects @390: no horizontal overflow
+ok   /settings @390: no horizontal overflow
+ok   / @414: no horizontal overflow
+ok   /monthly @414: no horizontal overflow
+ok   /projects @414: no horizontal overflow
+ok   /settings @414: no horizontal overflow
+ok   / @768: no horizontal overflow
+ok   /monthly @768: no horizontal overflow
+ok   /projects @768: no horizontal overflow
+ok   /settings @768: no horizontal overflow
+ok   /login @320: no horizontal overflow
+ok   /now @320: no horizontal overflow
+ok   /login @360: no horizontal overflow
+ok   /now @360: no horizontal overflow
+ok   /login @390: no horizontal overflow
+ok   /now @390: no horizontal overflow
+ok   /login @414: no horizontal overflow
+ok   /now @414: no horizontal overflow
+ok   /login @768: no horizontal overflow
+ok   /now @768: no horizontal overflow
+ok   / @1280: no horizontal overflow
+ok   /monthly @1280: no horizontal overflow
+ok   /projects @1280: no horizontal overflow
+ok   /settings @1280: no horizontal overflow
+ok   / @390: axe clean (WCAG 2.1 A/AA)
+ok   /monthly @390: axe clean (WCAG 2.1 A/AA)
+ok   /projects @390: axe clean (WCAG 2.1 A/AA)
+ok   /settings @390: axe clean (WCAG 2.1 A/AA)
+ok   /login @390: axe clean (WCAG 2.1 A/AA)
+ok   /now @390: axe clean (WCAG 2.1 A/AA)
+ok   / @1280: axe clean (WCAG 2.1 A/AA)
+ok   /monthly @1280: axe clean (WCAG 2.1 A/AA)
+ok   /projects @1280: axe clean (WCAG 2.1 A/AA)
+ok   /settings @1280: axe clean (WCAG 2.1 A/AA)
+ok   /login @1280: axe clean (WCAG 2.1 A/AA)
+ok   /now @1280: axe clean (WCAG 2.1 A/AA)
+capture probe: created scratch project a11y probe 1783375963931
+ok   capture probe: entry logged for a11y probe 1783375963931
+ok   capture probe: entry deleted, data restored
+ok   capture probe: scratch project removed
+
+all mobile/a11y checks passed
