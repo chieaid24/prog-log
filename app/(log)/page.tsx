@@ -60,8 +60,8 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
     view === "calendar" ? `/?view=calendar${monthQuery}` : `/?view=heatmap`;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-      <div className="flex flex-col gap-5">
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="flex min-w-0 flex-col gap-5">
         {/* A segmented pair of links, not ARIA tabs: each option is a real
             navigation (?view=), and links don't get the arrow-key behavior
             the tab role promises. aria-current marks the active view. */}
@@ -119,7 +119,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
         )}
       </div>
 
-      <aside className="flex flex-col gap-6">
+      <aside className="flex min-w-0 flex-col gap-6">
         {/* On phones this card gives way to the floating log button + sheet
             below; the form itself is identical. */}
         <section

@@ -191,7 +191,7 @@ export function QuickAddForm({ projects: initialProjects, date, onLogged }: Prop
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="qa-milestone" className="text-xs font-medium text-ink-muted">
-          Milestone <span className="font-normal text-ink-faint">(optional)</span>
+          Milestone <span className="font-normal text-ink-muted">(optional)</span>
         </label>
         <input
           id="qa-milestone"
@@ -222,7 +222,7 @@ export function QuickAddForm({ projects: initialProjects, date, onLogged }: Prop
         <button
           type="button"
           onClick={() => setShowDetail(true)}
-          className="tap self-start rounded-md text-xs text-ink-faint transition-colors hover:text-ink-muted"
+          className="tap self-start rounded-md text-xs text-ink-muted transition-colors hover:text-ink-muted"
         >
           + add detail
         </button>

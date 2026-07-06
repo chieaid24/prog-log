@@ -48,7 +48,7 @@ export function TimezoneForm({ current, timezones }: Props) {
           </option>
         ))}
       </select>
-      <p className="max-w-md text-xs text-ink-faint">
+      <p className="max-w-md text-xs text-ink-muted">
         &ldquo;Today&rdquo; for every log (web, Discord, Shortcut) is resolved in this zone.
         Changing it affects only future entries; logged days stay exactly where they are.
       </p>

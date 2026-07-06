@@ -94,9 +94,9 @@ export default async function MonthlyPage({ searchParams }: { searchParams: Sear
 
       <EffortTrend points={trendPoints} />
 
-      <div className="grid gap-5 lg:grid-cols-2">
+      <div className="grid gap-5 lg:grid-cols-[repeat(2,minmax(0,1fr))]">
         <ProjectStack rows={stackRows} />
-        <div className="flex flex-col gap-5">
+        <div className="flex min-w-0 flex-col gap-5">
           <ProjectShare segments={shareSegments} />
           <WeekdayPattern rows={weekdayRows} />
         </div>

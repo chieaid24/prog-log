@@ -32,7 +32,7 @@ export function DataSection() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
         <h3 className="text-sm text-ink">Export</h3>
-        <p className="max-w-md text-xs text-ink-faint">
+        <p className="max-w-md text-xs text-ink-muted">
           Every Entry, yours to take anywhere. CSV opens in a spreadsheet; JSON keeps Project
           colors and categories for a full restore.
         </p>
@@ -56,7 +56,7 @@ export function DataSection() {
 
       <form onSubmit={submit} aria-label="Import entries" className="flex flex-col gap-2">
         <h3 className="text-sm text-ink">Import</h3>
-        <p className="max-w-md text-xs text-ink-faint">
+        <p className="max-w-md text-xs text-ink-muted">
           Bring data in from a prog-log export or a Notion CSV. Rows land through the same
           write path as every log: re-importing never shrinks a day or erases a Milestone.
         </p>

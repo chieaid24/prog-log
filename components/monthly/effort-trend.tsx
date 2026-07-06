@@ -56,7 +56,7 @@ export function EffortTrend({ points }: Props) {
         )}
       </div>
       {empty ? (
-        <p className="mt-3 text-sm text-ink-faint">Nothing logged in the last 90 days.</p>
+        <p className="mt-3 text-sm text-ink-muted">Nothing logged in the last 90 days.</p>
       ) : (
         <>
           {/* 90 daily bars need real width to stay legible: on narrow

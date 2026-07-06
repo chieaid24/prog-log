@@ -21,7 +21,7 @@ export function WeekdayPattern({ rows }: Props) {
       </h2>
       <p className="text-xs text-ink-muted">Which days do I actually work?</p>
       {empty ? (
-        <p className="mt-3 text-sm text-ink-faint">No Entries this month.</p>
+        <p className="mt-3 text-sm text-ink-muted">No Entries this month.</p>
       ) : (
         <ol className="mt-3 flex flex-col gap-1.5">
           {rows.map((row) => (

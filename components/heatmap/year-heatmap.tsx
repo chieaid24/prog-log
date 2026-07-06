@@ -75,7 +75,7 @@ export function YearHeatmap({ cells, todayISO, selectedDay }: Props) {
               key={label}
               x={0}
               y={TOP + (1 + i * 2) * STEP + Math.round(CELL * 0.75)}
-              className="fill-[var(--ink-faint)] font-mono text-[9px]"
+              className="fill-[var(--ink-muted)] font-mono text-[9px]"
             >
               {label}
             </text>
@@ -131,7 +131,7 @@ export function YearHeatmap({ cells, todayISO, selectedDay }: Props) {
           </p>
         )}
         <div
-          className="flex items-center gap-1 font-mono text-xs text-ink-faint"
+          className="flex items-center gap-1 font-mono text-xs text-ink-muted"
           aria-hidden="true"
         >
           <span className="mr-1">Less</span>

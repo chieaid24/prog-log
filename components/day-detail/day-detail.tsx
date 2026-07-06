@@ -40,14 +40,14 @@ export function DayDetail({ date, entries, projects, closeHref }: Props) {
           type="button"
           onClick={() => router.push(closeHref, { scroll: false })}
           aria-label="Close day detail"
-          className="tap rounded-md px-2 py-1 text-sm text-ink-faint transition-colors hover:bg-surface-sunken hover:text-ink"
+          className="tap rounded-md px-2 py-1 text-sm text-ink-muted transition-colors hover:bg-surface-sunken hover:text-ink"
         >
           ✕
         </button>
       </header>
 
       {entries.length === 0 ? (
-        <p className="mb-4 text-sm text-ink-faint">Nothing logged this day.</p>
+        <p className="mb-4 text-sm text-ink-muted">Nothing logged this day.</p>
       ) : (
         <ul className="mb-4 flex flex-col divide-y divide-border">
           {entries.map((entry) => (
@@ -71,7 +71,7 @@ export function DayDetail({ date, entries, projects, closeHref }: Props) {
                   onClick={() => remove(entry.id, entry.project.name)}
                   disabled={pending}
                   aria-label={`Delete ${entry.project.name} entry`}
-                  className="tap rounded-md px-1.5 py-0.5 text-xs text-ink-faint transition-colors hover:bg-surface-sunken hover:text-danger-red disabled:opacity-50"
+                  className="tap rounded-md px-1.5 py-0.5 text-xs text-ink-muted transition-colors hover:bg-surface-sunken hover:text-danger-red disabled:opacity-50"
                 >
                   Delete
                 </button>
@@ -86,7 +86,7 @@ export function DayDetail({ date, entries, projects, closeHref }: Props) {
               )}
               {entry.description && (
                 <details className="mt-1">
-                  <summary className="tap cursor-pointer rounded-md text-xs text-ink-faint transition-colors hover:text-ink-muted">
+                  <summary className="tap cursor-pointer rounded-md text-xs text-ink-muted transition-colors hover:text-ink-muted">
                     detail
                   </summary>
                   <p className="mt-1 whitespace-pre-wrap text-sm text-ink-muted">

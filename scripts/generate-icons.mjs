@@ -34,7 +34,7 @@ const COLS = 16;
 const ROWS = SPRITE.length;
 
 const PALETTE = {
-  G: [0x47, 0x9b, 0x57], // frog-green oklch(0.62 0.13 148)
+  G: [0x2c, 0x82, 0x40], // frog-green oklch(0.54 0.13 148)
   Y: [0xd5, 0xf1, 0xd7], // frog-green-soft oklch(0.93 0.045 148)
   W: [0xfc, 0xfc, 0xf9], // on-green oklch(0.99 0.004 95)
   K: [0x2a, 0x26, 0x20], // ink oklch(0.27 0.012 80)

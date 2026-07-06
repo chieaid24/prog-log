@@ -39,7 +39,7 @@ export function StatTiles({ stat, split }: Props) {
       <div className="mt-3 border-t border-border pt-3">
         <h2 className="text-xs font-medium text-ink-muted">Time Commitment split</h2>
         {total === 0 ? (
-          <p className="mt-2 text-sm text-ink-faint">No Entries this month.</p>
+          <p className="mt-2 text-sm text-ink-muted">No Entries this month.</p>
         ) : (
           <>
             <div

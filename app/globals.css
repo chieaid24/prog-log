@@ -12,8 +12,8 @@
   --ink-faint: oklch(0.68 0.01 90);
   --border: oklch(0.9 0.008 95);
   --border-strong: oklch(0.83 0.01 90);
-  --frog-green: oklch(0.62 0.13 148);
-  --frog-green-strong: oklch(0.54 0.13 148);
+  --frog-green: oklch(0.54 0.13 148);
+  --frog-green-strong: oklch(0.47 0.125 148);
   --frog-green-soft: oklch(0.93 0.045 148);
   --on-green: oklch(0.99 0.004 95);
   --log-brown: oklch(0.5 0.06 60);

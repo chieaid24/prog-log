@@ -40,7 +40,7 @@ export function ProjectManager({ projects, usage, aliases = {} }: Props) {
 
       <section aria-label="Active projects" className="flex flex-col gap-2">
         <h2 className="text-sm font-medium text-ink-muted">
-          Active <span className="text-ink-faint">({active.length})</span>
+          Active <span className="text-ink-muted">({active.length})</span>
         </h2>
         {active.length === 0 ? (
           <p className="rounded-xl border border-border bg-surface p-6 text-sm text-ink-muted">
@@ -57,7 +57,7 @@ export function ProjectManager({ projects, usage, aliases = {} }: Props) {
 
       <section aria-label="Archived projects" className="flex flex-col gap-2">
         <h2 className="text-sm font-medium text-ink-muted">
-          Archived <span className="text-ink-faint">({archived.length})</span>
+          Archived <span className="text-ink-muted">({archived.length})</span>
         </h2>
         {archived.length === 0 ? (
           <p className="rounded-xl border border-dashed border-border bg-surface p-6 text-sm text-ink-muted">
@@ -66,7 +66,7 @@ export function ProjectManager({ projects, usage, aliases = {} }: Props) {
           </p>
         ) : (
           <>
-            <p className="text-xs text-ink-faint">
+            <p className="text-xs text-ink-muted">
               Archived projects stay in the monthly breakdown and Throwbacks; they just leave
               the pickers.
             </p>
@@ -239,8 +239,8 @@ function ProjectRow({
 
   return (
     <li
-      className={`rounded-xl border border-border bg-surface p-4 transition-colors ${
-        archived ? "opacity-70" : ""
+      className={`rounded-xl border bg-surface p-4 transition-colors ${
+        archived ? "border-dashed border-border-strong" : "border-border"
       }`}
     >
       <div className="flex flex-wrap items-center gap-3">
@@ -255,7 +255,7 @@ function ProjectRow({
             {project.category}
           </span>
         )}
-        <span className="font-mono text-xs text-ink-faint">
+        <span className="font-mono text-xs text-ink-muted">
           {usage && usage.entries > 0
             ? `${usage.entries} ${usage.entries === 1 ? "entry" : "entries"} · last logged ${humanizeAge(usage.lastLoggedDaysAgo ?? 0)}`
             : "never logged"}
@@ -323,7 +323,7 @@ function AliasEditor({ project, aliases }: { project: Project; aliases: ProjectA
 
   return (
     <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
-      <span className="text-xs text-ink-faint" title="Extra names Discord and the Shortcut accept">
+      <span className="text-xs text-ink-muted" title="Extra names Discord and the Shortcut accept">
         Aliases
       </span>
       {aliases.map((a) => (
@@ -337,7 +337,7 @@ function AliasEditor({ project, aliases }: { project: Project; aliases: ProjectA
             aria-label={`Remove alias ${a.alias}`}
             onClick={() => remove(a.id)}
             disabled={pending}
-            className="tap rounded-full px-1 text-ink-faint transition-colors hover:text-danger-red disabled:opacity-50"
+            className="tap rounded-full px-1 text-ink-muted transition-colors hover:text-danger-red disabled:opacity-50"
           >
             &times;
           </button>
