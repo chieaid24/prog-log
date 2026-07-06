@@ -47,3 +47,4 @@ ls docs/adr | grep -oE '^[0-9]{4}' | sort -n | tail -1
 | [0012](0012-explicit-table-grants-in-migrations.md) | Table privileges are granted explicitly in migrations | accepted |
 | [0013](0013-track-work-in-github-issues.md) | Track work in GitHub Issues; retire the `tasks/` folder | accepted |
 | [0014](0014-warm-paper-retheme-implementation.md) | Warm-paper retheme: token vocabulary, heat ramp, palette migration | accepted |
+| [0015](0015-mobile-navigation-and-aa-contrast.md) | Bottom tab bar, sheet capture, and AA-driven green/ink adjustments | accepted |
