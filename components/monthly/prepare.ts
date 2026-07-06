@@ -7,21 +7,21 @@ import type { ProjectShare, TrendPoint, WeekdayPattern } from "@/lib/rollups";
 import { toMonthlyStats } from "@/lib/rollups";
 
 /**
- * Ordinal ramp for the Time Commitment scale (S < M < L), one indigo hue,
- * dark-mode anchored (larger = brighter). Validated with the dataviz palette
- * validator: monotone L, adjacent dL >= 0.06, light end 2.49:1 vs #070a13.
+ * Ordinal ramp for the Time Commitment scale (S < M < L): the DESIGN.md heat
+ * ramp, one green hue climbing in lightness (larger = deeper) so charts and
+ * the heatmap speak the same visual language on warm paper.
  */
 export const TIME_RAMP: Record<TimeSize, string> = {
-  small: "#454e7d",
-  medium: "#7c8cf8",
-  large: "#b3bdfc",
+  small: "var(--heat-1)",
+  medium: "var(--heat-2)",
+  large: "var(--heat-3)",
 };
 
 /** Chart surface + shared chrome colors (match app/globals.css tokens). */
-export const CHART_SURFACE = "#070a13";
-export const CHART_GRID = "rgba(148, 163, 199, 0.10)";
-export const CHART_TEXT = "#98a0b6";
-export const OTHER_COLOR = "#5c6478";
+export const CHART_SURFACE = "var(--surface)";
+export const CHART_GRID = "var(--border)";
+export const CHART_TEXT = "var(--ink-muted)";
+export const OTHER_COLOR = "var(--ink-faint)";
 
 const MONTH_PARAM = /^\d{4}-(0[1-9]|1[0-2])$/;
 

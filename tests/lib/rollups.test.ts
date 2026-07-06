@@ -57,16 +57,16 @@ describe("toHeatmapCells", () => {
 });
 
 describe("intensityLevel", () => {
-  it("buckets weights into 5 levels", () => {
+  it("buckets weights onto the heat-0..3 ramp", () => {
     expect(intensityLevel(0)).toBe(0);
     expect(intensityLevel(1)).toBe(1);
     expect(intensityLevel(2)).toBe(1);
     expect(intensityLevel(3)).toBe(2);
     expect(intensityLevel(4)).toBe(2);
-    expect(intensityLevel(5)).toBe(3);
+    expect(intensityLevel(5)).toBe(2);
     expect(intensityLevel(6)).toBe(3);
-    expect(intensityLevel(7)).toBe(4);
-    expect(intensityLevel(12)).toBe(4);
+    expect(intensityLevel(7)).toBe(3);
+    expect(intensityLevel(12)).toBe(3);
   });
 });
 

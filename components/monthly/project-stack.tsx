@@ -62,20 +62,20 @@ function StackTooltip({ active, label, payload }: TooltipProps) {
   const counts = new Map(payload.map((p) => [p.dataKey, Number(p.value ?? 0)]));
   const total = TIME_SIZES.reduce((n, t) => n + (counts.get(t) ?? 0), 0);
   return (
-    <div className="rounded-lg border border-line-strong bg-background/95 px-3 py-2 text-xs shadow-lg">
-      <p className="font-medium text-foreground">{label}</p>
+    <div className="rounded-lg border border-border bg-surface px-3 py-2 text-xs shadow-overlay">
+      <p className="font-medium text-ink">{label}</p>
       <ul className="mt-1.5 flex flex-col gap-0.5">
         {TIME_SIZES.map((t) => (
-          <li key={t} className="flex items-center gap-1.5 text-muted">
+          <li key={t} className="flex items-center gap-1.5 text-ink-muted">
             <span aria-hidden className="size-2 rounded-sm" style={{ background: TIME_RAMP[t] }} />
             {TIME_LABEL[t]}
-            <span className="ml-auto pl-3 tabular-nums text-foreground">
+            <span className="ml-auto pl-3 font-mono tabular-nums text-ink">
               {counts.get(t) ?? 0}
             </span>
           </li>
         ))}
       </ul>
-      <p className="mt-1.5 border-t border-line pt-1 text-muted">
+      <p className="mt-1.5 border-t border-border pt-1 text-ink-muted">
         {total} {total === 1 ? "Entry" : "Entries"}
       </p>
     </div>
@@ -86,14 +86,14 @@ export function ProjectStack({ rows }: Props) {
   return (
     <section
       aria-labelledby="project-stack-title"
-      className="flex flex-col gap-1 rounded-xl border border-line bg-panel p-4"
+      className="flex flex-col gap-1 rounded-xl border border-border bg-surface p-4"
     >
-      <h2 id="project-stack-title" className="text-sm font-semibold text-foreground">
+      <h2 id="project-stack-title" className="text-sm font-semibold text-ink">
         Projects by Time Commitment
       </h2>
-      <p className="text-xs text-muted">Which Projects carried the month?</p>
+      <p className="text-xs text-ink-muted">Which Projects carried the month?</p>
       {rows.length === 0 ? (
-        <p className="mt-3 text-sm text-faint">No Entries this month.</p>
+        <p className="mt-3 text-sm text-ink-faint">No Entries this month.</p>
       ) : (
         <>
           <div aria-hidden style={{ height: rows.length * ROW_HEIGHT + 30 }} className="mt-2">
@@ -108,7 +108,7 @@ export function ProjectStack({ rows }: Props) {
                 <XAxis
                   type="number"
                   allowDecimals={false}
-                  tick={{ fill: CHART_TEXT, fontSize: 11 }}
+                  tick={{ fill: CHART_TEXT, fontSize: 11, fontFamily: "var(--font-geist-mono)" }}
                   axisLine={false}
                   tickLine={false}
                 />
@@ -122,7 +122,7 @@ export function ProjectStack({ rows }: Props) {
                 />
                 <Tooltip
                   content={<StackTooltip />}
-                  cursor={{ fill: "rgba(148, 163, 199, 0.06)" }}
+                  cursor={{ fill: "oklch(0.27 0.012 80 / 0.05)" }}
                 />
                 {TIME_SIZES.map((t) => (
                   <Bar
@@ -139,7 +139,7 @@ export function ProjectStack({ rows }: Props) {
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <p className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
+          <p className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-muted">
             {TIME_SIZES.map((t) => (
               <span key={t} className="inline-flex items-center gap-1.5">
                 <span

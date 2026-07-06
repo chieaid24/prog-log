@@ -25,15 +25,15 @@ export function toHeatmapCells(entries: readonly EntryLike[]): HeatmapCell[] {
 }
 
 /**
- * Bucket a day's summed weight into 5 intensity levels (0 = none, 4 = max)
- * for the heatmap's monochrome scale.
+ * Bucket a day's summed weight onto the DESIGN.md heat ramp (heat-0..3):
+ * 0 = nothing logged, 1 = a light day (up to a Medium), 2 = a solid day
+ * (a Large, or a few smaller Entries), 3 = a heavy day (6+, e.g. two Larges).
  */
-export function intensityLevel(weight: number): 0 | 1 | 2 | 3 | 4 {
+export function intensityLevel(weight: number): 0 | 1 | 2 | 3 {
   if (weight <= 0) return 0;
   if (weight <= 2) return 1;
-  if (weight <= 4) return 2;
-  if (weight <= 6) return 3;
-  return 4;
+  if (weight <= 5) return 2;
+  return 3;
 }
 
 /**

@@ -104,9 +104,8 @@ components:
 
 # Design System: prog-log
 
-> **This is a target, not a description of the current build.** The shipped app still wears the
-> old dark "space" theme. Every UI change from here conforms to *this* system and moves the app
-> toward it. The redesign itself is tracked as its own queued issue. When a request conflicts
+> **This system is shipped.** The app wears it end to end (issue #10, ADR-0014); the old dark
+> "space" theme is gone. Every UI change conforms to *this* system. When a request conflicts
 > with a decision here, flag it, don't quietly diverge.
 
 ## 1. Overview

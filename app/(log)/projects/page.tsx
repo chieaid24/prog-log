@@ -41,9 +41,9 @@ export default async function ProjectsPage() {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
       <header>
-        <h1 className="text-xl font-semibold tracking-tight">Projects</h1>
-        <p className="mt-1 text-sm text-muted">
-          Archive instead of deleting — history stays intact.
+        <h1 className="text-2xl font-bold tracking-tight text-ink">Projects</h1>
+        <p className="mt-1 text-sm text-ink-muted">
+          Archive instead of deleting; history stays intact.
         </p>
       </header>
       <ProjectManager projects={projects} usage={usage} aliases={aliases} />

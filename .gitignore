@@ -2,6 +2,7 @@
 
 # git worktrees created under the repo (EnterWorktree / git worktree add)
 .claude/worktrees/
+.worktrees/
 
 # dependencies
 /node_modules

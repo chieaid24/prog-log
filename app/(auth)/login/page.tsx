@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { Frog } from "@/components/ui/frog";
 import { createClient } from "@/lib/supabase/client";
 
 type SendState = { status: "idle" | "sending" | "sent" } | { status: "error"; message: string };
@@ -34,8 +35,8 @@ function LoginForm() {
     return (
       <div className="text-center" role="status">
         <p className="text-2xl">Check your inbox</p>
-        <p className="mt-2 text-sm text-muted">
-          A sign-in link is on its way to <span className="text-foreground">{email}</span>.
+        <p className="mt-2 text-sm text-ink-muted">
+          A sign-in link is on its way to <span className="text-ink">{email}</span>.
         </p>
       </div>
     );
@@ -43,7 +44,7 @@ function LoginForm() {
 
   return (
     <form onSubmit={sendLink} className="flex flex-col gap-4">
-      <label htmlFor="email" className="text-sm text-muted">
+      <label htmlFor="email" className="text-sm text-ink-muted">
         Email
       </label>
       <input
@@ -54,23 +55,23 @@ function LoginForm() {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         placeholder="you@example.com"
-        className="rounded-lg border border-line bg-panel px-3 py-2 text-foreground placeholder:text-faint focus:border-line-strong"
+        className="rounded-lg border border-border bg-surface px-3 py-2 text-ink placeholder:text-ink-faint focus:border-frog-green"
       />
       <button
         type="submit"
         disabled={state.status === "sending"}
-        className="rounded-lg bg-accent px-3 py-2 font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-50"
+        className="rounded-lg bg-frog-green px-3 py-2 font-medium text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-50"
       >
         {state.status === "sending" ? "Sending…" : "Send magic link"}
       </button>
       {state.status === "error" && (
-        <p className="text-sm text-danger" role="alert">
+        <p className="text-sm text-danger-red" role="alert">
           {state.message}
         </p>
       )}
       {confirmError && state.status === "idle" && (
-        <p className="text-sm text-danger" role="alert">
-          Sign-in link was invalid or expired — request a new one.
+        <p className="text-sm text-danger-red" role="alert">
+          Sign-in link was invalid or expired. Request a new one.
         </p>
       )}
     </form>
@@ -80,9 +81,12 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <main className="flex min-h-dvh items-center justify-center p-6">
-      <div className="w-full max-w-sm rounded-2xl border border-line bg-panel p-8 backdrop-blur">
-        <h1 className="mb-1 text-lg font-semibold tracking-tight">prog-log</h1>
-        <p className="mb-6 text-sm text-muted">Sign in with a magic link.</p>
+      <div className="w-full max-w-sm rounded-xl border border-border bg-surface p-8">
+        <div className="mb-1 flex items-center gap-2.5">
+          <Frog size={28} />
+          <h1 className="text-lg font-bold tracking-tight text-ink">prog-log</h1>
+        </div>
+        <p className="mb-6 text-sm text-ink-muted">Sign in with a magic link.</p>
         <Suspense>
           <LoginForm />
         </Suspense>

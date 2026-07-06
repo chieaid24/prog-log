@@ -40,7 +40,7 @@ export function TimezoneForm({ current, timezones }: Props) {
           setTimezone(e.target.value);
           setState("idle");
         }}
-        className="max-w-sm rounded-lg border border-line bg-panel px-3 py-2 text-sm"
+        className="max-w-sm rounded-lg border border-border bg-surface px-3 py-2 text-sm focus:border-frog-green"
       >
         {timezones.map((tz) => (
           <option key={tz} value={tz}>
@@ -48,21 +48,21 @@ export function TimezoneForm({ current, timezones }: Props) {
           </option>
         ))}
       </select>
-      <p className="max-w-md text-xs text-faint">
-        &ldquo;Today&rdquo; for every log — web, Discord, Shortcut — is resolved in this zone.
+      <p className="max-w-md text-xs text-ink-faint">
+        &ldquo;Today&rdquo; for every log (web, Discord, Shortcut) is resolved in this zone.
         Changing it affects only future entries; logged days stay exactly where they are.
       </p>
       <div className="flex items-center gap-3">
         <button
           type="submit"
           disabled={pending || timezone === current}
-          className="self-start rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-background transition-opacity hover:opacity-90 disabled:opacity-40"
+          className="self-start rounded-lg bg-frog-green px-4 py-2 text-sm font-semibold text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-40"
         >
           {pending ? "Saving…" : "Save timezone"}
         </button>
         <span aria-live="polite" className="text-sm">
-          {state === "saved" && <span className="text-success">Saved.</span>}
-          {state === "error" && <span className="text-danger">{error}</span>}
+          {state === "saved" && <span className="text-frog-green-strong">Saved.</span>}
+          {state === "error" && <span className="text-danger-red">{error}</span>}
         </span>
       </div>
     </form>

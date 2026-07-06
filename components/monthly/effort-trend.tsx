@@ -15,8 +15,8 @@ const PAD_TOP = 8;
 const PAD_BOTTOM = 20;
 const PLOT_HEIGHT = HEIGHT - PAD_TOP - PAD_BOTTOM;
 
-const BAR_COLOR = "rgba(124, 140, 248, 0.28)";
-const LINE_COLOR = "#b3bdfc";
+const BAR_COLOR = "var(--heat-1)";
+const LINE_COLOR = "var(--frog-green-strong)";
 
 export function EffortTrend({ points }: Props) {
   const empty = points.every((p) => p.weight === 0);
@@ -37,26 +37,26 @@ export function EffortTrend({ points }: Props) {
   return (
     <section
       aria-labelledby="effort-trend-title"
-      className="flex flex-col gap-1 rounded-xl border border-line bg-panel p-4"
+      className="flex flex-col gap-1 rounded-xl border border-border bg-surface p-4"
     >
       <div className="flex items-baseline justify-between gap-3">
         <div>
-          <h2 id="effort-trend-title" className="text-sm font-semibold text-foreground">
+          <h2 id="effort-trend-title" className="text-sm font-semibold text-ink">
             Effort trend
           </h2>
-          <p className="text-xs text-muted">Last 90 days — is my effort rising or falling?</p>
+          <p className="text-xs text-ink-muted">Last 90 days. Is my effort rising or falling?</p>
         </div>
         {!empty && latest && (
-          <p className="text-xs text-muted">
+          <p className="text-xs text-ink-muted">
             7-day avg{" "}
-            <span className="font-mono tabular-nums text-foreground">
+            <span className="font-mono tabular-nums text-ink">
               {latest.rolling.toFixed(1)}
             </span>
           </p>
         )}
       </div>
       {empty ? (
-        <p className="mt-3 text-sm text-faint">Nothing logged in the last 90 days.</p>
+        <p className="mt-3 text-sm text-ink-faint">Nothing logged in the last 90 days.</p>
       ) : (
         <>
           <svg
@@ -100,13 +100,14 @@ export function EffortTrend({ points }: Props) {
                   textAnchor="middle"
                   fontSize={11}
                   fill={CHART_TEXT}
+                  fontFamily="var(--font-geist-mono)"
                 >
                   {shortMonthLabel(date)}
                 </text>
               );
             })}
           </svg>
-          <p className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
+          <p className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-muted">
             <span className="inline-flex items-center gap-1.5">
               <span aria-hidden className="h-2 w-2 rounded-sm" style={{ background: BAR_COLOR }} />
               Daily weight

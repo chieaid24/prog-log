@@ -14,14 +14,14 @@ export function WeekdayPattern({ rows }: Props) {
   return (
     <section
       aria-labelledby="weekday-pattern-title"
-      className="flex flex-col gap-1 rounded-xl border border-line bg-panel p-4"
+      className="flex flex-col gap-1 rounded-xl border border-border bg-surface p-4"
     >
-      <h2 id="weekday-pattern-title" className="text-sm font-semibold text-foreground">
+      <h2 id="weekday-pattern-title" className="text-sm font-semibold text-ink">
         Weekday pattern
       </h2>
-      <p className="text-xs text-muted">Which days do I actually work?</p>
+      <p className="text-xs text-ink-muted">Which days do I actually work?</p>
       {empty ? (
-        <p className="mt-3 text-sm text-faint">No Entries this month.</p>
+        <p className="mt-3 text-sm text-ink-faint">No Entries this month.</p>
       ) : (
         <ol className="mt-3 flex flex-col gap-1.5">
           {rows.map((row) => (
@@ -32,7 +32,7 @@ export function WeekdayPattern({ rows }: Props) {
               className="grid grid-cols-[2.5rem_1fr] items-center gap-2"
             >
               <span
-                className={`text-xs tabular-nums ${row.isPeak ? "font-medium text-foreground" : "text-muted"}`}
+                className={`font-mono text-xs tabular-nums ${row.isPeak ? "font-medium text-ink" : "text-ink-muted"}`}
               >
                 {row.label}
               </span>
@@ -43,11 +43,11 @@ export function WeekdayPattern({ rows }: Props) {
                   style={{
                     width: `${(row.weight / max) * 100}%`,
                     minWidth: row.weight > 0 ? "4px" : "0",
-                    background: row.isPeak ? "#b3bdfc" : "rgba(124, 140, 248, 0.45)",
+                    background: row.isPeak ? "var(--heat-3)" : "var(--heat-1)",
                   }}
                 />
                 {row.isPeak && (
-                  <span className="whitespace-nowrap text-xs tabular-nums text-muted">
+                  <span className="whitespace-nowrap font-mono text-xs tabular-nums text-ink-muted">
                     {row.entries} {row.entries === 1 ? "Entry" : "Entries"}
                   </span>
                 )}
