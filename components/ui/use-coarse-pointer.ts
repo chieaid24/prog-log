@@ -4,7 +4,13 @@ import { useSyncExternalStore } from "react";
 
 const QUERY = "(pointer: coarse)";
 
+// matchMedia is absent in jsdom (tests); treat that as a fine pointer.
+function supported(): boolean {
+  return typeof window.matchMedia === "function";
+}
+
 function subscribe(onChange: () => void) {
+  if (!supported()) return () => {};
   const mq = window.matchMedia(QUERY);
   mq.addEventListener("change", onChange);
   return () => mq.removeEventListener("change", onChange);
@@ -19,7 +25,7 @@ function subscribe(onChange: () => void) {
 export function useCoarsePointer(): boolean {
   return useSyncExternalStore(
     subscribe,
-    () => window.matchMedia(QUERY).matches,
+    () => supported() && window.matchMedia(QUERY).matches,
     () => false,
   );
 }
