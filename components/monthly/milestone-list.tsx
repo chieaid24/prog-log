@@ -11,16 +11,16 @@ export function MilestoneList({ rows }: Props) {
   return (
     <section
       aria-labelledby="milestone-list-title"
-      className="flex flex-col gap-1 rounded-xl border border-line bg-panel p-4"
+      className="flex flex-col gap-1 rounded-xl border border-border bg-surface p-4"
     >
-      <h2 id="milestone-list-title" className="text-sm font-semibold text-foreground">
+      <h2 id="milestone-list-title" className="text-sm font-semibold text-ink">
         Milestones
       </h2>
-      <p className="text-xs text-muted">The month&apos;s headlines.</p>
+      <p className="text-xs text-ink-muted">The month&apos;s headlines.</p>
       {rows.length === 0 ? (
-        <p className="mt-3 text-sm text-faint">No Milestones this month.</p>
+        <p className="mt-3 text-sm text-ink-faint">No Milestones this month.</p>
       ) : (
-        <ol className="mt-3 flex flex-col divide-y divide-line">
+        <ol className="mt-3 flex flex-col divide-y divide-border">
           {rows.map((row) => (
             <li
               key={row.entryId}
@@ -28,12 +28,12 @@ export function MilestoneList({ rows }: Props) {
             >
               <time
                 dateTime={row.date}
-                className="w-14 shrink-0 font-mono text-xs tabular-nums text-muted"
+                className="w-14 shrink-0 font-mono text-xs tabular-nums text-ink-muted"
               >
                 {shortDate(row.date)}
               </time>
               <ProjectChip name={row.projectName} color={row.color} />
-              <span className="min-w-0 flex-1 text-sm text-foreground">{row.milestone}</span>
+              <span className="min-w-0 flex-1 text-sm text-ink">{row.milestone}</span>
             </li>
           ))}
         </ol>

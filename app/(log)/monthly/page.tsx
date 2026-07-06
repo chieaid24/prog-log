@@ -63,13 +63,13 @@ export default async function MonthlyPage({ searchParams }: { searchParams: Sear
   return (
     <div className="flex flex-col gap-5">
       <nav aria-label="Month" className="flex items-center gap-2">
-        <h1 className="mr-auto text-lg font-semibold tracking-tight text-foreground">
+        <h1 className="mr-auto text-2xl font-bold tracking-tight text-ink">
           {nav.title}
         </h1>
         {!nav.isCurrentMonth && (
           <Link
             href="/monthly"
-            className="rounded-lg px-3 py-1.5 text-sm text-muted transition-colors hover:bg-panel-raised hover:text-foreground"
+            className="rounded-lg px-3 py-1.5 text-sm text-ink-muted transition-colors hover:bg-surface-sunken hover:text-ink"
           >
             This month
           </Link>
@@ -77,14 +77,14 @@ export default async function MonthlyPage({ searchParams }: { searchParams: Sear
         <Link
           aria-label="Previous month"
           href={`/monthly?month=${nav.prev}`}
-          className="rounded-lg border border-line px-3 py-1.5 text-sm text-muted transition-colors hover:bg-panel-raised hover:text-foreground"
+          className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-ink-muted transition-colors hover:border-border-strong hover:text-ink"
         >
           &larr;
         </Link>
         <Link
           aria-label="Next month"
           href={`/monthly?month=${nav.next}`}
-          className="rounded-lg border border-line px-3 py-1.5 text-sm text-muted transition-colors hover:bg-panel-raised hover:text-foreground"
+          className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-ink-muted transition-colors hover:border-border-strong hover:text-ink"
         >
           &rarr;
         </Link>

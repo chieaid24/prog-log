@@ -13,14 +13,14 @@ export function ProjectShare({ segments }: Props) {
   return (
     <section
       aria-labelledby="project-share-title"
-      className="flex flex-col gap-1 rounded-xl border border-line bg-panel p-4"
+      className="flex flex-col gap-1 rounded-xl border border-border bg-surface p-4"
     >
-      <h2 id="project-share-title" className="text-sm font-semibold text-foreground">
+      <h2 id="project-share-title" className="text-sm font-semibold text-ink">
         Project share
       </h2>
-      <p className="text-xs text-muted">Where did the month&apos;s effort go?</p>
+      <p className="text-xs text-ink-muted">Where did the month&apos;s effort go?</p>
       {segments.length === 0 ? (
-        <p className="mt-3 text-sm text-faint">No Entries this month.</p>
+        <p className="mt-3 text-sm text-ink-faint">No Entries this month.</p>
       ) : (
         <>
           <div
@@ -32,16 +32,16 @@ export function ProjectShare({ segments }: Props) {
               <div
                 key={s.name}
                 title={`${s.name}: ${s.pct}% (weight ${s.weight})`}
-                className="border-r-2 border-background last:border-r-0"
+                className="border-r-2 border-surface last:border-r-0"
                 style={{ width: `${(s.pct / totalPct) * 100}%`, background: s.color }}
               />
             ))}
           </div>
-          <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
+          <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-muted">
             {segments.map((s) => (
               <li key={s.name} className="inline-flex items-center gap-1.5">
                 <span aria-hidden className="size-2 rounded-sm" style={{ background: s.color }} />
-                {s.name} <span className="tabular-nums text-foreground">{s.pct}%</span>
+                {s.name} <span className="font-mono tabular-nums text-ink">{s.pct}%</span>
               </li>
             ))}
           </ul>
