@@ -262,7 +262,7 @@ space or a hairline instead.
 - **Phones (below md):** the top nav collapses into a fixed bottom tab bar on `paper` with a
   hairline top border: four labelled tabs with 8-bit pixel icons (Ferdy's visual language),
   >=56px tall plus `env(safe-area-inset-bottom)`. Active = `Ink` + a small `Frog Green` bar
-  under the icon; never green alone. The main column reserves bottom padding so content clears
+  under the tab's label; never green alone. The main column reserves bottom padding so content clears
   the bar.
 - **Mobile capture:** on the daily log the quick-add card gives way to one floating `Frog Green`
   pixel-plus button above the tab bar, opening the same form as a native `<dialog>` bottom sheet

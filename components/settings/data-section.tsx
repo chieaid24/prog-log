@@ -36,17 +36,17 @@ export function DataSection() {
           Every Entry, yours to take anywhere. CSV opens in a spreadsheet; JSON keeps Project
           colors and categories for a full restore.
         </p>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <a
             href="/api/export?format=csv"
-            className="rounded-lg border border-border px-4 py-2 text-sm text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:py-3"
+            className="rounded-lg border border-border px-4 py-2 text-sm text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:py-3 whitespace-nowrap"
             download
           >
             Download CSV
           </a>
           <a
             href="/api/export?format=json"
-            className="rounded-lg border border-border px-4 py-2 text-sm text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:py-3"
+            className="rounded-lg border border-border px-4 py-2 text-sm text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:py-3 whitespace-nowrap"
             download
           >
             Download JSON
@@ -60,7 +60,7 @@ export function DataSection() {
           Bring data in from a prog-log export or a Notion CSV. Rows land through the same
           write path as every log: re-importing never shrinks a day or erases a Milestone.
         </p>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <label
             htmlFor="import-file"
             className="cursor-pointer rounded-lg border border-dashed border-border px-4 py-2 text-sm text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:py-3"

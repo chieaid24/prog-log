@@ -4,6 +4,7 @@
 // intensity = summed Time Commitment weight bucketed onto the heat ramp.
 // Cells are keyboard-operable and select a day (?day=) shared with the
 // calendar view.
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Frog } from "@/components/ui/frog";
 import { useCoarsePointer } from "@/components/ui/use-coarse-pointer";
@@ -36,6 +37,13 @@ type Props = {
 
 export function YearHeatmap({ cells, todayISO, selectedDay }: Props) {
   const router = useRouter();
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // The year ends at today (rightmost column): start there, not at last July.
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el) el.scrollLeft = el.scrollWidth;
+  }, []);
   const coarse = useCoarsePointer();
   const { cell: CELL, gap: GAP, top: TOP } = coarse ? COARSE : FINE;
   const STEP = CELL + GAP;
@@ -51,7 +59,7 @@ export function YearHeatmap({ cells, todayISO, selectedDay }: Props) {
 
   return (
     <div>
-      <div className="overflow-x-auto overscroll-x-contain pb-1" data-testid="heatmap-scroll">
+      <div ref={scrollRef} className="overflow-x-auto overscroll-x-contain pb-1" data-testid="heatmap-scroll">
         <svg
           width={width}
           height={height}

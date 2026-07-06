@@ -4,7 +4,7 @@
 // Commitment are the always-visible controls; Milestone is one optional line;
 // Description hides behind "+ add detail". "+ New project" creates inline
 // without leaving the flow.
-import { useRef, useState, useTransition } from "react";
+import { useId, useRef, useState, useTransition } from "react";
 import { logEntryAction } from "@/app/actions/entries";
 import { createProjectAction } from "@/app/actions/projects";
 import { humanDate } from "@/lib/dates";
@@ -22,6 +22,10 @@ type Props = {
 };
 
 export function QuickAddForm({ projects: initialProjects, date, onLogged }: Props) {
+  // The form renders more than once per page (desktop aside + day detail +
+  // the mobile sheet), so field ids must be instance-unique or labels bind
+  // to the wrong (even hidden) controls.
+  const uid = useId();
   const [projects, setProjects] = useState(initialProjects);
   const [projectId, setProjectId] = useState("");
   const [timeSpent, setTimeSpent] = useState<TimeSize | null>(null);
@@ -104,11 +108,11 @@ export function QuickAddForm({ projects: initialProjects, date, onLogged }: Prop
       )}
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="qa-project" className="text-xs font-medium text-ink-muted">
+        <label htmlFor={`${uid}-project`} className="text-xs font-medium text-ink-muted">
           Project
         </label>
         <select
-          id="qa-project"
+          id={`${uid}-project`}
           value={creating ? NEW_PROJECT : projectId}
           onChange={(e) => selectProject(e.target.value)}
           className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-ink focus:border-frog-green pointer-coarse:py-3 pointer-coarse:text-base"
@@ -127,11 +131,11 @@ export function QuickAddForm({ projects: initialProjects, date, onLogged }: Prop
 
       {creating && (
         <div className="flex flex-col gap-2 rounded-lg bg-surface-sunken p-3">
-          <label htmlFor="qa-new-name" className="text-xs font-medium text-ink-muted">
+          <label htmlFor={`${uid}-new-name`} className="text-xs font-medium text-ink-muted">
             New project name
           </label>
           <input
-            id="qa-new-name"
+            id={`${uid}-new-name`}
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder="e.g. Rocketry"
@@ -139,11 +143,11 @@ export function QuickAddForm({ projects: initialProjects, date, onLogged }: Prop
             autoComplete="off"
             className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm placeholder:text-ink-faint focus:border-frog-green pointer-coarse:py-3 pointer-coarse:text-base"
           />
-          <label htmlFor="qa-new-category" className="text-xs font-medium text-ink-muted">
+          <label htmlFor={`${uid}-new-category`} className="text-xs font-medium text-ink-muted">
             Category (optional)
           </label>
           <select
-            id="qa-new-category"
+            id={`${uid}-new-category`}
             value={newCategory}
             onChange={(e) => setNewCategory(e.target.value)}
             className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm focus:border-frog-green pointer-coarse:py-3 pointer-coarse:text-base"
@@ -190,11 +194,11 @@ export function QuickAddForm({ projects: initialProjects, date, onLogged }: Prop
       </fieldset>
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="qa-milestone" className="text-xs font-medium text-ink-muted">
+        <label htmlFor={`${uid}-milestone`} className="text-xs font-medium text-ink-muted">
           Milestone <span className="font-normal text-ink-muted">(optional)</span>
         </label>
         <input
-          id="qa-milestone"
+          id={`${uid}-milestone`}
           value={milestone}
           onChange={(e) => setMilestone(e.target.value)}
           placeholder="Something notable today?"
@@ -206,11 +210,11 @@ export function QuickAddForm({ projects: initialProjects, date, onLogged }: Prop
 
       {showDetail ? (
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="qa-description" className="text-xs font-medium text-ink-muted">
+          <label htmlFor={`${uid}-description`} className="text-xs font-medium text-ink-muted">
             Description
           </label>
           <textarea
-            id="qa-description"
+            id={`${uid}-description`}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}

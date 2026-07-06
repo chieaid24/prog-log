@@ -200,7 +200,7 @@ for (const [label, options] of [
     await dialog.getByLabel("Project").selectOption(candidate.id);
     await dialog.getByRole("button", { name: "Small" }).click();
     await dialog.getByRole("button", { name: "Log it" }).click();
-    await page.getByText("Logged.").waitFor();
+    await page.getByText("Logged.").first().waitFor();
     await page.screenshot({ path: join(OUT, "capture-logged-390.png") });
 
     const created = await sb(
