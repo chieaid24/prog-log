@@ -34,7 +34,7 @@ export default async function SettingsPage() {
         <form action={signOut}>
           <button
             type="submit"
-            className="rounded-lg border border-border px-4 py-2 text-sm text-ink-muted transition-colors hover:border-border-strong hover:text-ink"
+            className="rounded-lg border border-border px-4 py-2 text-sm text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:py-3"
           >
             Sign out
           </button>

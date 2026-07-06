@@ -52,15 +52,19 @@ function LoginForm() {
         type="email"
         required
         autoFocus
+        inputMode="email"
+        autoComplete="email"
+        autoCapitalize="none"
+        spellCheck={false}
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         placeholder="you@example.com"
-        className="rounded-lg border border-border bg-surface px-3 py-2 text-ink placeholder:text-ink-faint focus:border-frog-green"
+        className="rounded-lg border border-border bg-surface px-3 py-2 text-ink placeholder:text-ink-faint focus:border-frog-green pointer-coarse:py-3"
       />
       <button
         type="submit"
         disabled={state.status === "sending"}
-        className="rounded-lg bg-frog-green px-3 py-2 font-medium text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-50"
+        className="rounded-lg bg-frog-green px-3 py-2 font-medium text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-50 pointer-coarse:py-3"
       >
         {state.status === "sending" ? "Sending…" : "Send magic link"}
       </button>

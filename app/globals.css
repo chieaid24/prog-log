@@ -12,8 +12,8 @@
   --ink-faint: oklch(0.68 0.01 90);
   --border: oklch(0.9 0.008 95);
   --border-strong: oklch(0.83 0.01 90);
-  --frog-green: oklch(0.62 0.13 148);
-  --frog-green-strong: oklch(0.54 0.13 148);
+  --frog-green: oklch(0.54 0.13 148);
+  --frog-green-strong: oklch(0.47 0.125 148);
   --frog-green-soft: oklch(0.93 0.045 148);
   --on-green: oklch(0.99 0.004 95);
   --log-brown: oklch(0.5 0.06 60);
@@ -63,6 +63,70 @@ body {
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   min-height: 100dvh;
+}
+
+/* Expand a visually small control to a >=44px hit area on touch devices
+   without changing its rendered size (WCAG 2.5.5 / Apple HIG). The overlay
+   is centered, so surrounding layout is untouched. */
+@utility tap {
+  position: relative;
+}
+
+@media (pointer: coarse) {
+  .tap::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* The quick-add bottom sheet (mobile capture). Native <dialog> gives the
+   focus trap, Escape handling and top layer for free; CSS only shapes it
+   into a thumb-reachable sheet. Slide-up is a transform transition driven
+   by @starting-style, and the global prefers-reduced-motion block already
+   collapses it to an instant appearance. */
+dialog.log-sheet {
+  position: fixed;
+  inset: auto 0 0 0;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 32rem;
+  max-height: calc(100dvh - 3rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: 12px 12px 0 0;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--overlay-shadow);
+  padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+  transition:
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    overlay 0.25s allow-discrete,
+    display 0.25s allow-discrete;
+}
+
+dialog.log-sheet::backdrop {
+  background: oklch(0.27 0.012 80 / 0.35);
+  transition:
+    opacity 0.25s ease,
+    overlay 0.25s allow-discrete,
+    display 0.25s allow-discrete;
+}
+
+@starting-style {
+  dialog.log-sheet[open] {
+    transform: translateY(100%);
+  }
+
+  dialog.log-sheet[open]::backdrop {
+    opacity: 0;
+  }
 }
 
 /* Visible keyboard focus everywhere; never remove, only restyle. */

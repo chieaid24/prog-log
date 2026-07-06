@@ -40,7 +40,7 @@ export function TimezoneForm({ current, timezones }: Props) {
           setTimezone(e.target.value);
           setState("idle");
         }}
-        className="max-w-sm rounded-lg border border-border bg-surface px-3 py-2 text-sm focus:border-frog-green"
+        className="max-w-sm rounded-lg border border-border bg-surface px-3 py-2 text-sm focus:border-frog-green pointer-coarse:py-3 pointer-coarse:text-base"
       >
         {timezones.map((tz) => (
           <option key={tz} value={tz}>
@@ -48,7 +48,7 @@ export function TimezoneForm({ current, timezones }: Props) {
           </option>
         ))}
       </select>
-      <p className="max-w-md text-xs text-ink-faint">
+      <p className="max-w-md text-xs text-ink-muted">
         &ldquo;Today&rdquo; for every log (web, Discord, Shortcut) is resolved in this zone.
         Changing it affects only future entries; logged days stay exactly where they are.
       </p>
@@ -56,7 +56,7 @@ export function TimezoneForm({ current, timezones }: Props) {
         <button
           type="submit"
           disabled={pending || timezone === current}
-          className="self-start rounded-lg bg-frog-green px-4 py-2 text-sm font-semibold text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-40"
+          className="self-start rounded-lg bg-frog-green px-4 py-2 text-sm font-semibold text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-40 pointer-coarse:py-3"
         >
           {pending ? "Saving…" : "Save timezone"}
         </button>

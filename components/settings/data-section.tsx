@@ -32,21 +32,21 @@ export function DataSection() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
         <h3 className="text-sm text-ink">Export</h3>
-        <p className="max-w-md text-xs text-ink-faint">
+        <p className="max-w-md text-xs text-ink-muted">
           Every Entry, yours to take anywhere. CSV opens in a spreadsheet; JSON keeps Project
           colors and categories for a full restore.
         </p>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <a
             href="/api/export?format=csv"
-            className="rounded-lg border border-border px-4 py-2 text-sm text-ink-muted transition-colors hover:border-border-strong hover:text-ink"
+            className="rounded-lg border border-border px-4 py-2 text-sm text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:py-3 whitespace-nowrap"
             download
           >
             Download CSV
           </a>
           <a
             href="/api/export?format=json"
-            className="rounded-lg border border-border px-4 py-2 text-sm text-ink-muted transition-colors hover:border-border-strong hover:text-ink"
+            className="rounded-lg border border-border px-4 py-2 text-sm text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:py-3 whitespace-nowrap"
             download
           >
             Download JSON
@@ -56,14 +56,14 @@ export function DataSection() {
 
       <form onSubmit={submit} aria-label="Import entries" className="flex flex-col gap-2">
         <h3 className="text-sm text-ink">Import</h3>
-        <p className="max-w-md text-xs text-ink-faint">
+        <p className="max-w-md text-xs text-ink-muted">
           Bring data in from a prog-log export or a Notion CSV. Rows land through the same
           write path as every log: re-importing never shrinks a day or erases a Milestone.
         </p>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <label
             htmlFor="import-file"
-            className="cursor-pointer rounded-lg border border-dashed border-border px-4 py-2 text-sm text-ink-muted transition-colors hover:border-border-strong hover:text-ink"
+            className="cursor-pointer rounded-lg border border-dashed border-border px-4 py-2 text-sm text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:py-3"
           >
             {fileName ?? "Choose CSV or JSON…"}
           </label>
@@ -82,7 +82,7 @@ export function DataSection() {
           <button
             type="submit"
             disabled={pending || !fileName}
-            className="rounded-lg bg-frog-green px-4 py-2 text-sm font-semibold text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-40"
+            className="rounded-lg bg-frog-green px-4 py-2 text-sm font-semibold text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-40 pointer-coarse:py-3"
           >
             {pending ? "Importing…" : "Import"}
           </button>

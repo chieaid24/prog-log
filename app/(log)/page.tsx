@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { DayDetail } from "@/components/day-detail/day-detail";
 import { MonthCalendar } from "@/components/calendar/month-calendar";
+import { LogSheet } from "@/components/quick-add/log-sheet";
 import { QuickAddForm } from "@/components/quick-add/quick-add-form";
 import { MomentumPanel } from "@/components/streak/momentum-panel";
 import { ThrowbackFeed } from "@/components/throwback/throwback-feed";
@@ -59,18 +60,19 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
     view === "calendar" ? `/?view=calendar${monthQuery}` : `/?view=heatmap`;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-      <div className="flex flex-col gap-5">
-        <div
-          role="tablist"
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="flex min-w-0 flex-col gap-5">
+        {/* A segmented pair of links, not ARIA tabs: each option is a real
+            navigation (?view=), and links don't get the arrow-key behavior
+            the tab role promises. aria-current marks the active view. */}
+        <nav
           aria-label="Daily log view"
           className="grid w-fit grid-cols-2 gap-1 rounded-lg bg-surface-sunken p-1 text-sm"
         >
           <Link
-            role="tab"
-            aria-selected={view === "heatmap"}
+            aria-current={view === "heatmap" ? "page" : undefined}
             href={`/?view=heatmap${dayQuery}`}
-            className={`rounded-md px-4 py-1.5 transition-colors ${
+            className={`rounded-md px-4 py-1.5 transition-colors pointer-coarse:py-2.5 ${
               view === "heatmap"
                 ? "border border-border bg-surface font-medium text-ink"
                 : "border border-transparent text-ink-muted hover:text-ink"
@@ -79,10 +81,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
             Heatmap
           </Link>
           <Link
-            role="tab"
-            aria-selected={view === "calendar"}
+            aria-current={view === "calendar" ? "page" : undefined}
             href={`/?view=calendar${monthQuery}${dayQuery}`}
-            className={`rounded-md px-4 py-1.5 transition-colors ${
+            className={`rounded-md px-4 py-1.5 transition-colors pointer-coarse:py-2.5 ${
               view === "calendar"
                 ? "border border-border bg-surface font-medium text-ink"
                 : "border border-transparent text-ink-muted hover:text-ink"
@@ -90,7 +91,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
           >
             Calendar
           </Link>
-        </div>
+        </nav>
 
         <section
           aria-label={view === "heatmap" ? "Year heatmap" : "Month calendar"}
@@ -118,10 +119,12 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
         )}
       </div>
 
-      <aside className="flex flex-col gap-6">
+      <aside className="flex min-w-0 flex-col gap-6">
+        {/* On phones this card gives way to the floating log button + sheet
+            below; the form itself is identical. */}
         <section
           aria-label="Log today"
-          className="rounded-xl border border-border bg-surface p-4"
+          className="hidden rounded-xl border border-border bg-surface p-4 lg:block"
         >
           <h2 className="mb-3 text-sm font-semibold tracking-tight">Log today</h2>
           <QuickAddForm projects={projects} />
@@ -129,6 +132,8 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
         <ThrowbackFeed />
         <MomentumPanel />
       </aside>
+
+      <LogSheet projects={projects} />
     </div>
   );
 }

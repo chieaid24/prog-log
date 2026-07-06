@@ -10,8 +10,8 @@ colors:
   surface-sunken: "oklch(0.945 0.01 95)"
   border: "oklch(0.90 0.008 95)"
   border-strong: "oklch(0.83 0.01 90)"
-  frog-green: "oklch(0.62 0.13 148)"
-  frog-green-strong: "oklch(0.54 0.13 148)"
+  frog-green: "oklch(0.54 0.13 148)"
+  frog-green-strong: "oklch(0.47 0.125 148)"
   frog-green-soft: "oklch(0.93 0.045 148)"
   on-green: "oklch(0.99 0.004 95)"
   log-brown: "oklch(0.5 0.06 60)"
@@ -145,10 +145,11 @@ A warm, paper-toned neutral field carrying a single muted leaf-green accent. Eve
 tinted toward warm (hue ~80-95), never a cold or pure gray.
 
 ### Primary
-- **Frog Green** (`oklch(0.62 0.13 148)`): the one accent. Primary buttons, the active logging
+- **Frog Green** (`oklch(0.54 0.13 148)`): the one accent. Primary buttons, the active logging
   streak, selected states, links, focus emphasis. A natural, slightly muted leaf green, not a
-  screen green.
-- **Frog Green Strong** (`oklch(0.54 0.13 148)`): hover/pressed state of anything green, and
+  screen green. Darkened from the original `0.62` so On Green text on a green fill meets
+  WCAG AA (4.6:1); ADR-0015.
+- **Frog Green Strong** (`oklch(0.47 0.125 148)`): hover/pressed state of anything green, and
   green text that needs contrast on paper (a raw accent-on-paper link can be too light).
 - **Frog Green Soft** (`oklch(0.93 0.045 148)`): pale green tint for soft/secondary buttons,
   selected-row backgrounds, and gentle highlights.
@@ -159,7 +160,9 @@ tinted toward warm (hue ~80-95), never a cold or pure gray.
 - **Surface Sunken** (`oklch(0.945 0.01 95)`): inset tracks (segmented controls, progress rails) that sit *below* paper.
 - **Ink** (`oklch(0.27 0.012 80)`): primary text. Warm near-black, never `#000`.
 - **Ink Muted** (`oklch(0.52 0.012 85)`): secondary text, labels, captions.
-- **Ink Faint** (`oklch(0.68 0.01 90)`): placeholders, disabled text, the faintest metadata.
+- **Ink Faint** (`oklch(0.68 0.01 90)`): placeholders and disabled text **only**. At 2.7:1 on
+  paper it fails WCAG AA for readable text, so every legible word or number uses Ink Muted or
+  darker (ADR-0015).
 - **Border** (`oklch(0.90 0.008 95)`): default hairline dividers and card outlines.
 - **Border Strong** (`oklch(0.83 0.01 90)`): hover borders and emphasis separators.
 - **Log Brown** (`oklch(0.5 0.06 60)`): the frog's log. A warm secondary reserved for mascot art and the rare woody accent; not a UI color.
@@ -253,7 +256,33 @@ space or a hairline instead.
 - **Disabled:** `surface-sunken` background, `Ink Faint` text.
 
 ### Navigation
-- Quiet top nav on `paper`: sans labels in `Ink Muted`, the active item in `Ink` with a `Frog Green` underline or dot. No heavy chrome, no boxed nav bar. The wordmark (with the frog) sits at the left.
+- **Desktop (md and up):** quiet top nav on `paper`: sans labels in `Ink Muted`, the active item
+  in `Ink` with a `Frog Green` underline or dot. No heavy chrome, no boxed nav bar. The wordmark
+  (with the frog) sits at the left.
+- **Phones (below md):** the top nav collapses into a fixed bottom tab bar on `paper` with a
+  hairline top border: four labelled tabs with 8-bit pixel icons (Ferdy's visual language),
+  >=56px tall plus `env(safe-area-inset-bottom)`. Active = `Ink` + a small `Frog Green` bar
+  under the tab's label; never green alone. The main column reserves bottom padding so content clears
+  the bar.
+- **Mobile capture:** on the daily log the quick-add card gives way to one floating `Frog Green`
+  pixel-plus button above the tab bar, opening the same form as a native `<dialog>` bottom sheet
+  (surface, 12px top radius, overlay shadow — it genuinely floats). The sheet slides up 250ms
+  ease-out, honors `prefers-reduced-motion`, and closes on Escape, backdrop tap, or a logged
+  Entry. Capture stays two picks; the button never scrolls away.
+
+### Responsive & Touch
+- Breakpoints: content-driven Tailwind defaults; the nav collapse happens at `md` (768px).
+  Every `lg:` two-column grid reflows to one legible column on phones; nothing horizontally
+  scrolls except wide data surfaces (heatmap, charts, calendar) inside their own
+  `overflow-x-auto` containers.
+- Touch targets are >=44px on coarse pointers: `pointer-coarse:` padding bumps on real
+  controls, the `tap` utility (centered 44px hit-area overlay) on visually small ones.
+  Heatmap cells scale to the WCAG 2.5.8 24px-with-spacing minimum on touch; the calendar
+  carries the full-size targets for the same action.
+- Form fields are >=16px font on coarse pointers (`pointer-coarse:text-base`) so iOS never
+  zooms on focus; inputs declare the right `type`/`inputmode`/`autocomplete`.
+- Safe areas: the shell pads with `env(safe-area-inset-*)` so paper reaches the screen edge
+  but content never sits under a notch or the home indicator.
 
 ### The Frog (signature)
 - An **8-bit / pixel-art frog on a log**, rendered as crisp pixel SVG (`image-rendering: pixelated`, `shape-rendering: crispEdges`), green body over `Log Brown`.

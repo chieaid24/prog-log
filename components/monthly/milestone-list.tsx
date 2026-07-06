@@ -18,7 +18,7 @@ export function MilestoneList({ rows }: Props) {
       </h2>
       <p className="text-xs text-ink-muted">The month&apos;s headlines.</p>
       {rows.length === 0 ? (
-        <p className="mt-3 text-sm text-ink-faint">No Milestones this month.</p>
+        <p className="mt-3 text-sm text-ink-muted">No Milestones this month.</p>
       ) : (
         <ol className="mt-3 flex flex-col divide-y divide-border">
           {rows.map((row) => (

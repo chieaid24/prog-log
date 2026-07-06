@@ -10,7 +10,7 @@ import { prepareMomentum, type MomentumRow } from "./prepare";
 const DIRECTION: Record<MomentumRow["momentum"]["direction"], { glyph: string; label: string; tone: string }> = {
   rising: { glyph: "▲", label: "rising", tone: "text-frog-green-strong" },
   steady: { glyph: "─", label: "steady", tone: "text-ink-muted" },
-  cooling: { glyph: "▼", label: "cooling", tone: "text-ink-faint" },
+  cooling: { glyph: "▼", label: "cooling", tone: "text-ink-muted" },
 };
 
 export async function MomentumPanel() {
@@ -40,12 +40,12 @@ export async function MomentumPanel() {
       </div>
 
       {overall.totalDays === 0 ? (
-        <p className="mt-3 text-sm text-ink-faint">
+        <p className="mt-3 text-sm text-ink-muted">
           Log a day and your streak starts counting.
         </p>
       ) : (
         <>
-          <p className="mt-1 font-mono text-xs text-ink-faint">
+          <p className="mt-1 font-mono text-xs text-ink-muted">
             longest {overall.longest} · {overall.totalDays} days logged
           </p>
           {rows.length > 0 && (
@@ -61,7 +61,7 @@ export async function MomentumPanel() {
                           {row.streak}d run
                         </span>
                       )}
-                      <span className="text-ink-faint">{row.momentum.daysLast14}/14</span>
+                      <span className="text-ink-muted">{row.momentum.daysLast14}/14</span>
                       <span aria-label={d.label} title={d.label} className={d.tone}>
                         {d.glyph}
                       </span>

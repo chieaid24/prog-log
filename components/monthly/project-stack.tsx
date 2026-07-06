@@ -86,17 +86,20 @@ export function ProjectStack({ rows }: Props) {
   return (
     <section
       aria-labelledby="project-stack-title"
-      className="flex flex-col gap-1 rounded-xl border border-border bg-surface p-4"
+      className="flex min-w-0 flex-col gap-1 rounded-xl border border-border bg-surface p-4"
     >
       <h2 id="project-stack-title" className="text-sm font-semibold text-ink">
         Projects by Time Commitment
       </h2>
       <p className="text-xs text-ink-muted">Which Projects carried the month?</p>
       {rows.length === 0 ? (
-        <p className="mt-3 text-sm text-ink-faint">No Entries this month.</p>
+        <p className="mt-3 text-sm text-ink-muted">No Entries this month.</p>
       ) : (
         <>
-          <div aria-hidden style={{ height: rows.length * ROW_HEIGHT + 30 }} className="mt-2">
+          {/* The 138px label gutter plus bars needs ~30rem to breathe; on
+              narrower screens the chart scrolls in its own container. */}
+          <div className="mt-2 overflow-x-auto overscroll-x-contain">
+          <div aria-hidden style={{ height: rows.length * ROW_HEIGHT + 30 }} className="min-w-[30rem]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={rows}
@@ -138,6 +141,7 @@ export function ProjectStack({ rows }: Props) {
                 ))}
               </BarChart>
             </ResponsiveContainer>
+          </div>
           </div>
           <p className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-muted">
             {TIME_SIZES.map((t) => (

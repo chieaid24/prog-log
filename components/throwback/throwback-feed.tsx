@@ -28,7 +28,7 @@ export async function ThrowbackFeed() {
         Throwbacks
       </h2>
       {items.length === 0 ? (
-        <p className="mt-3 text-sm text-ink-faint">
+        <p className="mt-3 text-sm text-ink-muted">
           Milestones you log will resurface here on future days.
         </p>
       ) : (

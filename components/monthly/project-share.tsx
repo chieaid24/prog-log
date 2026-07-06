@@ -20,7 +20,7 @@ export function ProjectShare({ segments }: Props) {
       </h2>
       <p className="text-xs text-ink-muted">Where did the month&apos;s effort go?</p>
       {segments.length === 0 ? (
-        <p className="mt-3 text-sm text-ink-faint">No Entries this month.</p>
+        <p className="mt-3 text-sm text-ink-muted">No Entries this month.</p>
       ) : (
         <>
           <div

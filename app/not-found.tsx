@@ -13,7 +13,7 @@ export default function NotFound() {
       </p>
       <Link
         href="/"
-        className="rounded-lg bg-frog-green px-4 py-2 text-sm font-semibold text-on-green transition-colors hover:bg-frog-green-strong"
+        className="rounded-lg bg-frog-green px-4 py-2 text-sm font-semibold text-on-green transition-colors hover:bg-frog-green-strong pointer-coarse:py-3"
       >
         Back to the log
       </Link>
