@@ -9,6 +9,10 @@ work, prove it, and leave a trail. **These rules are non-negotiable. Follow them
 > an Apple Shortcut. Full spec: **[`worklog-prd (1).md`](worklog-prd%20(1).md)** — the PRD is the
 > source of truth for *what* to build (see §7 for the build phases).
 
+> **Status: not production-ready.** Do not share the live app URL anywhere yet (PRs, issues,
+> commits, chat, external docs). It stays out of the GitHub repo's public homepage field and
+> README. Lift this once the app is ready to show.
+
 ---
 
 ## The six rules
