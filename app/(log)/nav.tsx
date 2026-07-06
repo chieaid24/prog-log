@@ -10,10 +10,12 @@ const LINKS = [
   { href: "/settings", label: "Settings" },
 ];
 
+// Quiet top nav (DESIGN.md): sans labels in ink-muted, the active item in ink
+// with a frog-green underline. No boxed chrome, no pills.
 export function LogNav() {
   const pathname = usePathname();
   return (
-    <nav aria-label="Primary" className="flex items-center gap-1">
+    <nav aria-label="Primary" className="flex items-center gap-4">
       {LINKS.map(({ href, label }) => {
         const active = pathname === href;
         return (
@@ -21,10 +23,10 @@ export function LogNav() {
             key={href}
             href={href}
             aria-current={active ? "page" : undefined}
-            className={`rounded-lg px-3 py-1.5 text-sm transition-colors ${
+            className={`relative px-0.5 py-1.5 text-sm transition-colors ${
               active
-                ? "bg-accent-soft font-medium text-accent"
-                : "text-muted hover:bg-panel-raised hover:text-foreground"
+                ? "font-medium text-ink after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:rounded-full after:bg-frog-green"
+                : "text-ink-muted hover:text-ink"
             }`}
           >
             {label}
