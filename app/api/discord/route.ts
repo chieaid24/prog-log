@@ -1,11 +1,10 @@
 // Discord interactions endpoint (PRD 4.1, ADR-0002). Discord POSTs every
 // interaction here: PING handshakes, /log commands, and project autocomplete.
-// Ed25519 signature first, owner gate second, and every write goes through
-// upsertEntry — the single shared write path (ADR-0001).
-import { getOwnerActiveProjects, getOwnerAliases, noMatchMessage } from "@/lib/discord/owner";
+// Ed25519 signature first, owner gate second; /log delegates resolution and
+// the write to the shared capture pipeline (captureLog, ADR-0001).
+import { captureLog } from "@/lib/capture";
+import { getOwnerActiveProjects, getOwnerAliases } from "@/lib/discord/owner";
 import { verifyDiscordSignature } from "@/lib/discord/verify";
-import { upsertEntry } from "@/lib/entries";
-import { resolveProjectWithAliases } from "@/lib/projects";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { TIME_SIZES, type TimeSize } from "@/lib/types";
 
@@ -111,7 +110,7 @@ async function handleAutocomplete(interaction: Interaction): Promise<Response> {
   return Response.json({ type: AUTOCOMPLETE_RESULT, data: { choices } });
 }
 
-/** /log: exact Project resolution (never guess), then the shared upsert. */
+/** /log: option normalization here, capture decisions in captureLog. */
 async function handleLogCommand(interaction: Interaction): Promise<Response> {
   if (interaction.data?.name !== "log") return reply("unknown command");
 
@@ -124,30 +123,18 @@ async function handleLogCommand(interaction: Interaction): Promise<Response> {
     return reply(`"${time}" is not a time commitment - use small, medium or large.`);
   }
 
-  const db = createAdminClient();
-  const [projects, aliases] = await Promise.all([
-    getOwnerActiveProjects(db, ownerId()),
-    getOwnerAliases(db, ownerId()),
-  ]);
-  const resolution = resolveProjectWithAliases(projects, aliases, opts.project ?? "");
-  if (resolution.status !== "match") {
-    return reply(noMatchMessage(opts.project ?? "", resolution.near));
-  }
-
-  try {
-    await upsertEntry(db, {
-      projectId: resolution.project.id,
-      timeSpent: time,
-      milestone: opts.milestone ?? null,
-      description: opts.description ?? null,
-      userId: ownerId(),
-    });
-  } catch {
-    return reply("could not save the entry - try again.");
-  }
+  const result = await captureLog(createAdminClient(), {
+    ownerId: ownerId(),
+    rawProject: opts.project ?? "",
+    timeSpent: time,
+    milestone: opts.milestone ?? null,
+    description: opts.description ?? null,
+  });
+  if (result.status === "unresolved") return reply(result.message);
+  if (result.status === "write-failed") return reply("could not save the entry - try again.");
 
   const suffix = opts.milestone ? `, milestone: ${opts.milestone}` : "";
-  return reply(`logged ${resolution.project.name} - ${time}${suffix}`);
+  return reply(`logged ${result.project.name} - ${time}${suffix}`);
 }
 
 function ownerId(): string {
