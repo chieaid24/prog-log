@@ -40,7 +40,7 @@ export function ProjectManager({ projects, usage, aliases = {} }: Props) {
 
       <section aria-label="Active projects" className="flex flex-col gap-2">
         <h2 className="text-sm font-medium text-ink-muted">
-          Active <span className="text-ink-muted">({active.length})</span>
+          Active <span className="font-mono text-ink-muted">({active.length})</span>
         </h2>
         {active.length === 0 ? (
           <p className="rounded-xl border border-border bg-surface p-6 text-sm text-ink-muted">
@@ -57,7 +57,7 @@ export function ProjectManager({ projects, usage, aliases = {} }: Props) {
 
       <section aria-label="Archived projects" className="flex flex-col gap-2">
         <h2 className="text-sm font-medium text-ink-muted">
-          Archived <span className="text-ink-muted">({archived.length})</span>
+          Archived <span className="font-mono text-ink-muted">({archived.length})</span>
         </h2>
         {archived.length === 0 ? (
           <p className="rounded-xl border border-dashed border-border bg-surface p-6 text-sm text-ink-muted">
@@ -440,7 +440,7 @@ function EditProjectForm({ project, onSaved }: { project: Project; onSaved: () =
       <button
         type="submit"
         disabled={pending || name.trim().length === 0}
-        className="rounded-lg bg-frog-green px-4 py-1.5 text-sm font-semibold text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-40 pointer-coarse:py-3"
+        className="rounded-lg bg-frog-green px-4 py-2 text-sm font-semibold text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-40 pointer-coarse:py-3"
       >
         {pending ? "Saving…" : "Save"}
       </button>

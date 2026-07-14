@@ -7,7 +7,7 @@ export default function NotFound() {
       {/* Decorative: the heading right below carries the meaning, so the
           frog stays aria-hidden (DESIGN.md frog a11y). */}
       <Frog size={72} />
-      <h1 className="text-2xl font-bold tracking-tight text-ink">
+      <h1 className="text-2xl font-semibold leading-[1.2] tracking-[-0.01em] text-ink">
         Nothing on this lily pad
       </h1>
       <p className="text-sm text-ink-muted">

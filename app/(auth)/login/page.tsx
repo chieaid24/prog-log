@@ -64,7 +64,7 @@ function LoginForm() {
       <button
         type="submit"
         disabled={state.status === "sending"}
-        className="rounded-lg bg-frog-green px-3 py-2 font-medium text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-50 pointer-coarse:py-3"
+        className="rounded-lg bg-frog-green px-4 py-2 text-sm font-semibold text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-50 pointer-coarse:py-3"
       >
         {state.status === "sending" ? "Sending…" : "Send magic link"}
       </button>
@@ -88,7 +88,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm rounded-xl border border-border bg-surface p-8">
         <div className="mb-1 flex items-center gap-2.5">
           <Frog size={28} />
-          <h1 className="text-lg font-bold tracking-tight text-ink">prog-log</h1>
+          <h1 className="text-lg font-semibold text-ink">prog-log</h1>
         </div>
         <p className="mb-6 text-sm text-ink-muted">Sign in with a magic link.</p>
         <Suspense>

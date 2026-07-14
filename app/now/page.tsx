@@ -84,7 +84,9 @@ export default async function NowPage() {
         {/* Decorative: the heading right below carries the meaning, so the
             frog stays aria-hidden (DESIGN.md frog a11y). */}
         <Frog size={44} />
-        <h1 className="text-3xl font-bold tracking-tight text-ink">What I&rsquo;m working on</h1>
+        <h1 className="text-[clamp(1.75rem,3vw,2.25rem)] font-bold leading-[1.1] tracking-[-0.02em] text-ink">
+          What I&rsquo;m working on
+        </h1>
         <p className="text-sm text-ink-muted">
           Milestones and deep-work days from the last {NOW_WINDOW_DAYS} days of my work log.
         </p>
@@ -108,13 +110,13 @@ export default async function NowPage() {
               className="rounded-xl border border-border bg-surface p-4"
             >
               <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2">
                   <span
                     aria-hidden
                     className="inline-block size-2.5 shrink-0 rounded-full"
                     style={{ backgroundColor: project.color ?? "var(--ink-faint)" }}
                   />
-                  <h2 className="text-base font-semibold tracking-tight">
+                  <h2 className="text-lg font-semibold leading-[1.3]">
                     {project.projectName}
                   </h2>
                   {project.category && (
