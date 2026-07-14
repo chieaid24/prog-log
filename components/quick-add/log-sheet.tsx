@@ -107,7 +107,7 @@ export function LogSheet({ projects }: { projects: Project[] }) {
             type="button"
             onClick={close}
             aria-label="Close"
-            className="tap rounded-md px-2 py-1 text-sm text-ink-muted transition-colors hover:bg-surface-sunken hover:text-ink"
+            className="tap rounded-lg px-2 py-1 text-sm text-ink-muted transition-colors hover:bg-surface-sunken hover:text-ink"
           >
             &#x2715;
           </button>
