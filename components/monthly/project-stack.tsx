@@ -97,8 +97,15 @@ export function ProjectStack({ rows }: Props) {
       ) : (
         <>
           {/* The 138px label gutter plus bars needs ~30rem to breathe; on
-              narrower screens the chart scrolls in its own container. */}
-          <div className="mt-2 overflow-x-auto overscroll-x-contain">
+              narrower screens the chart scrolls in its own container.
+              tabIndex keeps that scroll keyboard-operable (axe:
+              scrollable-region-focusable). */}
+          <div
+            tabIndex={0}
+            role="region"
+            aria-label="Projects by Time Commitment chart, scrolls horizontally"
+            className="mt-2 overflow-x-auto overscroll-x-contain"
+          >
           <div aria-hidden style={{ height: rows.length * ROW_HEIGHT + 30 }} className="min-w-[30rem]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
@@ -106,6 +113,10 @@ export function ProjectStack({ rows }: Props) {
                 layout="vertical"
                 margin={{ top: 0, right: 12, bottom: 0, left: 8 }}
                 barCategoryGap="28%"
+                // The sr-only table below is the accessible mirror; Recharts'
+                // own layer would inject svg[tabindex=0] inside this
+                // aria-hidden wrapper (axe: aria-hidden-focus).
+                accessibilityLayer={false}
               >
                 <CartesianGrid horizontal={false} stroke={CHART_GRID} />
                 <XAxis
