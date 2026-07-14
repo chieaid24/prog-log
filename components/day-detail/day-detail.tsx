@@ -71,7 +71,7 @@ export function DayDetail({ date, entries, projects, closeHref }: Props) {
                   onClick={() => remove(entry.id, entry.project.name)}
                   disabled={pending}
                   aria-label={`Delete ${entry.project.name} entry`}
-                  className="tap rounded-md px-1.5 py-0.5 text-xs text-ink-muted transition-colors hover:bg-surface-sunken hover:text-danger-red disabled:opacity-50"
+                  className="tap rounded-md px-1.5 py-0.5 text-xs text-ink-muted transition-colors hover:text-danger-red disabled:opacity-50"
                 >
                   Delete
                 </button>

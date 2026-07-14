@@ -61,24 +61,27 @@ export function DataSection() {
           write path as every log: re-importing never shrinks a day or erases a Milestone.
         </p>
         <div className="flex flex-wrap items-center gap-3">
-          <label
-            htmlFor="import-file"
-            className="cursor-pointer rounded-lg border border-dashed border-border px-4 py-2 text-sm text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:py-3"
-          >
-            {fileName ?? "Choose CSV or JSON…"}
-          </label>
+          {/* Input first so the visible label can mirror its keyboard focus
+              via peer-focus-visible; the input itself is sr-only (1x1px), so
+              the global focus ring is invisible on it. */}
           <input
             ref={fileRef}
             id="import-file"
             name="file"
             type="file"
             accept=".csv,.json,text/csv,application/json"
-            className="sr-only"
+            className="peer sr-only"
             onChange={(e) => {
               setFileName(e.target.files?.[0]?.name ?? null);
               setResult(null);
             }}
           />
+          <label
+            htmlFor="import-file"
+            className="cursor-pointer rounded-lg border border-dashed border-border px-4 py-2 text-sm text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:py-3 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-frog-green"
+          >
+            {fileName ?? "Choose CSV or JSON…"}
+          </label>
           <button
             type="submit"
             disabled={pending || !fileName}

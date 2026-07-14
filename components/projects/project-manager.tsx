@@ -40,7 +40,7 @@ export function ProjectManager({ projects, usage, aliases = {} }: Props) {
 
       <section aria-label="Active projects" className="flex flex-col gap-2">
         <h2 className="text-sm font-medium text-ink-muted">
-          Active <span className="text-ink-muted">({active.length})</span>
+          Active <span className="font-mono text-ink-muted">({active.length})</span>
         </h2>
         {active.length === 0 ? (
           <p className="rounded-xl border border-border bg-surface p-6 text-sm text-ink-muted">
@@ -57,7 +57,7 @@ export function ProjectManager({ projects, usage, aliases = {} }: Props) {
 
       <section aria-label="Archived projects" className="flex flex-col gap-2">
         <h2 className="text-sm font-medium text-ink-muted">
-          Archived <span className="text-ink-muted">({archived.length})</span>
+          Archived <span className="font-mono text-ink-muted">({archived.length})</span>
         </h2>
         {archived.length === 0 ? (
           <p className="rounded-xl border border-dashed border-border bg-surface p-6 text-sm text-ink-muted">
@@ -264,7 +264,7 @@ function ProjectRow({
           <button
             type="button"
             onClick={() => setEditing((v) => !v)}
-            className="rounded-lg border border-border px-3 py-1.5 text-xs text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:px-4 pointer-coarse:py-3"
+            className="rounded-lg border border-border px-3 py-1.5 text-xs text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:min-h-11 pointer-coarse:px-4 pointer-coarse:py-3"
           >
             {editing ? "Close" : "Edit"}
           </button>
@@ -272,7 +272,7 @@ function ProjectRow({
             type="button"
             onClick={toggleStatus}
             disabled={pending}
-            className="rounded-lg border border-border px-3 py-1.5 text-xs text-ink-muted transition-colors hover:border-border-strong hover:text-ink disabled:opacity-50 pointer-coarse:px-4 pointer-coarse:py-3"
+            className="rounded-lg border border-border px-3 py-1.5 text-xs text-ink-muted transition-colors hover:border-border-strong hover:text-ink disabled:opacity-50 pointer-coarse:min-h-11 pointer-coarse:px-4 pointer-coarse:py-3"
           >
             {archived ? "Restore" : "Archive"}
           </button>
@@ -359,7 +359,7 @@ function AliasEditor({ project, aliases }: { project: Project; aliases: ProjectA
         <button
           type="submit"
           disabled={pending || draft.trim().length === 0}
-          className="rounded-full border border-border px-2.5 py-0.5 text-xs text-ink-muted transition-colors hover:border-border-strong hover:text-ink disabled:opacity-40 pointer-coarse:px-4 pointer-coarse:py-2.5"
+          className="rounded-full border border-border px-2.5 py-0.5 text-xs text-ink-muted transition-colors hover:border-border-strong hover:text-ink disabled:opacity-40 pointer-coarse:min-h-11 pointer-coarse:px-4 pointer-coarse:py-3"
         >
           Add
         </button>
@@ -440,7 +440,7 @@ function EditProjectForm({ project, onSaved }: { project: Project; onSaved: () =
       <button
         type="submit"
         disabled={pending || name.trim().length === 0}
-        className="rounded-lg bg-frog-green px-4 py-1.5 text-sm font-semibold text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-40 pointer-coarse:py-3"
+        className="rounded-lg bg-frog-green px-4 py-2 text-sm font-semibold text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-40 pointer-coarse:py-3"
       >
         {pending ? "Saving…" : "Save"}
       </button>

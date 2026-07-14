@@ -181,7 +181,7 @@ export function QuickAddForm({ projects: initialProjects, date, onLogged }: Prop
               aria-pressed={timeSpent === t}
               aria-label={TIME_LABEL[t]}
               title={TIME_LABEL[t]}
-              className={`rounded-md px-2 py-1.5 font-mono text-sm font-medium transition-colors pointer-coarse:py-3 ${
+              className={`rounded-lg px-2 py-1.5 font-mono text-sm font-medium transition-colors pointer-coarse:py-3 ${
                 timeSpent === t
                   ? "bg-frog-green font-semibold text-on-green"
                   : "text-ink-muted hover:text-ink"
@@ -219,7 +219,7 @@ export function QuickAddForm({ projects: initialProjects, date, onLogged }: Prop
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
             placeholder="What actually happened (rarely needed)"
-            className="resize-y rounded-lg border border-border bg-surface px-3 py-2 text-sm placeholder:text-ink-faint focus:border-frog-green pointer-coarse:text-base"
+            className="resize-y rounded-lg border border-border bg-surface px-3 py-2 text-sm placeholder:text-ink-faint focus:border-frog-green pointer-coarse:py-3 pointer-coarse:text-base"
           />
         </div>
       ) : (

@@ -72,7 +72,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
           <Link
             aria-current={view === "heatmap" ? "page" : undefined}
             href={`/?view=heatmap${dayQuery}`}
-            className={`rounded-md px-4 py-1.5 transition-colors pointer-coarse:py-2.5 ${
+            className={`rounded-md px-4 py-1.5 transition-colors pointer-coarse:py-3 ${
               view === "heatmap"
                 ? "border border-border bg-surface font-medium text-ink"
                 : "border border-transparent text-ink-muted hover:text-ink"
@@ -83,7 +83,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
           <Link
             aria-current={view === "calendar" ? "page" : undefined}
             href={`/?view=calendar${monthQuery}${dayQuery}`}
-            className={`rounded-md px-4 py-1.5 transition-colors pointer-coarse:py-2.5 ${
+            className={`rounded-md px-4 py-1.5 transition-colors pointer-coarse:py-3 ${
               view === "calendar"
                 ? "border border-border bg-surface font-medium text-ink"
                 : "border border-transparent text-ink-muted hover:text-ink"
@@ -133,7 +133,10 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
         <MomentumPanel />
       </aside>
 
-      <LogSheet projects={projects} />
+      {/* With a day selected, the day panel carries its own capture form on
+          the same screen; the fixed button would float right over those
+          controls at 390px and steal their taps. */}
+      {!selectedDay && <LogSheet projects={projects} />}
     </div>
   );
 }
