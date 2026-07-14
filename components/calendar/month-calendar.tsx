@@ -44,6 +44,9 @@ export function MonthCalendar({ monthStart, todayISO, cards, selectedDay }: Prop
     if (days.length > 42) break; // safety: 6 weeks max
   }
 
+  const weeks: string[][] = [];
+  for (let i = 0; i < days.length; i += 7) weeks.push(days.slice(i, i + 7));
+
   const hasAnyCards = cards.some((c) => c.date.slice(0, 7) === month);
 
   return (
@@ -83,79 +86,87 @@ export function MonthCalendar({ monthStart, todayISO, cards, selectedDay }: Prop
               </div>
             ))}
           </div>
+          {/* Weeks carry role=row (required between grid and gridcell);
+              display:contents keeps the 7-column CSS grid laying out cells
+              directly. first:border-l now applies per week row, closing the
+              grid's left edge on every row. */}
           <div className="grid grid-cols-7" role="grid" aria-label={monthTitle(monthStart)}>
-            {days.map((day) => {
-              const inMonth = day.slice(0, 7) === month;
-              const isToday = day === todayISO;
-              const dayCards = inMonth ? (byDate.get(day) ?? []) : [];
-              const overflow = dayCards.length - CARD_CAP;
-              return (
-                <div
-                  key={day}
-                  role="gridcell"
-                  data-date={day}
-                  aria-current={isToday ? "date" : undefined}
-                  className={`min-h-24 border-b border-r border-border p-1.5 first:border-l ${
-                    day === selectedDay ? "bg-frog-green-soft" : ""
-                  } ${inMonth ? "" : "bg-surface-sunken/40"}`}
-                >
-                  <div className="mb-1 flex justify-end">
-                    <Link
-                      href={dayHref(monthStart, day)}
-                      aria-label={`Open ${day}`}
-                      className={`tap flex h-6 w-6 items-center justify-center rounded-full font-mono text-xs transition-colors hover:bg-surface-sunken ${
-                        isToday
-                          ? "bg-ink font-semibold text-paper hover:bg-ink"
-                          : inMonth
-                            ? "text-ink"
-                            : "text-ink-muted"
-                      }`}
+            {weeks.map((week) => (
+              <div key={week[0]} role="row" className="contents">
+                {week.map((day) => {
+                  const inMonth = day.slice(0, 7) === month;
+                  const isToday = day === todayISO;
+                  const dayCards = inMonth ? (byDate.get(day) ?? []) : [];
+                  const overflow = dayCards.length - CARD_CAP;
+                  return (
+                    <div
+                      key={day}
+                      role="gridcell"
+                      data-date={day}
+                      aria-current={isToday ? "date" : undefined}
+                      className={`min-h-24 border-b border-r border-border p-1.5 first:border-l ${
+                        day === selectedDay ? "bg-frog-green-soft" : ""
+                      } ${inMonth ? "" : "bg-surface-sunken/40"}`}
                     >
-                      {Number(day.slice(8, 10))}
-                    </Link>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    {dayCards.slice(0, CARD_CAP).map((card) => (
-                      <Link
-                        key={card.projectId}
-                        href={dayHref(monthStart, day)}
-                        data-testid="calendar-card"
-                        className="group flex items-center gap-1.5 rounded-md px-1.5 py-1 transition-colors hover:bg-surface-sunken pointer-coarse:py-1.5"
-                      >
-                        <span
-                          className="size-1.5 shrink-0 rounded-full"
-                          style={{ backgroundColor: card.color ?? "var(--ink-faint)" }}
-                          aria-hidden="true"
-                        />
-                        <span className="min-w-0 flex-1 truncate text-[11px] leading-tight">
-                          {card.projectName}
-                        </span>
-                        {card.hasMilestone && (
-                          <span
-                            aria-label="Has milestone"
-                            title="Milestone"
-                            className="text-[9px] text-frog-green-strong"
+                      <div className="mb-1 flex justify-end">
+                        <Link
+                          href={dayHref(monthStart, day)}
+                          aria-label={`Open ${day}`}
+                          className={`tap flex h-6 w-6 items-center justify-center rounded-full font-mono text-xs transition-colors hover:bg-surface-sunken ${
+                            isToday
+                              ? "bg-ink font-semibold text-paper hover:bg-ink"
+                              : inMonth
+                                ? "text-ink"
+                                : "text-ink-muted"
+                          }`}
+                        >
+                          {Number(day.slice(8, 10))}
+                        </Link>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        {dayCards.slice(0, CARD_CAP).map((card) => (
+                          <Link
+                            key={card.projectId}
+                            href={dayHref(monthStart, day)}
+                            data-testid="calendar-card"
+                            className="group flex items-center gap-1.5 rounded-md px-1.5 py-1 transition-colors hover:bg-surface-sunken pointer-coarse:py-1.5"
                           >
-                            ✦
-                          </span>
+                            <span
+                              className="size-1.5 shrink-0 rounded-full"
+                              style={{ backgroundColor: card.color ?? "var(--ink-faint)" }}
+                              aria-hidden="true"
+                            />
+                            <span className="min-w-0 flex-1 truncate text-[11px] leading-tight">
+                              {card.projectName}
+                            </span>
+                            {card.hasMilestone && (
+                              <span
+                                aria-label="Has milestone"
+                                title="Milestone"
+                                className="text-[9px] text-frog-green-strong"
+                              >
+                                ✦
+                              </span>
+                            )}
+                            <span className="font-mono text-[10px] font-semibold uppercase text-ink-muted group-hover:text-ink">
+                              {card.timeSpent[0]}
+                            </span>
+                          </Link>
+                        ))}
+                        {overflow > 0 && (
+                          <Link
+                            href={dayHref(monthStart, day)}
+                            className="rounded px-1.5 py-0.5 font-mono text-[10px] text-ink-muted transition-colors hover:text-ink pointer-coarse:py-1"
+                          >
+                            +{overflow} more
+                          </Link>
                         )}
-                        <span className="font-mono text-[10px] font-semibold uppercase text-ink-muted group-hover:text-ink">
-                          {card.timeSpent[0]}
-                        </span>
-                      </Link>
-                    ))}
-                    {overflow > 0 && (
-                      <Link
-                        href={dayHref(monthStart, day)}
-                        className="rounded px-1.5 py-0.5 font-mono text-[10px] text-ink-muted transition-colors hover:text-ink pointer-coarse:py-1"
-                      >
-                        +{overflow} more
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
           </div>
         </div>
       </div>
