@@ -38,7 +38,14 @@ function projectTick(rows: StackRow[]) {
     return (
       <g transform={`translate(${Number(x)},${Number(y)})`}>
         <circle cx={-LABEL_WIDTH + 10} cy={0} r={3} fill={row?.color ?? CHART_TEXT} />
-        <text x={-LABEL_WIDTH + 20} y={0} dy={3.5} fill={CHART_TEXT} fontSize={12}>
+        <text
+          x={-LABEL_WIDTH + 20}
+          y={0}
+          dy={4}
+          fill={CHART_TEXT}
+          fontSize={13}
+          fontFamily="var(--font-geist-mono)"
+        >
           {truncate(name)}
         </text>
       </g>
@@ -122,7 +129,7 @@ export function ProjectStack({ rows }: Props) {
                 <XAxis
                   type="number"
                   allowDecimals={false}
-                  tick={{ fill: CHART_TEXT, fontSize: 11, fontFamily: "var(--font-geist-mono)" }}
+                  tick={{ fill: CHART_TEXT, fontSize: 13, fontFamily: "var(--font-geist-mono)" }}
                   axisLine={false}
                   tickLine={false}
                 />

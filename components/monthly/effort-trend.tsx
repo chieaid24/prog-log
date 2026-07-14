@@ -109,7 +109,7 @@ export function EffortTrend({ points }: Props) {
                   x={x(i)}
                   y={HEIGHT - 6}
                   textAnchor="middle"
-                  fontSize={11}
+                  fontSize={13}
                   fill={CHART_TEXT}
                   fontFamily="var(--font-geist-mono)"
                 >

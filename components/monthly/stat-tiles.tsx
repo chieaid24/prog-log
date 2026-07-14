@@ -23,7 +23,7 @@ export function StatTiles({ stat, split }: Props) {
   return (
     <section
       aria-label="Month at a glance"
-      className="rounded-xl border border-border bg-surface px-4 py-3"
+      className="rounded-xl border border-border bg-surface p-3"
     >
       <dl className="grid grid-cols-2 gap-y-4 sm:grid-cols-4 sm:divide-x sm:divide-border">
         {stats.map((item) => (
