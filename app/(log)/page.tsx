@@ -133,7 +133,10 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
         <MomentumPanel />
       </aside>
 
-      <LogSheet projects={projects} />
+      {/* With a day selected, the day panel carries its own capture form on
+          the same screen; the fixed button would float right over those
+          controls at 390px and steal their taps. */}
+      {!selectedDay && <LogSheet projects={projects} />}
     </div>
   );
 }
