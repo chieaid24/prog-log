@@ -3,7 +3,7 @@
 // Server component: all interaction is links, sharing ?day= with the heatmap.
 import Link from "next/link";
 import { addDays, addMonths, monthTitle, weekdayMondayFirst } from "@/lib/dates";
-import type { CalendarDayProject } from "@/lib/types";
+import { TIME_LABEL, type CalendarDayProject } from "@/lib/types";
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const CARD_CAP = 3;
@@ -52,7 +52,9 @@ export function MonthCalendar({ monthStart, todayISO, cards, selectedDay }: Prop
   return (
     <div>
       <header className="mb-3 flex items-center justify-between">
-        <h2 className="text-base font-semibold tracking-tight">{monthTitle(monthStart)}</h2>
+        <h2 className="text-2xl font-semibold leading-[1.2] tracking-[-0.01em]">
+          {monthTitle(monthStart)}
+        </h2>
         <nav aria-label="Calendar navigation" className="flex items-center gap-1 text-sm">
           <Link
             href={monthHref(addMonths(monthStart, -1))}
@@ -129,6 +131,9 @@ export function MonthCalendar({ monthStart, todayISO, cards, selectedDay }: Prop
                             key={card.projectId}
                             href={dayHref(monthStart, day)}
                             data-testid="calendar-card"
+                            aria-label={`${card.projectName}, ${TIME_LABEL[card.timeSpent]}${
+                              card.hasMilestone ? ", milestone" : ""
+                            }`}
                             className="group flex items-center gap-1.5 rounded-md px-1.5 py-1 transition-colors hover:bg-surface-sunken pointer-coarse:py-1.5"
                           >
                             <span
