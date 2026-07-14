@@ -61,8 +61,15 @@ export function EffortTrend({ points }: Props) {
         <>
           {/* 90 daily bars need real width to stay legible: on narrow
               screens the chart keeps a minimum width and scrolls inside
-              its own container instead of squeezing. */}
-          <div className="mt-2 overflow-x-auto overscroll-x-contain">
+              its own container instead of squeezing. tabIndex lets keyboard
+              users scroll the hidden portion (axe:
+              scrollable-region-focusable). */}
+          <div
+            tabIndex={0}
+            role="region"
+            aria-label="Effort trend chart, scrolls horizontally"
+            className="mt-2 overflow-x-auto overscroll-x-contain"
+          >
           <svg
             viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
             className="w-full min-w-[560px]"
