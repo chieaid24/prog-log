@@ -57,20 +57,20 @@ export function MonthCalendar({ monthStart, todayISO, cards, selectedDay }: Prop
           <Link
             href={monthHref(addMonths(monthStart, -1))}
             aria-label="Previous month"
-            className="rounded-md border border-border bg-surface px-2 py-1 text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:px-3 pointer-coarse:py-2.5"
+            className="rounded-md border border-border bg-surface px-2 py-1 text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:px-3 pointer-coarse:py-3"
           >
             ←
           </Link>
           <Link
             href={monthHref(todayISO)}
-            className="rounded-md border border-border bg-surface px-2 py-1 text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:px-3 pointer-coarse:py-2.5"
+            className="rounded-md border border-border bg-surface px-2 py-1 text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:px-3 pointer-coarse:py-3"
           >
             Today
           </Link>
           <Link
             href={monthHref(addMonths(monthStart, 1))}
             aria-label="Next month"
-            className="rounded-md border border-border bg-surface px-2 py-1 text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:px-3 pointer-coarse:py-2.5"
+            className="rounded-md border border-border bg-surface px-2 py-1 text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:px-3 pointer-coarse:py-3"
           >
             →
           </Link>
