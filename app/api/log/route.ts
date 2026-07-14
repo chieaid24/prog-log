@@ -1,11 +1,7 @@
 // Apple Shortcut ingest (PRD 4.2, ADR-0002). A single-purpose bearer secret
-// gates the route; project resolution follows the same never-guess rule as
-// Discord, and the write goes through upsertEntry — the single shared write
-// path (ADR-0001).
-import { bearerMatches } from "@/lib/capture";
-import { getOwnerActiveProjects, getOwnerAliases, noMatchMessage } from "@/lib/discord/owner";
-import { upsertEntry } from "@/lib/entries";
-import { resolveProjectWithAliases } from "@/lib/projects";
+// gates the route; resolution and the write are the shared capture pipeline
+// (captureLog, ADR-0001) — this file only parses the body and shapes JSON.
+import { bearerMatches, captureLog } from "@/lib/capture";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { TIME_SIZES, type TimeSize } from "@/lib/types";
 
@@ -47,34 +43,23 @@ export async function POST(req: Request): Promise<Response> {
     );
   }
 
-  const db = createAdminClient();
-  const ownerId = process.env.OWNER_USER_ID ?? "";
-  const [projects, aliases] = await Promise.all([
-    getOwnerActiveProjects(db, ownerId),
-    getOwnerAliases(db, ownerId),
-  ]);
-  const resolution = resolveProjectWithAliases(projects, aliases, rawProject);
-  if (resolution.status !== "match") {
-    return Response.json(
-      { error: noMatchMessage(rawProject, resolution.near) },
-      { status: 404 },
-    );
+  const result = await captureLog(createAdminClient(), {
+    ownerId: process.env.OWNER_USER_ID ?? "",
+    rawProject,
+    timeSpent: body.time,
+    milestone: optionalText(body.milestone),
+    description: optionalText(body.description),
+  });
+  if (result.status === "unresolved") {
+    return Response.json({ error: result.message }, { status: 404 });
   }
-
-  try {
-    const entry = await upsertEntry(db, {
-      projectId: resolution.project.id,
-      timeSpent: body.time,
-      milestone: optionalText(body.milestone),
-      description: optionalText(body.description),
-      userId: ownerId,
-    });
-    return Response.json({
-      ok: true,
-      message: `logged ${resolution.project.name} - ${body.time}`,
-      entry,
-    });
-  } catch {
+  if (result.status === "write-failed") {
     return Response.json({ error: "could not save the entry" }, { status: 500 });
   }
+
+  return Response.json({
+    ok: true,
+    message: `logged ${result.project.name} - ${body.time}`,
+    entry: result.entry,
+  });
 }

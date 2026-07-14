@@ -1,5 +1,11 @@
-// Thin RLS fetches (ADR-0007): filters and joins only, no aggregation.
+// Thin fetches (ADR-0007): filters and joins only, no aggregation.
 // Rollups happen in lib/rollups.ts / lib/throwbacks.ts on the returned rows.
+//
+// The get* helpers are RLS-scoped (session client — the policy scopes rows).
+// Three shapes are shared with the service-role capture layer (ADR-0009):
+// their fetch* cores take an optional ownerId and add an explicit
+// `.eq("user_id", ownerId)` filter when it is present. The owner-scoped
+// wrappers that always supply it live in lib/discord/owner.ts.
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types";
 import { DEFAULT_TIMEZONE, daysBetween } from "./dates";
@@ -9,15 +15,21 @@ export type Db = SupabaseClient<Database>;
 
 const ENTRY_WITH_PROJECT = "*, project:projects(id, name, color, category, status)";
 
-/** Active Projects for pickers, name order (PRD 3.2). */
-export async function getActiveProjects(db: Db): Promise<Project[]> {
-  const { data, error } = await db
-    .from("projects")
-    .select("*")
-    .eq("status", "active")
-    .order("name");
+/**
+ * Core shape: active Projects, name order. RLS callers omit `ownerId`;
+ * service-role callers (ADR-0009) must pass it since RLS is bypassed.
+ */
+export async function fetchActiveProjects(db: Db, ownerId?: string): Promise<Project[]> {
+  const query = db.from("projects").select("*");
+  const scoped = ownerId === undefined ? query : query.eq("user_id", ownerId);
+  const { data, error } = await scoped.eq("status", "active").order("name");
   if (error) throw error;
   return data;
+}
+
+/** Active Projects for pickers, name order (PRD 3.2). */
+export async function getActiveProjects(db: Db): Promise<Project[]> {
+  return fetchActiveProjects(db);
 }
 
 /** Every Project regardless of status, active first then name. */
@@ -76,13 +88,20 @@ export async function getEntriesForDay(db: Db, date: string): Promise<EntryWithP
 }
 
 /**
- * The Throwback candidate pool: every past Milestone (strictly before today
- * in the user's timezone), with its age precomputed (PRD 3.4).
+ * Core shape: the Throwback candidate pool — every past Milestone (strictly
+ * before today in the user's timezone), with its age precomputed (PRD 3.4).
+ * RLS callers omit `ownerId`; service-role callers (ADR-0009) must pass it.
  */
-export async function getThrowbackPool(db: Db, todayISO: string): Promise<ThrowbackItem[]> {
-  const { data, error } = await db
+export async function fetchThrowbackPool(
+  db: Db,
+  todayISO: string,
+  ownerId?: string,
+): Promise<ThrowbackItem[]> {
+  const query = db
     .from("entries")
-    .select("id, milestone, entry_date, project:projects(name, color)")
+    .select("id, milestone, entry_date, project:projects(name, color)");
+  const scoped = ownerId === undefined ? query : query.eq("user_id", ownerId);
+  const { data, error } = await scoped
     .not("milestone", "is", null)
     .lt("entry_date", todayISO)
     .order("entry_date");
@@ -103,6 +122,13 @@ export async function getThrowbackPool(db: Db, todayISO: string): Promise<Throwb
 }
 
 /**
+ * The Throwback candidate pool for the signed-in user's web feed (PRD 3.4).
+ */
+export async function getThrowbackPool(db: Db, todayISO: string): Promise<ThrowbackItem[]> {
+  return fetchThrowbackPool(db, todayISO);
+}
+
+/**
  * Every Entry's (date, project) pair, all time — the lean feed for streak and
  * momentum math (ADR-0011: streaks reach past the heatmap's year window).
  */
@@ -117,9 +143,19 @@ export async function getEntryDatesWithProject(
   return data;
 }
 
-/** The stored user timezone (ADR-0004), defaulting when no row exists yet. */
-export async function getUserTimezone(db: Db): Promise<string> {
-  const { data, error } = await db.from("app_settings").select("timezone").maybeSingle();
+/**
+ * Core shape: the stored timezone (ADR-0004), defaulting when no row exists
+ * yet. RLS callers omit `ownerId`; service-role callers (ADR-0009) must pass it.
+ */
+export async function fetchTimezone(db: Db, ownerId?: string): Promise<string> {
+  const query = db.from("app_settings").select("timezone");
+  const scoped = ownerId === undefined ? query : query.eq("user_id", ownerId);
+  const { data, error } = await scoped.maybeSingle();
   if (error) throw error;
   return data?.timezone ?? DEFAULT_TIMEZONE;
+}
+
+/** The stored user timezone (ADR-0004), defaulting when no row exists yet. */
+export async function getUserTimezone(db: Db): Promise<string> {
+  return fetchTimezone(db);
 }
