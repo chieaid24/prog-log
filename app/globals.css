@@ -65,22 +65,27 @@ body {
   min-height: 100dvh;
 }
 
-/* Expand a visually small control to a >=44px hit area on touch devices
-   without changing its rendered size (WCAG 2.5.5 / Apple HIG). The overlay
-   is centered, so surrounding layout is untouched. */
+/* Expand a visually small control's hit area without changing its rendered
+   size: >=24px on fine pointers (WCAG 2.5.8), >=44px on touch (WCAG 2.5.5 /
+   Apple HIG). The overlay is centered, so surrounding layout is untouched. */
 @utility tap {
   position: relative;
 }
 
+.tap::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100%, 24px);
+  height: max(100%, 24px);
+  transform: translate(-50%, -50%);
+}
+
 @media (pointer: coarse) {
   .tap::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    top: 50%;
     width: max(100%, 44px);
     height: max(100%, 44px);
-    transform: translate(-50%, -50%);
   }
 }
 
