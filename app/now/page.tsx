@@ -81,7 +81,9 @@ export default async function NowPage() {
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-col gap-8 py-12 pl-[max(1.5rem,env(safe-area-inset-left))] pr-[max(1.5rem,env(safe-area-inset-right))]">
       <header className="flex flex-col gap-3">
-        <Frog size={44} title="Ferdy, a pixel frog sitting on a log" />
+        {/* Decorative: the heading right below carries the meaning, so the
+            frog stays aria-hidden (DESIGN.md frog a11y). */}
+        <Frog size={44} />
         <h1 className="text-3xl font-bold tracking-tight text-ink">What I&rsquo;m working on</h1>
         <p className="text-sm text-ink-muted">
           Milestones and deep-work days from the last {NOW_WINDOW_DAYS} days of my work log.
@@ -103,7 +105,7 @@ export default async function NowPage() {
           {projects.map((project) => (
             <li
               key={project.projectName}
-              className="rounded-xl border border-border bg-surface p-5"
+              className="rounded-xl border border-border bg-surface p-4"
             >
               <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                 <div className="flex items-center gap-2.5">

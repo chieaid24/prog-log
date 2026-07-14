@@ -4,7 +4,9 @@ import { Frog } from "@/components/ui/frog";
 export default function NotFound() {
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center gap-4 p-6 text-center">
-      <Frog size={72} title="Ferdy, a pixel frog sitting on a log" />
+      {/* Decorative: the heading right below carries the meaning, so the
+          frog stays aria-hidden (DESIGN.md frog a11y). */}
+      <Frog size={72} />
       <h1 className="text-2xl font-bold tracking-tight text-ink">
         Nothing on this lily pad
       </h1>
