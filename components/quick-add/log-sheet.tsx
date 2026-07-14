@@ -41,6 +41,30 @@ export function LogSheet({ projects }: { projects: Project[] }) {
     if (event.target === dialogRef.current) close();
   }
 
+  // showModal() makes the page inert but Chromium still parks focus on
+  // <body> for one Tab press at the cycle edge, leaving no visible focus.
+  // Wrap explicitly instead.
+  function onKeyDown(event: React.KeyboardEvent<HTMLDialogElement>) {
+    if (event.key !== "Tab") return;
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const focusables = [
+      ...dialog.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      ),
+    ].filter((el) => !el.hasAttribute("disabled") && el.getClientRects().length > 0);
+    if (focusables.length === 0) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
   return (
     <div className="lg:hidden">
       <button
@@ -75,6 +99,7 @@ export function LogSheet({ projects }: { projects: Project[] }) {
         aria-label="Log today"
         className="log-sheet"
         onClick={onBackdropClick}
+        onKeyDown={onKeyDown}
       >
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-sm font-semibold tracking-tight">Log today</h2>
