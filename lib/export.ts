@@ -8,6 +8,8 @@ export const CSV_HEADER = ["entry_date", "project", "time_spent", "milestone", "
 
 /** One normalized Entry row, the common currency of both formats. */
 export type ImportRow = {
+  /** CSV record number or one-based JSON entry position in the source file. */
+  line: number;
   entryDate: string;
   projectName: string;
   timeSpent: TimeSize;
@@ -137,6 +139,7 @@ function validateRow(
   const description = raw.description.trim();
   return {
     row: {
+      line,
       entryDate,
       projectName,
       timeSpent,
