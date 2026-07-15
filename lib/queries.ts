@@ -8,7 +8,7 @@
 // wrappers that always supply it live in lib/discord/owner.ts.
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types";
-import { DEFAULT_TIMEZONE, daysBetween } from "./dates";
+import { DEFAULT_TIMEZONE, daysBetween, todayInTimeZone } from "./dates";
 import type { EntryWithProject, Project, ProjectAlias, ThrowbackItem } from "./types";
 
 export type Db = SupabaseClient<Database>;
@@ -158,4 +158,13 @@ export async function fetchTimezone(db: Db, ownerId?: string): Promise<string> {
 /** The stored user timezone (ADR-0004), defaulting when no row exists yet. */
 export async function getUserTimezone(db: Db): Promise<string> {
   return fetchTimezone(db);
+}
+
+/**
+ * Today's calendar date in the stored timezone (ADR-0004). Concentrates the
+ * fetch-then-compute pairing every read boundary needs, so no caller can drift
+ * from the stored zone. RLS-scoped; owner-scoped callers use getOwnerToday.
+ */
+export async function getToday(db: Db): Promise<string> {
+  return todayInTimeZone(await fetchTimezone(db));
 }

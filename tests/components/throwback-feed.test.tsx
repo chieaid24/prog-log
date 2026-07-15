@@ -6,14 +6,14 @@ import { humanizeAge, pickThrowbacks } from "@/lib/throwbacks";
 import type { ThrowbackItem } from "@/lib/types";
 
 const getThrowbackPool = vi.fn();
-const getUserTimezone = vi.fn();
+const getToday = vi.fn();
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn(async () => ({})),
 }));
 vi.mock("@/lib/queries", () => ({
   getThrowbackPool: (...args: unknown[]) => getThrowbackPool(...args),
-  getUserTimezone: (...args: unknown[]) => getUserTimezone(...args),
+  getToday: (...args: unknown[]) => getToday(...args),
 }));
 
 function item(entryId: string, milestone: string, daysAgo: number): ThrowbackItem {
@@ -35,15 +35,12 @@ const POOL = [
   item("e5", "calendar banners done", 2),
 ];
 
-// Fixed clock: 2026-06-20 in America/Toronto.
+// Fixed today: 2026-06-20 in the stored timezone.
 beforeEach(() => {
-  vi.useFakeTimers({ toFake: ["Date"] });
-  vi.setSystemTime(new Date("2026-06-20T16:00:00Z"));
-  getUserTimezone.mockResolvedValue("America/Toronto");
+  getToday.mockResolvedValue("2026-06-20");
 });
 
 afterEach(() => {
-  vi.useRealTimers();
   vi.clearAllMocks();
 });
 

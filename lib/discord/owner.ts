@@ -3,6 +3,7 @@
 // the shared shapes delegate to the fetch* cores in lib/queries (ADR-0009)
 // with `ownerId` always supplied. Never call the RLS-scoped get* helpers in
 // lib/queries with the admin client.
+import { todayInTimeZone } from "@/lib/dates";
 import { fetchActiveProjects, fetchThrowbackPool, fetchTimezone } from "@/lib/queries";
 import type { Db } from "@/lib/queries";
 import type { Project, ProjectAlias, ThrowbackItem } from "@/lib/types";
@@ -25,6 +26,11 @@ export async function getOwnerAliases(db: Db, ownerId: string): Promise<ProjectA
 /** The owner's stored timezone (ADR-0004), with the documented default. */
 export async function getOwnerTimezone(db: Db, ownerId: string): Promise<string> {
   return fetchTimezone(db, ownerId);
+}
+
+/** The owner's today (ADR-0004) in their stored timezone — the digest's date boundary. */
+export async function getOwnerToday(db: Db, ownerId: string): Promise<string> {
+  return todayInTimeZone(await fetchTimezone(db, ownerId));
 }
 
 /** The owner's Throwback pool — same shape as the web feed's (PRD 3.4). */

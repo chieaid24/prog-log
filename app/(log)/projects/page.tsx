@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ProjectManager, type ProjectUsage } from "@/components/projects/project-manager";
-import { daysBetween, todayInTimeZone } from "@/lib/dates";
-import { getAllProjects, getProjectAliases, getUserTimezone } from "@/lib/queries";
+import { daysBetween } from "@/lib/dates";
+import { getAllProjects, getProjectAliases, getToday } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 import type { ProjectAlias } from "@/lib/types";
 
@@ -10,9 +10,9 @@ export const dynamic = "force-dynamic";
 
 export default async function ProjectsPage() {
   const supabase = await createClient();
-  const [projects, timezone, aliasRows] = await Promise.all([
+  const [projects, today, aliasRows] = await Promise.all([
     getAllProjects(supabase),
-    getUserTimezone(supabase),
+    getToday(supabase),
     getProjectAliases(supabase),
   ]);
 
@@ -27,7 +27,6 @@ export default async function ProjectsPage() {
     .select("project_id, entry_date");
   if (error) throw error;
 
-  const today = todayInTimeZone(timezone);
   const usage: Record<string, ProjectUsage> = {};
   for (const row of entryRows) {
     const u = usage[row.project_id] ?? { entries: 0, lastLoggedDaysAgo: null };

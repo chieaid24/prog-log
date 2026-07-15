@@ -8,8 +8,8 @@ import { QuickAddForm } from "@/components/quick-add/quick-add-form";
 import { MomentumPanel } from "@/components/streak/momentum-panel";
 import { ThrowbackFeed } from "@/components/throwback/throwback-feed";
 import { YearHeatmap } from "@/components/heatmap/year-heatmap";
-import { addDays, endOfMonth, startOfMonth, todayInTimeZone } from "@/lib/dates";
-import { getActiveProjects, getEntriesInRange, getUserTimezone } from "@/lib/queries";
+import { addDays, endOfMonth, startOfMonth } from "@/lib/dates";
+import { getActiveProjects, getEntriesInRange, getToday } from "@/lib/queries";
 import { toCalendarDayProjects, toHeatmapCells } from "@/lib/rollups";
 import { createClient } from "@/lib/supabase/server";
 
@@ -32,8 +32,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
   const selectedDay = rawDay && DAY_RE.test(rawDay) ? rawDay : null;
 
   const supabase = await createClient();
-  const timezone = await getUserTimezone(supabase);
-  const today = todayInTimeZone(timezone);
+  const today = await getToday(supabase);
   const monthStart =
     rawMonth && MONTH_RE.test(rawMonth) ? `${rawMonth}-01` : startOfMonth(today);
 

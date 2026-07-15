@@ -6,16 +6,16 @@ import { todayInTimeZone } from "@/lib/dates";
 import { humanizeAge, pickThrowbacks } from "@/lib/throwbacks";
 import type { ThrowbackItem } from "@/lib/types";
 
-const { ADMIN, getOwnerThrowbackPool, getOwnerTimezone } = vi.hoisted(() => ({
+const { ADMIN, getOwnerThrowbackPool, getOwnerToday } = vi.hoisted(() => ({
   ADMIN: { admin: true },
   getOwnerThrowbackPool: vi.fn(),
-  getOwnerTimezone: vi.fn(),
+  getOwnerToday: vi.fn(),
 }));
 
 vi.mock("@/lib/supabase/admin", () => ({ createAdminClient: () => ADMIN }));
 vi.mock("@/lib/discord/owner", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/discord/owner")>();
-  return { ...actual, getOwnerThrowbackPool, getOwnerTimezone };
+  return { ...actual, getOwnerThrowbackPool, getOwnerToday };
 });
 
 import { GET } from "@/app/api/cron/digest/route";
@@ -57,7 +57,7 @@ beforeEach(() => {
   vi.stubEnv("OWNER_USER_ID", "11111111-1111-1111-1111-111111111111");
   vi.stubGlobal("fetch", fetchMock);
   fetchMock.mockReset().mockResolvedValue(new Response(null, { status: 204 }));
-  getOwnerTimezone.mockReset().mockResolvedValue(TIMEZONE);
+  getOwnerToday.mockReset().mockResolvedValue(todayInTimeZone(TIMEZONE));
   getOwnerThrowbackPool.mockReset().mockResolvedValue(POOL);
 });
 
