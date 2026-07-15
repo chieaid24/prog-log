@@ -2,8 +2,7 @@
 // in the dashboard aside next to the quick-add that extends it. Self-contained
 // server component, same idiom as <ThrowbackFeed/>.
 import { ProjectChip } from "@/components/ui/project-chip";
-import { todayInTimeZone } from "@/lib/dates";
-import { getAllProjects, getEntryDatesWithProject, getUserTimezone } from "@/lib/queries";
+import { getAllProjects, getEntryDatesWithProject, getToday } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 import { prepareMomentum, type MomentumRow } from "./prepare";
 
@@ -15,8 +14,7 @@ const DIRECTION: Record<MomentumRow["momentum"]["direction"], { glyph: string; l
 
 export async function MomentumPanel() {
   const supabase = await createClient();
-  const timezone = await getUserTimezone(supabase);
-  const today = todayInTimeZone(timezone);
+  const today = await getToday(supabase);
   const [pairs, projects] = await Promise.all([
     getEntryDatesWithProject(supabase),
     getAllProjects(supabase),

@@ -6,13 +6,13 @@ import type { Project } from "@/lib/types";
 
 const getEntryDatesWithProject = vi.fn();
 const getAllProjects = vi.fn();
-const getUserTimezone = vi.fn();
+const getToday = vi.fn();
 
 vi.mock("@/lib/supabase/server", () => ({ createClient: async () => ({}) }));
 vi.mock("@/lib/queries", () => ({
   getEntryDatesWithProject: (...args: unknown[]) => getEntryDatesWithProject(...args),
   getAllProjects: (...args: unknown[]) => getAllProjects(...args),
-  getUserTimezone: (...args: unknown[]) => getUserTimezone(...args),
+  getToday: (...args: unknown[]) => getToday(...args),
 }));
 
 import { MomentumPanel } from "@/components/streak/momentum-panel";
@@ -91,9 +91,9 @@ describe("prepareMomentum", () => {
 
 describe("<MomentumPanel/>", () => {
   it("renders the streak header and per-project cadence rows", async () => {
-    getUserTimezone.mockResolvedValue("UTC");
-    getAllProjects.mockResolvedValue([project({ id: "turkish", name: "Turkish" })]);
     const today = new Intl.DateTimeFormat("en-CA", { timeZone: "UTC" }).format(new Date());
+    getToday.mockResolvedValue(today);
+    getAllProjects.mockResolvedValue([project({ id: "turkish", name: "Turkish" })]);
     const d = (offset: number) => {
       const date = new Date(`${today}T12:00:00Z`);
       date.setUTCDate(date.getUTCDate() + offset);
@@ -110,7 +110,7 @@ describe("<MomentumPanel/>", () => {
   });
 
   it("shows the quiet empty state before any logging", async () => {
-    getUserTimezone.mockResolvedValue("UTC");
+    getToday.mockResolvedValue(new Intl.DateTimeFormat("en-CA", { timeZone: "UTC" }).format(new Date()));
     getAllProjects.mockResolvedValue([]);
     getEntryDatesWithProject.mockResolvedValue([]);
 

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { render, screen, within } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import MonthlyPage from "@/app/(log)/monthly/page";
 import { EffortTrend } from "@/components/monthly/effort-trend";
 import { MilestoneList } from "@/components/monthly/milestone-list";
@@ -17,14 +17,14 @@ import type { TrendPoint } from "@/lib/rollups";
 import type { EntryWithProject } from "@/lib/types";
 
 const getEntriesInRange = vi.fn();
-const getUserTimezone = vi.fn();
+const getToday = vi.fn();
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn(async () => ({})),
 }));
 vi.mock("@/lib/queries", () => ({
   getEntriesInRange: (...args: unknown[]) => getEntriesInRange(...args),
-  getUserTimezone: (...args: unknown[]) => getUserTimezone(...args),
+  getToday: (...args: unknown[]) => getToday(...args),
 }));
 
 function entry(
@@ -43,14 +43,7 @@ function entry(
   };
 }
 
-// Fixed clock: 2026-06-20 anywhere in America/Toronto.
-beforeEach(() => {
-  vi.useFakeTimers({ toFake: ["Date"] });
-  vi.setSystemTime(new Date("2026-06-20T16:00:00Z"));
-});
-
 afterEach(() => {
-  vi.useRealTimers();
   vi.clearAllMocks();
 });
 
@@ -210,7 +203,7 @@ describe("milestone list", () => {
 
 describe("monthly page", () => {
   it("fetches one union range and renders the requested month", async () => {
-    getUserTimezone.mockResolvedValue("America/Toronto");
+    getToday.mockResolvedValue("2026-06-20");
     getEntriesInRange.mockResolvedValue([
       entry({ entry_date: "2026-05-04", milestone: "wired the schema" }),
       entry({ entry_date: "2026-05-04", time_spent: "large" }),
@@ -246,7 +239,7 @@ describe("monthly page", () => {
   });
 
   it("defaults to today's month in the stored timezone with quiet empty states", async () => {
-    getUserTimezone.mockResolvedValue("America/Toronto");
+    getToday.mockResolvedValue("2026-06-20");
     getEntriesInRange.mockResolvedValue([]);
 
     render(await MonthlyPage({ searchParams: Promise.resolve({}) }));

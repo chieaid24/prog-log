@@ -2,14 +2,20 @@
 // each shared shape has exactly one definition in lib/queries, the RLS get*
 // wrappers apply no user_id filter, and the owner-scoped wrappers in
 // lib/discord/owner add the explicit filter the service-role client needs.
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DEFAULT_TIMEZONE } from "@/lib/dates";
 import {
   getOwnerActiveProjects,
   getOwnerThrowbackPool,
   getOwnerTimezone,
+  getOwnerToday,
 } from "@/lib/discord/owner";
-import { getActiveProjects, getThrowbackPool, getUserTimezone } from "@/lib/queries";
+import {
+  getActiveProjects,
+  getThrowbackPool,
+  getToday,
+  getUserTimezone,
+} from "@/lib/queries";
 import type { Db } from "@/lib/queries";
 
 const OWNER_ID = "11111111-1111-1111-1111-111111111111";
@@ -145,5 +151,40 @@ describe("timezone shape", () => {
   it("falls back to the default timezone when no row exists", async () => {
     await expect(getUserTimezone(fakeDb(null).db)).resolves.toBe(DEFAULT_TIMEZONE);
     await expect(getOwnerTimezone(fakeDb(null).db, OWNER_ID)).resolves.toBe(DEFAULT_TIMEZONE);
+  });
+});
+
+describe("today shape", () => {
+  // 2026-07-14T16:00Z: noon in America/Toronto (still the 14th), 19:00 in
+  // Istanbul (the 14th), but already the 15th in Kiritimati (UTC+14). The
+  // stored zone, not the server clock, decides the calendar day (ADR-0004).
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-07-14T16:00:00Z"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("RLS: computes today from the stored timezone, no user_id filter", async () => {
+    const { db, calls } = fakeDb({ timezone: "Europe/Istanbul" });
+    await expect(getToday(db)).resolves.toBe("2026-07-14");
+    expect(calls).toEqual([
+      ["from", "app_settings"],
+      ["select", "timezone"],
+      ["maybeSingle"],
+    ]);
+  });
+
+  it("owner: computes today from the owner's stored zone across the date line", async () => {
+    const { db, calls } = fakeDb({ timezone: "Pacific/Kiritimati" });
+    await expect(getOwnerToday(db, OWNER_ID)).resolves.toBe("2026-07-15");
+    expect(calls).toContainEqual(["eq", "user_id", OWNER_ID]);
+  });
+
+  it("falls back to the default timezone when no row exists", async () => {
+    await expect(getToday(fakeDb(null).db)).resolves.toBe("2026-07-14");
+    await expect(getOwnerToday(fakeDb(null).db, OWNER_ID)).resolves.toBe("2026-07-14");
   });
 });

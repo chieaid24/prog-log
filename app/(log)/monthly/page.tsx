@@ -21,8 +21,7 @@ import { ProjectShare } from "@/components/monthly/project-share";
 import { ProjectStack } from "@/components/monthly/project-stack";
 import { StatTiles } from "@/components/monthly/stat-tiles";
 import { WeekdayPattern } from "@/components/monthly/weekday-pattern";
-import { todayInTimeZone } from "@/lib/dates";
-import { getEntriesInRange, getUserTimezone } from "@/lib/queries";
+import { getEntriesInRange, getToday } from "@/lib/queries";
 import {
   toProjectMonthSplits,
   toProjectShares,
@@ -43,8 +42,7 @@ export default async function MonthlyPage({ searchParams }: { searchParams: Sear
   const params = await searchParams;
 
   const supabase = await createClient();
-  const timezone = await getUserTimezone(supabase);
-  const today = todayInTimeZone(timezone);
+  const today = await getToday(supabase);
   const monthStart = parseMonthParam(single(params.month), today);
   const window = monthWindow(monthStart, today);
 

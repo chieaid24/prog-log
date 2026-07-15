@@ -4,8 +4,7 @@
 // as the web feed's first card, so page and digest always agree. An empty
 // pool means a silent day: {sent:false}, no webhook call.
 import { bearerMatches } from "@/lib/capture";
-import { todayInTimeZone } from "@/lib/dates";
-import { getOwnerThrowbackPool, getOwnerTimezone } from "@/lib/discord/owner";
+import { getOwnerThrowbackPool, getOwnerToday } from "@/lib/discord/owner";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { humanizeAge, pickThrowbacks } from "@/lib/throwbacks";
 
@@ -24,8 +23,7 @@ export async function GET(req: Request): Promise<Response> {
 
   const db = createAdminClient();
   const ownerId = process.env.OWNER_USER_ID ?? "";
-  const timezone = await getOwnerTimezone(db, ownerId);
-  const today = todayInTimeZone(timezone);
+  const today = await getOwnerToday(db, ownerId);
   const pool = await getOwnerThrowbackPool(db, ownerId, today);
 
   const [pick] = pickThrowbacks(pool, today, 1);

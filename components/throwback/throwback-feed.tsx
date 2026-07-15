@@ -4,15 +4,13 @@
 // per today (user timezone): refreshing never reshuffles, and the morning
 // Discord digest's single item is always this feed's first card.
 import { ProjectChip } from "@/components/ui/project-chip";
-import { todayInTimeZone } from "@/lib/dates";
-import { getThrowbackPool, getUserTimezone } from "@/lib/queries";
+import { getThrowbackPool, getToday } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 import { humanizeAge, pickThrowbacks } from "@/lib/throwbacks";
 
 export async function ThrowbackFeed() {
   const supabase = await createClient();
-  const timezone = await getUserTimezone(supabase);
-  const today = todayInTimeZone(timezone);
+  const today = await getToday(supabase);
   const pool = await getThrowbackPool(supabase, today);
   const items = pickThrowbacks(pool, today);
 
