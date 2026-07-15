@@ -1,10 +1,10 @@
 // Unit tests for the ADR-0008 import loop at its own level (lib/import):
 // name-resolution dedup, Project creation with envelope metadata, failure
-// accumulation seeded from parser errors, and the two quirks kept verbatim
-// (issue #16): write failures numbered `i + 2` over the filtered valid rows,
-// and archived Projects reused as-is without revival.
+// accumulation seeded from parser errors, including the issue #16 guarantees:
+// write failures retain their true CSV/JSON source position, and archived
+// Projects are resolved through createProject so they are revived.
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { ImportRow, ParsedImport } from "@/lib/export";
+import { parseImport, type ImportRow, type ParsedImport } from "@/lib/export";
 import type { Db } from "@/lib/queries";
 import type { Project } from "@/lib/types";
 
@@ -43,6 +43,7 @@ function project(name: string, overrides: Partial<Project> = {}): Project {
 
 function row(projectName: string, entryDate: string, overrides: Partial<ImportRow> = {}): ImportRow {
   return {
+    line: 2,
     entryDate,
     projectName,
     timeSpent: "small",
@@ -67,8 +68,13 @@ beforeEach(() => {
 });
 
 describe("project resolution", () => {
-  it("reuses known Projects and creates each unknown name exactly once", async () => {
+  it("resolves each distinct name once and counts only names absent from the initial snapshot", async () => {
     projectsSelect.mockResolvedValue({ data: [project("Alpha")], error: null });
+    createProject.mockImplementation(async (_db: unknown, input: { name: string }) =>
+      input.name.trim().toLowerCase() === "alpha"
+        ? project("Alpha")
+        : project(input.name, { id: `created-${input.name.toLowerCase()}` }),
+    );
     const outcome = await runImport(
       DB,
       parsed([
@@ -78,8 +84,14 @@ describe("project resolution", () => {
         row("BETA", "2026-07-03"),
       ]),
     );
-    expect(createProject).toHaveBeenCalledTimes(1);
-    expect(createProject).toHaveBeenCalledWith(DB, {
+    expect(createProject).toHaveBeenCalledTimes(2);
+    expect(createProject).toHaveBeenNthCalledWith(1, DB, {
+      name: "alpha",
+      category: null,
+      color: null,
+      description: null,
+    });
+    expect(createProject).toHaveBeenNthCalledWith(2, DB, {
       name: "Beta",
       category: null,
       color: null,
@@ -122,15 +134,19 @@ describe("project resolution", () => {
     expect(outcome.projectsCreated).toBe(2);
   });
 
-  it("reuses an archived Project's id as-is without creating or reviving it", async () => {
-    // Known quirk (issue #16): the known map ignores status, so the archived
-    // Project stays archived; only unknown names hit createProject's revive.
+  it("delegates an archived Project match to createProject so it is revived", async () => {
     projectsSelect.mockResolvedValue({
       data: [project("Alpha", { status: "archived" })],
       error: null,
     });
+    createProject.mockResolvedValue(project("Alpha", { status: "active" }));
     const outcome = await runImport(DB, parsed([row("alpha", "2026-07-01")]));
-    expect(createProject).not.toHaveBeenCalled();
+    expect(createProject).toHaveBeenCalledWith(DB, {
+      name: "alpha",
+      category: null,
+      color: null,
+      description: null,
+    });
     expect(upsertEntry).toHaveBeenCalledWith(DB, expect.objectContaining({ projectId: "id-alpha" }));
     expect(outcome).toEqual({ imported: 1, projectsCreated: 0, failed: [] });
   });
@@ -144,40 +160,72 @@ describe("project resolution", () => {
 });
 
 describe("failure accumulation", () => {
-  it("keeps writing after a row fails and reports the failure as i + 2", async () => {
+  it("keeps writing after a row fails and reports the row's source position", async () => {
     upsertEntry.mockImplementation(async (_db: unknown, input: { entryDate?: string }) => {
       if (input.entryDate === "2026-07-02") throw new Error("write exploded");
       return { id: "e1" };
     });
     const outcome = await runImport(
       DB,
-      parsed([row("Alpha", "2026-07-01"), row("Alpha", "2026-07-02"), row("Alpha", "2026-07-03")]),
+      parsed([
+        row("Alpha", "2026-07-01", { line: 2 }),
+        row("Alpha", "2026-07-02", { line: 8 }),
+        row("Alpha", "2026-07-03", { line: 9 }),
+      ]),
     );
     expect(outcome.imported).toBe(2);
-    expect(outcome.failed).toEqual([{ line: 3, message: "write exploded" }]);
+    expect(outcome.failed).toEqual([{ line: 8, message: "write exploded" }]);
   });
 
-  it("seeds failures with the parser's errors, then appends write failures in row order", async () => {
-    upsertEntry
-      .mockResolvedValueOnce({ id: "e1" })
-      .mockRejectedValueOnce(new Error("second write failed"))
-      .mockRejectedValueOnce("not an Error");
+  it("uses true CSV record numbers after invalid rows were filtered out", async () => {
+    upsertEntry.mockImplementation(async (_db: unknown, input: { entryDate?: string }) => {
+      if (input.entryDate === "2026-07-03") throw new Error("write exploded");
+      return { id: "e1" };
+    });
     const outcome = await runImport(
       DB,
-      parsed(
-        [row("Alpha", "2026-07-01"), row("Alpha", "2026-07-02"), row("Alpha", "2026-07-03")],
-        { errors: [{ line: 3, message: "invalid time_spent" }] },
+      parseImport(
+        [
+          "entry_date,project,time_spent",
+          "2026-07-01,Alpha,small",
+          "bad-date,Alpha,small",
+          "2026-07-03,Alpha,small",
+        ].join("\n"),
       ),
     );
-    // Known quirk (issue #16): write-failure lines index the *filtered* rows
-    // array, so after one parse error they mis-point by one file line.
     expect(outcome).toEqual({
       imported: 1,
       projectsCreated: 1,
       failed: [
-        { line: 3, message: "invalid time_spent" },
-        { line: 3, message: "second write failed" },
-        { line: 4, message: "write failed" }, // non-Error rejection fallback
+        { line: 3, message: 'invalid entry_date "bad-date" (expected YYYY-MM-DD)' },
+        { line: 4, message: "write exploded" },
+      ],
+    });
+  });
+
+  it("uses one-based JSON entry positions rather than the CSV header offset", async () => {
+    upsertEntry.mockImplementation(async (_db: unknown, input: { entryDate?: string }) => {
+      if (input.entryDate === "2026-07-01") throw "not an Error";
+      return { id: "e1" };
+    });
+    const outcome = await runImport(
+      DB,
+      parseImport(
+        JSON.stringify({
+          format: "prog-log-export",
+          entries: [
+            { entry_date: "2026-07-01", project: "Alpha", time_spent: "small" },
+            { entry_date: "bad-date", project: "Alpha", time_spent: "small" },
+          ],
+        }),
+      ),
+    );
+    expect(outcome).toEqual({
+      imported: 0,
+      projectsCreated: 1,
+      failed: [
+        { line: 2, message: 'invalid entry_date "bad-date" (expected YYYY-MM-DD)' },
+        { line: 1, message: "write failed" },
       ],
     });
   });

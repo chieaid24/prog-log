@@ -1,10 +1,9 @@
 // Characterization tests for the import server action (PRD §8, ADR-0008):
 // pin the guard copy, the auth gate, the parse short-circuits, and the
 // create-missing-Projects + upsert-accumulate loop through the action's real
-// FormData interface — including two known quirks kept verbatim (issue #16):
-// write failures are numbered `i + 2` over the *filtered* valid-rows array
-// (mis-pointing after parse errors), and an archived Project already in the
-// table is reused as-is without being revived.
+// FormData interface, including the issue #16 fixes: write failures retain
+// their parser source position, and archived Projects go through the shared
+// create-or-revive path.
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Project } from "@/lib/types";
 
@@ -134,12 +133,18 @@ describe("parse short-circuits", () => {
 });
 
 describe("happy path", () => {
-  it("reuses an existing active Project and upserts with the row's entryDate", async () => {
+  it("resolves an existing active Project and upserts with the row's entryDate", async () => {
     projectsSelect.mockResolvedValue({ data: [project("Alpha")], error: null });
+    createProject.mockResolvedValue(project("Alpha"));
     const res = await importEntriesAction(
       fileForm(csv("2026-07-01,alpha,small,first steps,notes here")),
     );
-    expect(createProject).not.toHaveBeenCalled();
+    expect(createProject).toHaveBeenCalledWith(DB, {
+      name: "alpha",
+      category: null,
+      color: null,
+      description: null,
+    });
     expect(upsertEntry).toHaveBeenCalledTimes(1);
     expect(upsertEntry).toHaveBeenCalledWith(DB, {
       projectId: "id-alpha",
@@ -185,23 +190,26 @@ describe("happy path", () => {
     expect(res).toEqual({ ok: true, imported: 2, projectsCreated: 1, failed: [] });
   });
 
-  it("reuses an archived Project's id as-is without creating or reviving it", async () => {
-    // Known quirk (issue #16): the local map ignores status, so the archived
-    // Project stays archived — only unknown names go through createProject,
-    // which does revive.
+  it("delegates an archived Project match to createProject so it is revived", async () => {
     projectsSelect.mockResolvedValue({
       data: [project("Alpha", { status: "archived" })],
       error: null,
     });
+    createProject.mockResolvedValue(project("Alpha", { status: "active" }));
     const res = await importEntriesAction(fileForm(csv("2026-07-01,Alpha,medium,,")));
-    expect(createProject).not.toHaveBeenCalled();
+    expect(createProject).toHaveBeenCalledWith(DB, {
+      name: "Alpha",
+      category: null,
+      color: null,
+      description: null,
+    });
     expect(upsertEntry).toHaveBeenCalledWith(DB, expect.objectContaining({ projectId: "id-alpha" }));
     expect(res).toEqual({ ok: true, imported: 1, projectsCreated: 0, failed: [] });
   });
 });
 
 describe("failure accumulation", () => {
-  it("keeps parse-error line numbers real but numbers write failures i + 2 over the filtered rows", async () => {
+  it("keeps parser and write failures on their true CSV record numbers", async () => {
     projectsSelect.mockResolvedValue({ data: [project("Alpha")], error: null });
     upsertEntry.mockImplementation(async (_db: unknown, input: { entryDate?: string }) => {
       if (input.entryDate === "2026-07-03") throw new Error("write exploded");
@@ -210,21 +218,19 @@ describe("failure accumulation", () => {
     const res = await importEntriesAction(
       fileForm(
         csv(
-          "2026-07-01,alpha,small,,", // file line 2, valid rows index 0
+          "2026-07-01,alpha,small,,", // file line 2
           "bad-date,alpha,small,,", // file line 3, parse error
-          "2026-07-03,alpha,small,,", // file line 4, valid rows index 1
+          "2026-07-03,alpha,small,,", // file line 4, write error
         ),
       ),
     );
-    // Known quirk (issue #16): the failing write sits on file line 4 but is
-    // reported as line 3 (i + 2 with i indexing the filtered valid rows).
     expect(res).toEqual({
       ok: true,
       imported: 1,
       projectsCreated: 0,
       failed: [
         { line: 3, message: 'invalid entry_date "bad-date" (expected YYYY-MM-DD)' },
-        { line: 3, message: "write exploded" },
+        { line: 4, message: "write exploded" },
       ],
     });
   });

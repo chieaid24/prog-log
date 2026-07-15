@@ -8,7 +8,6 @@ import { upsertEntry } from "./entries";
 import type { ParsedImport } from "./export";
 import { createProject } from "./projects";
 import type { Db } from "./queries";
-import type { Project } from "./types";
 
 export type ImportFailure = { line: number; message: string };
 
@@ -37,32 +36,25 @@ export async function runImport(db: Db, parsed: ParsedImport): Promise<ImportOut
   let projectsCreated = 0;
   const { data: existing, error: fetchError } = await db.from("projects").select("*");
   if (fetchError) throw fetchError;
-  const known = new Map<string, Project>(
-    (existing ?? []).map((p) => [p.name.trim().toLowerCase(), p] as const),
-  );
+  const existingNames = new Set((existing ?? []).map((p) => p.name.trim().toLowerCase()));
 
   for (const row of rows) {
     const key = row.projectName.trim().toLowerCase();
     if (idByName.has(key)) continue;
-    const already = known.get(key);
-    if (already) {
-      idByName.set(key, already.id);
-      continue;
-    }
     const meta = metaByName.get(key);
-    const created = await createProject(db, {
+    const project = await createProject(db, {
       name: row.projectName,
       category: meta?.category ?? null,
       color: meta?.color ?? null,
       description: meta?.description ?? null,
     });
-    idByName.set(key, created.id);
-    projectsCreated += 1;
+    idByName.set(key, project.id);
+    if (!existingNames.has(key)) projectsCreated += 1;
   }
 
   const failed: ImportFailure[] = [...errors];
   let imported = 0;
-  for (const [i, row] of rows.entries()) {
+  for (const row of rows) {
     try {
       await upsertEntry(db, {
         projectId: idByName.get(row.projectName.trim().toLowerCase())!,
@@ -74,7 +66,7 @@ export async function runImport(db: Db, parsed: ParsedImport): Promise<ImportOut
       imported += 1;
     } catch (e) {
       failed.push({
-        line: i + 2, // best-effort: header + 1-indexed data rows
+        line: row.line,
         message: e instanceof Error ? e.message : "write failed",
       });
     }

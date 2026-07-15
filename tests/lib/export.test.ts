@@ -60,8 +60,16 @@ describe("entriesToCSV", () => {
     const parsed = parseImport(entriesToCSV(entries));
     expect(parsed.errors).toEqual([]);
     expect(parsed.rows).toEqual([
-      { entryDate: "2026-07-01", projectName: "prog-log", timeSpent: "medium", milestone: null, description: null },
       {
+        line: 2,
+        entryDate: "2026-07-01",
+        projectName: "prog-log",
+        timeSpent: "medium",
+        milestone: null,
+        description: null,
+      },
+      {
+        line: 3,
         entryDate: "2026-07-02",
         projectName: "Turkish, advanced",
         timeSpent: "large",
@@ -87,6 +95,7 @@ describe("buildExportJSON", () => {
     expect(parsed.errors).toEqual([]);
     expect(parsed.rows).toEqual([
       {
+        line: 1,
         entryDate: "2026-07-01",
         projectName: "prog-log",
         timeSpent: "medium",
@@ -123,6 +132,7 @@ describe("parseImport (CSV)", () => {
     expect(parsed.errors).toEqual([]);
     expect(parsed.rows).toEqual([
       {
+        line: 2,
         entryDate: "2026-06-30",
         projectName: "aim",
         timeSpent: "large",
@@ -142,7 +152,16 @@ describe("parseImport (CSV)", () => {
         "2026-07-01,aim,small",
       ].join("\n"),
     );
-    expect(parsed.rows).toHaveLength(1);
+    expect(parsed.rows).toEqual([
+      {
+        line: 5,
+        entryDate: "2026-07-01",
+        projectName: "aim",
+        timeSpent: "small",
+        milestone: null,
+        description: null,
+      },
+    ]);
     expect(parsed.errors).toEqual([
       { line: 2, message: 'invalid entry_date "2026-02-30" (expected YYYY-MM-DD)' },
       { line: 3, message: "missing project name" },
