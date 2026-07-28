@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isDemoMode } from "@/lib/demo/mode";
 
 /**
  * Paths reachable without a session: login + auth plumbing, the public "now"
@@ -21,6 +22,13 @@ export function isPublicPath(pathname: string): boolean {
  * cookies; getUser() must be called to trigger the refresh.
  */
 export async function updateSession(request: NextRequest) {
+  // DEMO_MODE (ADR-0016): every path is public and no session is refreshed —
+  // reads come from CSV fixtures, so the demo build needs no Supabase session
+  // and no real credentials to render private pages.
+  if (isDemoMode()) {
+    return NextResponse.next({ request });
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(

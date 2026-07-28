@@ -8,6 +8,7 @@ import { useId, useRef, useState, useTransition } from "react";
 import { logEntryAction } from "@/app/actions/entries";
 import { createProjectAction } from "@/app/actions/projects";
 import { humanDate } from "@/lib/dates";
+import { isDemoNotice } from "@/lib/demo/mode";
 import { TIME_LABEL, TIME_SIZES, type Project, type TimeSize } from "@/lib/types";
 
 const NEW_PROJECT = "__new__";
@@ -36,6 +37,7 @@ export function QuickAddForm({ projects: initialProjects, date, onLogged }: Prop
   const [newName, setNewName] = useState("");
   const [newCategory, setNewCategory] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [logged, setLogged] = useState(false);
   const [pending, startTransition] = useTransition();
   const loggedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -52,12 +54,18 @@ export function QuickAddForm({ projects: initialProjects, date, onLogged }: Prop
   }
 
   function createInline() {
+    setError(null);
+    setNotice(null);
     startTransition(async () => {
       const result = await createProjectAction({
         name: newName,
         category: newCategory || undefined,
       });
       if (!result.ok) {
+        if (isDemoNotice(result)) {
+          setNotice(result.error);
+          return;
+        }
         setError(result.error);
         return;
       }
@@ -77,6 +85,7 @@ export function QuickAddForm({ projects: initialProjects, date, onLogged }: Prop
     event.preventDefault();
     if (!projectId || !timeSpent) return;
     setError(null);
+    setNotice(null);
     startTransition(async () => {
       const result = await logEntryAction({
         projectId,
@@ -86,6 +95,10 @@ export function QuickAddForm({ projects: initialProjects, date, onLogged }: Prop
         entryDate: date,
       });
       if (!result.ok) {
+        if (isDemoNotice(result)) {
+          setNotice(result.error);
+          return;
+        }
         setError(result.error);
         return;
       }
@@ -242,7 +255,10 @@ export function QuickAddForm({ projects: initialProjects, date, onLogged }: Prop
 
       <div aria-live="polite" className="min-h-5 text-sm">
         {error && <p className="text-danger-red">{error}</p>}
-        {logged && !error && <p className="font-medium text-frog-green-strong">Logged.</p>}
+        {notice && !error && <p className="text-ink-muted">{notice}</p>}
+        {logged && !error && !notice && (
+          <p className="font-medium text-frog-green-strong">Logged.</p>
+        )}
       </div>
     </form>
   );

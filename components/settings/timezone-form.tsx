@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { updateTimezoneAction } from "@/app/actions/settings";
+import { DEMO_WRITE_NOTE } from "@/lib/demo/mode";
 
 type Props = {
   current: string;
@@ -62,7 +63,11 @@ export function TimezoneForm({ current, timezones }: Props) {
         </button>
         <span aria-live="polite" className="text-sm">
           {state === "saved" && <span className="text-frog-green-strong">Saved.</span>}
-          {state === "error" && <span className="text-danger-red">{error}</span>}
+          {state === "error" && (
+            <span className={error === DEMO_WRITE_NOTE ? "text-ink-muted" : "text-danger-red"}>
+              {error}
+            </span>
+          )}
         </span>
       </div>
     </form>

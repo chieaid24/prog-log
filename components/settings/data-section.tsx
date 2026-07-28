@@ -2,6 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { importEntriesAction, type ImportResult } from "@/app/actions/data";
+import { isDemoNotice } from "@/lib/demo/mode";
 
 /**
  * Settings → Data: export downloads (plain links to /api/export) and the
@@ -91,7 +92,11 @@ export function DataSection() {
           </button>
         </div>
         <div aria-live="polite" className="text-sm">
-          {result?.ok === false && <p className="text-danger-red">{result.error}</p>}
+          {result?.ok === false && (
+            <p className={isDemoNotice(result) ? "text-ink-muted" : "text-danger-red"}>
+              {result.error}
+            </p>
+          )}
           {result?.ok === true && (
             <div className="flex flex-col gap-1">
               <p className="text-frog-green-strong">

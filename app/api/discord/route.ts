@@ -3,6 +3,7 @@
 // Ed25519 signature first, owner gate second; /log delegates resolution and
 // the write to the shared capture pipeline (captureLog, ADR-0001).
 import { captureLog } from "@/lib/capture";
+import { DEMO_WRITE_NOTE, isDemoMode } from "@/lib/demo/mode";
 import { getOwnerActiveProjects, getOwnerAliases } from "@/lib/discord/owner";
 import { verifyDiscordSignature } from "@/lib/discord/verify";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -41,6 +42,11 @@ function isTimeSize(value: string): value is TimeSize {
 }
 
 export async function POST(req: Request): Promise<Response> {
+  // DEMO_MODE (ADR-0016): capture is a no-op that never touches the database.
+  if (isDemoMode()) {
+    return Response.json({ ok: false, demo: true, error: DEMO_WRITE_NOTE });
+  }
+
   const signature = req.headers.get("x-signature-ed25519");
   const timestamp = req.headers.get("x-signature-timestamp");
   const rawBody = await req.text();

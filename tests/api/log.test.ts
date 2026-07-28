@@ -139,6 +139,20 @@ describe("alias resolution (ADR-0010)", () => {
   });
 });
 
+describe("DEMO_MODE (ADR-0016)", () => {
+  it("no-ops with the demo sentinel and never writes, even for a valid bearer", async () => {
+    vi.stubEnv("DEMO_MODE", "1");
+    try {
+      const res = await post({ project: "Work", time: "small" });
+      expect(res.status).toBe(200);
+      expect(await res.json()).toMatchObject({ ok: false, demo: true });
+      expect(upsertEntry).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+});
+
 describe("rejections", () => {
   it("404s an unresolvable project with a did-you-mean hint and no write", async () => {
     const res = await post({ project: "turk", time: "small" });

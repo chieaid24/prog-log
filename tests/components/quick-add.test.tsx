@@ -3,6 +3,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { QuickAddForm } from "@/components/quick-add/quick-add-form";
+import { DEMO_WRITE_NOTE } from "@/lib/demo/mode";
 import type { Project } from "@/lib/types";
 
 const logEntryAction = vi.fn();
@@ -140,5 +141,21 @@ describe("quick add", () => {
     await user.click(screen.getByRole("button", { name: "Log it" }));
 
     expect(await screen.findByText("Could not log the entry.")).toBeInTheDocument();
+  });
+
+  it("in demo mode, shows an unobtrusive note and does not confirm a save", async () => {
+    logEntryAction.mockResolvedValue({ ok: false, demo: true, error: DEMO_WRITE_NOTE });
+    const user = userEvent.setup();
+    render(<QuickAddForm projects={PROJECTS} />);
+
+    await user.selectOptions(screen.getByLabelText("Project"), "work");
+    await user.click(screen.getByRole("button", { name: "Medium" }));
+    await user.click(screen.getByRole("button", { name: "Log it" }));
+
+    const note = await screen.findByText(DEMO_WRITE_NOTE);
+    expect(note).toBeInTheDocument();
+    // A no-op is neither a success nor a red error.
+    expect(note).toHaveClass("text-ink-muted");
+    expect(screen.queryByText("Logged.")).not.toBeInTheDocument();
   });
 });

@@ -5,6 +5,7 @@
 // rows to runImport, which creates missing Projects and writes through the
 // shared upsert-accumulate path so a re-import is always safe to retry.
 import { revalidatePath } from "next/cache";
+import { demoWriteResult, isDemoMode, type DemoWriteResult } from "@/lib/demo/mode";
 import { parseImport } from "@/lib/export";
 import { runImport } from "@/lib/import";
 import { createClient } from "@/lib/supabase/server";
@@ -16,11 +17,13 @@ export type ImportResult =
       projectsCreated: number;
       failed: Array<{ line: number; message: string }>;
     }
-  | { ok: false; error: string };
+  | { ok: false; error: string }
+  | DemoWriteResult;
 
 const MAX_IMPORT_BYTES = 5 * 1024 * 1024;
 
 export async function importEntriesAction(formData: FormData): Promise<ImportResult> {
+  if (isDemoMode()) return demoWriteResult();
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) {
     return { ok: false, error: "Choose a CSV or JSON export file first." };
