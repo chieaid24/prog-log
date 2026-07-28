@@ -14,3 +14,28 @@ export const DEMO_USER_ID = "00000000-0000-0000-0000-0000000000de";
 
 /** Timezone the demo computes "today" in, since it has no app_settings row. */
 export const DEMO_TIMEZONE = DEFAULT_TIMEZONE;
+
+/** Unobtrusive note the UI shows when a write is attempted in the demo. */
+export const DEMO_WRITE_NOTE = "Demo mode - changes aren't saved.";
+
+/**
+ * The sentinel every write path returns in DEMO_MODE instead of touching the
+ * database (ADR-0016). The `demo` discriminant lets the client tell a no-op
+ * apart from a real failure and show DEMO_WRITE_NOTE unobtrusively.
+ */
+export type DemoWriteResult = { ok: false; demo: true; error: string };
+
+/** Build the no-op write sentinel (ADR-0016). */
+export function demoWriteResult(): DemoWriteResult {
+  return { ok: false, demo: true, error: DEMO_WRITE_NOTE };
+}
+
+/** Client guard: did a write no-op because the app is in demo mode? */
+export function isDemoNotice(result: unknown): result is DemoWriteResult {
+  return (
+    typeof result === "object" &&
+    result !== null &&
+    (result as { ok?: unknown }).ok === false &&
+    (result as { demo?: unknown }).demo === true
+  );
+}

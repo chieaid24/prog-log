@@ -113,6 +113,20 @@ beforeEach(() => {
   getOwnerAliases.mockReset().mockResolvedValue([]);
 });
 
+describe("DEMO_MODE (ADR-0016)", () => {
+  it("no-ops with the demo sentinel before any signature or write, even for a valid /log", async () => {
+    vi.stubEnv("DEMO_MODE", "1");
+    try {
+      const res = await post(logCommand({ project: "Work", time: "small" }));
+      expect(res.status).toBe(200);
+      expect(await res.json()).toMatchObject({ ok: false, demo: true });
+      expect(upsertEntry).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+});
+
 describe("signature check", () => {
   it("401s a signature from the wrong key, without writing", async () => {
     const res = await post({ type: 1 }, { secretKey: wrongKeyPair.secretKey });

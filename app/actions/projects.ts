@@ -1,12 +1,19 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { demoWriteResult, isDemoMode, type DemoWriteResult } from "@/lib/demo/mode";
 import { addAlias, createProject, removeAlias, setProjectStatus } from "@/lib/projects";
 import { createClient } from "@/lib/supabase/server";
 import type { Project, ProjectAlias } from "@/lib/types";
 
-export type ProjectActionResult = { ok: true; project: Project } | { ok: false; error: string };
-export type AliasActionResult = { ok: true; alias?: ProjectAlias } | { ok: false; error: string };
+export type ProjectActionResult =
+  | { ok: true; project: Project }
+  | { ok: false; error: string }
+  | DemoWriteResult;
+export type AliasActionResult =
+  | { ok: true; alias?: ProjectAlias }
+  | { ok: false; error: string }
+  | DemoWriteResult;
 
 const CATEGORIES = ["Work", "Research", "Personal", "Learning"] as const;
 
@@ -17,6 +24,7 @@ export async function createProjectAction(input: {
   color?: string;
   description?: string;
 }): Promise<ProjectActionResult> {
+  if (isDemoMode()) return demoWriteResult();
   const name = input.name?.trim();
   if (!name) return { ok: false, error: "Project name is required." };
   if (input.category && !CATEGORIES.includes(input.category as (typeof CATEGORIES)[number])) {
@@ -43,6 +51,7 @@ export async function setProjectStatusAction(
   projectId: string,
   status: "active" | "archived",
 ): Promise<ProjectActionResult> {
+  if (isDemoMode()) return demoWriteResult();
   try {
     const supabase = await createClient();
     const project = await setProjectStatus(supabase, projectId, status);
@@ -58,6 +67,7 @@ export async function addProjectAliasAction(
   projectId: string,
   alias: string,
 ): Promise<AliasActionResult> {
+  if (isDemoMode()) return demoWriteResult();
   if (!alias?.trim()) return { ok: false, error: "Alias cannot be empty." };
   try {
     const supabase = await createClient();
@@ -71,6 +81,7 @@ export async function addProjectAliasAction(
 
 /** Remove a capture alias. */
 export async function removeProjectAliasAction(aliasId: string): Promise<AliasActionResult> {
+  if (isDemoMode()) return demoWriteResult();
   try {
     const supabase = await createClient();
     await removeAlias(supabase, aliasId);
@@ -86,6 +97,7 @@ export async function updateProjectAction(
   projectId: string,
   patch: { name?: string; category?: string | null; color?: string | null; description?: string | null },
 ): Promise<ProjectActionResult> {
+  if (isDemoMode()) return demoWriteResult();
   const update: Record<string, string | null> = {};
   if (patch.name !== undefined) {
     const name = patch.name.trim();

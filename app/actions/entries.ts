@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { demoWriteResult, isDemoMode, type DemoWriteResult } from "@/lib/demo/mode";
 import { upsertEntry } from "@/lib/entries";
 import { createClient } from "@/lib/supabase/server";
 import { TIME_SIZES, type Entry, type TimeSize } from "@/lib/types";
@@ -14,12 +15,16 @@ export type LogEntryInput = {
   entryDate?: string;
 };
 
-export type LogEntryResult = { ok: true; entry: Entry } | { ok: false; error: string };
+export type LogEntryResult =
+  | { ok: true; entry: Entry }
+  | { ok: false; error: string }
+  | DemoWriteResult;
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 /** Web quick add — session caller, RLS enforced, shared write path (ADR-0001). */
 export async function logEntryAction(input: LogEntryInput): Promise<LogEntryResult> {
+  if (isDemoMode()) return demoWriteResult();
   if (!input.projectId) return { ok: false, error: "Pick a project." };
   if (!TIME_SIZES.includes(input.timeSpent)) {
     return { ok: false, error: "Pick a time commitment." };
@@ -47,10 +52,11 @@ export async function logEntryAction(input: LogEntryInput): Promise<LogEntryResu
   }
 }
 
-export type DeleteEntryResult = { ok: true } | { ok: false; error: string };
+export type DeleteEntryResult = { ok: true } | { ok: false; error: string } | DemoWriteResult;
 
 /** Remove a single Entry (day detail view). */
 export async function deleteEntryAction(entryId: string): Promise<DeleteEntryResult> {
+  if (isDemoMode()) return demoWriteResult();
   try {
     const supabase = await createClient();
     const { error } = await supabase.from("entries").delete().eq("id", entryId);

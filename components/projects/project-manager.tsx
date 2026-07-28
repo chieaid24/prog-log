@@ -10,6 +10,7 @@ import {
   setProjectStatusAction,
   updateProjectAction,
 } from "@/app/actions/projects";
+import { DEMO_WRITE_NOTE } from "@/lib/demo/mode";
 import { humanizeAge } from "@/lib/throwbacks";
 import { PROJECT_PALETTE } from "@/lib/palette";
 import type { Project, ProjectAlias } from "@/lib/types";
@@ -204,7 +205,10 @@ function CreateProjectForm() {
         {pending ? "Creating…" : "Create"}
       </button>
       {error && (
-        <p role="alert" className="w-full text-sm text-danger-red">
+        <p
+          role="alert"
+          className={`w-full text-sm ${error === DEMO_WRITE_NOTE ? "text-ink-muted" : "text-danger-red"}`}
+        >
           {error}
         </p>
       )}
@@ -279,7 +283,10 @@ function ProjectRow({
         </span>
       </div>
       {error && (
-        <p role="alert" className="mt-2 text-sm text-danger-red">
+        <p
+          role="alert"
+          className={`mt-2 text-sm ${error === DEMO_WRITE_NOTE ? "text-ink-muted" : "text-danger-red"}`}
+        >
           {error}
         </p>
       )}
@@ -365,7 +372,10 @@ function AliasEditor({ project, aliases }: { project: Project; aliases: ProjectA
         </button>
       </form>
       {error && (
-        <p role="alert" className="w-full text-xs text-danger-red">
+        <p
+          role="alert"
+          className={`w-full text-xs ${error === DEMO_WRITE_NOTE ? "text-ink-muted" : "text-danger-red"}`}
+        >
           {error}
         </p>
       )}
@@ -445,7 +455,10 @@ function EditProjectForm({ project, onSaved }: { project: Project; onSaved: () =
         {pending ? "Saving…" : "Save"}
       </button>
       {error && (
-        <p role="alert" className="w-full text-sm text-danger-red">
+        <p
+          role="alert"
+          className={`w-full text-sm ${error === DEMO_WRITE_NOTE ? "text-ink-muted" : "text-danger-red"}`}
+        >
           {error}
         </p>
       )}

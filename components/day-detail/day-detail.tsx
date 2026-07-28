@@ -3,10 +3,11 @@
 // Day detail: the shared landing spot for a selected day from either view.
 // Lists the day's Entries and hosts a date-bound quick add.
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { deleteEntryAction } from "@/app/actions/entries";
 import { QuickAddForm } from "@/components/quick-add/quick-add-form";
 import { humanDate } from "@/lib/dates";
+import { isDemoNotice } from "@/lib/demo/mode";
 import { TIME_LABEL, type EntryWithProject, type Project } from "@/lib/types";
 
 type Props = {
@@ -20,11 +21,17 @@ type Props = {
 export function DayDetail({ date, entries, projects, closeHref }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [notice, setNotice] = useState<string | null>(null);
 
   function remove(entryId: string, projectName: string) {
     if (!window.confirm(`Delete the ${projectName} entry for ${humanDate(date)}?`)) return;
+    setNotice(null);
     startTransition(async () => {
-      await deleteEntryAction(entryId);
+      const result = await deleteEntryAction(entryId);
+      if (isDemoNotice(result)) {
+        setNotice(result.error);
+        return;
+      }
       router.refresh();
     });
   }
@@ -45,6 +52,12 @@ export function DayDetail({ date, entries, projects, closeHref }: Props) {
           ✕
         </button>
       </header>
+
+      {notice && (
+        <p aria-live="polite" className="mb-3 text-sm text-ink-muted">
+          {notice}
+        </p>
+      )}
 
       {entries.length === 0 ? (
         <p className="mb-4 text-sm text-ink-muted">Nothing logged this day.</p>

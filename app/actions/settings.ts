@@ -1,16 +1,18 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { demoWriteResult, isDemoMode, type DemoWriteResult } from "@/lib/demo/mode";
 import { createClient } from "@/lib/supabase/server";
 import { isValidTimeZone } from "@/lib/timezones";
 
-export type SettingsResult = { ok: true } | { ok: false; error: string };
+export type SettingsResult = { ok: true } | { ok: false; error: string } | DemoWriteResult;
 
 /**
  * Change the stored timezone (ADR-0004: manual, in settings). Affects only
  * future "today" resolution — historical Entries stay frozen.
  */
 export async function updateTimezoneAction(timezone: string): Promise<SettingsResult> {
+  if (isDemoMode()) return demoWriteResult();
   if (!isValidTimeZone(timezone)) {
     return { ok: false, error: "Unknown timezone." };
   }

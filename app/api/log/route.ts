@@ -2,6 +2,7 @@
 // gates the route; resolution and the write are the shared capture pipeline
 // (captureLog, ADR-0001) — this file only parses the body and shapes JSON.
 import { bearerMatches, captureLog } from "@/lib/capture";
+import { DEMO_WRITE_NOTE, isDemoMode } from "@/lib/demo/mode";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { TIME_SIZES, type TimeSize } from "@/lib/types";
 
@@ -21,6 +22,11 @@ function optionalText(value: unknown): string | null {
 }
 
 export async function POST(req: Request): Promise<Response> {
+  // DEMO_MODE (ADR-0016): capture is a no-op that never touches the database.
+  if (isDemoMode()) {
+    return Response.json({ ok: false, demo: true, error: DEMO_WRITE_NOTE });
+  }
+
   if (!bearerMatches(req.headers.get("authorization"), process.env.SHORTCUT_SECRET)) {
     return Response.json({ error: "not authorized" }, { status: 401 });
   }
