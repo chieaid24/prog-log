@@ -1,0 +1,34 @@
+id,project_id,entry_date,time_spent,milestone,description
+e01,00000000-0000-0000-0000-000000000001,2026-01-06,medium,,Kicked off Q1 planning.
+e02,00000000-0000-0000-0000-000000000001,2026-01-20,large,Shipped the new onboarding flow,Two weeks of work landed today.
+e03,00000000-0000-0000-0000-000000000001,2026-02-10,small,,Morning bug triage.
+e04,00000000-0000-0000-0000-000000000001,2026-03-03,medium,,"Design review, roadmap sync, and a long hallway chat."
+e05,00000000-0000-0000-0000-000000000001,2026-04-15,large,Launched the v2 dashboard,Big launch day.
+e06,00000000-0000-0000-0000-000000000001,2026-05-19,medium,,Performance pass on the API.
+e07,00000000-0000-0000-0000-000000000001,2026-06-09,small,,Sprint retro and planning.
+e08,00000000-0000-0000-0000-000000000001,2026-07-14,large,Cut the 1.0 release,Tagged and shipped 1.0.
+e09,00000000-0000-0000-0000-000000000001,2026-07-21,medium,,On-call handoff notes.
+e10,00000000-0000-0000-0000-000000000002,2026-01-13,medium,,Read three papers on RLHF.
+e11,00000000-0000-0000-0000-000000000002,2026-02-24,large,First working eval harness,Finally green end to end.
+e12,00000000-0000-0000-0000-000000000002,2026-03-17,small,,Tuned a handful of prompts.
+e13,00000000-0000-0000-0000-000000000002,2026-04-28,medium,,"Wrote up findings, shared them with the lab."
+e14,00000000-0000-0000-0000-000000000002,2026-06-02,large,Beat the baseline by 8 points,New approach paid off.
+e15,00000000-0000-0000-0000-000000000002,2026-07-07,medium,,Ran an ablation study overnight.
+e16,00000000-0000-0000-0000-000000000003,2026-02-01,small,,Picked a color palette.
+e17,00000000-0000-0000-0000-000000000003,2026-03-10,medium,Homepage went live,First public version online.
+e18,00000000-0000-0000-0000-000000000003,2026-04-04,small,,Fixed the mobile nav.
+e19,00000000-0000-0000-0000-000000000003,2026-05-05,medium,,Drafted two blog posts.
+e20,00000000-0000-0000-0000-000000000003,2026-06-22,large,Passed 10k monthly visitors,Traffic milestone.
+e21,00000000-0000-0000-0000-000000000003,2026-07-19,small,,Small SEO tweaks.
+e22,00000000-0000-0000-0000-000000000004,2026-01-09,small,,Learned the alphabet.
+e23,00000000-0000-0000-0000-000000000004,2026-02-14,small,,Present-tense drills.
+e24,00000000-0000-0000-0000-000000000004,2026-03-21,medium,Held my first five-minute conversation,Nerve-wracking but fun.
+e25,00000000-0000-0000-0000-000000000004,2026-05-12,small,,Vocabulary review.
+e26,00000000-0000-0000-0000-000000000004,2026-06-30,small,,Past-tense drills.
+e27,00000000-0000-0000-0000-000000000005,2026-01-27,small,,First 50 characters.
+e28,00000000-0000-0000-0000-000000000005,2026-02-28,medium,,Tone practice with a tutor.
+e29,00000000-0000-0000-0000-000000000005,2026-04-11,small,,HSK1 vocabulary.
+e30,00000000-0000-0000-0000-000000000005,2026-05-26,medium,Passed a mock HSK1,Scored well on the practice test.
+e31,00000000-0000-0000-0000-000000000005,2026-07-05,small,,Radicals review.
+e32,00000000-0000-0000-0000-000000000006,2026-01-15,large,Defended the thesis proposal,Committee approved it.
+e33,00000000-0000-0000-0000-000000000006,2026-02-20,medium,,"Revisions, committee feedback incorporated."

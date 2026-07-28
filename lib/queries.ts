@@ -9,11 +9,20 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types";
 import { DEFAULT_TIMEZONE, daysBetween, todayInTimeZone } from "./dates";
+import { isDemoMode } from "./demo/mode";
 import type { EntryWithProject, Project, ProjectAlias, ThrowbackItem } from "./types";
 
 export type Db = SupabaseClient<Database>;
 
 const ENTRY_WITH_PROJECT = "*, project:projects(id, name, color, category, status)";
+
+// DEMO_MODE (ADR-0016): the read wrappers below source from the server-side CSV
+// fixture provider instead of Supabase. Imported lazily so its fs/server-only
+// graph never loads in the normal app; only the get* wrappers branch, the
+// fetch* cores (service-role capture, ADR-0009) always hit the database.
+function demoReads() {
+  return import("./demo/fixtures");
+}
 
 /**
  * Core shape: active Projects, name order. RLS callers omit `ownerId`;
@@ -29,11 +38,13 @@ export async function fetchActiveProjects(db: Db, ownerId?: string): Promise<Pro
 
 /** Active Projects for pickers, name order (PRD 3.2). */
 export async function getActiveProjects(db: Db): Promise<Project[]> {
+  if (isDemoMode()) return (await demoReads()).getActiveProjects();
   return fetchActiveProjects(db);
 }
 
 /** Every Project regardless of status, active first then name. */
 export async function getAllProjects(db: Db): Promise<Project[]> {
+  if (isDemoMode()) return (await demoReads()).getAllProjects();
   const { data, error } = await db
     .from("projects")
     .select("*")
@@ -45,6 +56,7 @@ export async function getAllProjects(db: Db): Promise<Project[]> {
 
 /** Every capture alias, alias order (ADR-0010). */
 export async function getProjectAliases(db: Db): Promise<ProjectAlias[]> {
+  if (isDemoMode()) return (await demoReads()).getProjectAliases();
   const { data, error } = await db.from("project_aliases").select("*").order("alias");
   if (error) throw error;
   return data;
@@ -56,6 +68,7 @@ export async function getEntriesInRange(
   from: string,
   to: string,
 ): Promise<EntryWithProject[]> {
+  if (isDemoMode()) return (await demoReads()).getEntriesInRange(from, to);
   const { data, error } = await db
     .from("entries")
     .select(ENTRY_WITH_PROJECT)
@@ -68,6 +81,7 @@ export async function getEntriesInRange(
 
 /** All Entries ever, joined with their Project (monthly stats, exports). */
 export async function getAllEntries(db: Db): Promise<EntryWithProject[]> {
+  if (isDemoMode()) return (await demoReads()).getAllEntries();
   const { data, error } = await db
     .from("entries")
     .select(ENTRY_WITH_PROJECT)
@@ -78,6 +92,7 @@ export async function getAllEntries(db: Db): Promise<EntryWithProject[]> {
 
 /** One day's Entries with Projects (day detail panel). */
 export async function getEntriesForDay(db: Db, date: string): Promise<EntryWithProject[]> {
+  if (isDemoMode()) return (await demoReads()).getEntriesForDay(date);
   const { data, error } = await db
     .from("entries")
     .select(ENTRY_WITH_PROJECT)
@@ -125,6 +140,7 @@ export async function fetchThrowbackPool(
  * The Throwback candidate pool for the signed-in user's web feed (PRD 3.4).
  */
 export async function getThrowbackPool(db: Db, todayISO: string): Promise<ThrowbackItem[]> {
+  if (isDemoMode()) return (await demoReads()).getThrowbackPool(todayISO);
   return fetchThrowbackPool(db, todayISO);
 }
 
@@ -135,6 +151,7 @@ export async function getThrowbackPool(db: Db, todayISO: string): Promise<Throwb
 export async function getEntryDatesWithProject(
   db: Db,
 ): Promise<Array<{ entry_date: string; project_id: string }>> {
+  if (isDemoMode()) return (await demoReads()).getEntryDatesWithProject();
   const { data, error } = await db
     .from("entries")
     .select("entry_date, project_id")
@@ -157,6 +174,7 @@ export async function fetchTimezone(db: Db, ownerId?: string): Promise<string> {
 
 /** The stored user timezone (ADR-0004), defaulting when no row exists yet. */
 export async function getUserTimezone(db: Db): Promise<string> {
+  if (isDemoMode()) return (await demoReads()).getTimezone();
   return fetchTimezone(db);
 }
 
@@ -166,5 +184,6 @@ export async function getUserTimezone(db: Db): Promise<string> {
  * from the stored zone. RLS-scoped; owner-scoped callers use getOwnerToday.
  */
 export async function getToday(db: Db): Promise<string> {
+  if (isDemoMode()) return todayInTimeZone((await demoReads()).getTimezone());
   return todayInTimeZone(await fetchTimezone(db));
 }
