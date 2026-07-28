@@ -29,6 +29,30 @@ export type Database = {
         };
         Relationships: [];
       };
+      daily_reflections: {
+        Row: {
+          user_id: string;
+          entry_date: string;
+          reflection: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id?: string;
+          entry_date?: string;
+          reflection: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          entry_date?: string;
+          reflection?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       entries: {
         Row: {
           id: string;
@@ -153,6 +177,14 @@ export type Database = {
           p_date?: string | null;
         };
         Returns: Database["public"]["Tables"]["entries"]["Row"];
+      };
+      set_reflection: {
+        Args: {
+          p_reflection: string;
+          p_user?: string;
+          p_date?: string | null;
+        };
+        Returns: Database["public"]["Tables"]["daily_reflections"]["Row"];
       };
     };
     Enums: {
