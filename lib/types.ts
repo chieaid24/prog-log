@@ -24,6 +24,8 @@ export const TIME_LABEL: Record<TimeSize, string> = {
 export type Project = Tables<"projects">;
 export type Entry = Tables<"entries">;
 export type AppSettings = Tables<"app_settings">;
+/** A day-level free-text Reflection: one per (user, day), ADR-0017. */
+export type Reflection = Tables<"daily_reflections">;
 /** An extra name resolving to one Project during capture (ADR-0010). */
 export type ProjectAlias = Tables<"project_aliases">;
 
