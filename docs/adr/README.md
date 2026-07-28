@@ -48,3 +48,5 @@ ls docs/adr | grep -oE '^[0-9]{4}' | sort -n | tail -1
 | [0013](0013-track-work-in-github-issues.md) | Track work in GitHub Issues; retire the `tasks/` folder | accepted |
 | [0014](0014-warm-paper-retheme-implementation.md) | Warm-paper retheme: token vocabulary, heat ramp, palette migration | accepted |
 | [0015](0015-mobile-navigation-and-aa-contrast.md) | Bottom tab bar, sheet capture, and AA-driven green/ink adjustments | accepted |
+| [0016](0016-public-demo-shared-frontend-csv-fixtures.md) | Public demo runs the shared frontend against server-side CSV fixtures | accepted |
+| [0017](0017-daily-reflection-day-table-and-throwback-blend.md) | Daily reflection is a day-level table blended into the throwback pool | accepted |
