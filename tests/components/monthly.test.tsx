@@ -164,6 +164,22 @@ describe("effort trend", () => {
     );
     expect(screen.getByText("Nothing logged in the last 90 days.")).toBeInTheDocument();
   });
+
+  it("keeps a month tick near the left edge inside the viewBox", () => {
+    // A 90-day window starting on the 1st puts a month tick at index 0;
+    // unclamped, its centered label would clip at x=0 ("May" -> "ay").
+    const window: TrendPoint[] = Array.from({ length: 90 }, (_, i) => {
+      const d = new Date(Date.UTC(2026, 4, 1) + i * 24 * 60 * 60 * 1000);
+      return { date: d.toISOString().slice(0, 10), weight: 1, rolling: 1 };
+    });
+    const { container } = render(<EffortTrend points={window} />);
+    const labels = [...container.querySelectorAll("text")];
+    expect(labels.length).toBeGreaterThan(0);
+    for (const label of labels) {
+      expect(Number(label.getAttribute("x"))).toBeGreaterThanOrEqual(16);
+      expect(Number(label.getAttribute("x"))).toBeLessThanOrEqual(720 - 16);
+    }
+  });
 });
 
 describe("milestone list", () => {

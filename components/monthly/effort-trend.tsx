@@ -103,10 +103,13 @@ export function EffortTrend({ points }: Props) {
             <path d={line} fill="none" stroke={LINE_COLOR} strokeWidth={2} strokeLinejoin="round" />
             {ticks.map((date) => {
               const i = points.findIndex((p) => p.date === date);
+              // Clamp so a tick near either edge keeps its centered label
+              // inside the viewBox instead of clipping ("May" -> "ay").
+              const cx = Math.min(Math.max(x(i), 16), WIDTH - 16);
               return (
                 <text
                   key={date}
-                  x={x(i)}
+                  x={cx}
                   y={HEIGHT - 6}
                   textAnchor="middle"
                   fontSize={13}
