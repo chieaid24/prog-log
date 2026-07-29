@@ -54,7 +54,8 @@ export type CalendarDayProject = {
 };
 
 /** A past Milestone eligible to resurface, with its precomputed age. */
-export type ThrowbackItem = {
+export type MilestoneThrowback = {
+  kind: "milestone";
   entryId: string;
   milestone: string;
   entryDate: string;
@@ -62,6 +63,17 @@ export type ThrowbackItem = {
   color: string | null;
   daysAgo: number;
 };
+
+/** A past Reflection eligible to resurface, with its precomputed age. */
+export type ReflectionThrowback = {
+  kind: "reflection";
+  reflection: string;
+  entryDate: string;
+  daysAgo: number;
+};
+
+/** One item in the combined Milestone and Reflection Throwback pool. */
+export type ThrowbackItem = MilestoneThrowback | ReflectionThrowback;
 
 /** One month's aggregate stats (monthly breakdown header). */
 export type MonthlyStat = {

@@ -4,7 +4,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { todayInTimeZone } from "@/lib/dates";
 import { humanizeAge, pickThrowbacks } from "@/lib/throwbacks";
-import type { ThrowbackItem } from "@/lib/types";
+import type { MilestoneThrowback, ThrowbackItem } from "@/lib/types";
 
 const { ADMIN, getOwnerThrowbackPool, getOwnerToday } = vi.hoisted(() => ({
   ADMIN: { admin: true },
@@ -24,8 +24,13 @@ const CRON_SECRET = "c".repeat(64);
 const WEBHOOK_URL = "https://discord.com/api/webhooks/123/abc";
 const TIMEZONE = "America/Toronto";
 
-function throwback(milestone: string, projectName: string, daysAgo: number): ThrowbackItem {
+function throwback(
+  milestone: string,
+  projectName: string,
+  daysAgo: number,
+): MilestoneThrowback {
   return {
+    kind: "milestone",
     entryId: `e-${milestone.replace(/\s+/g, "-")}`,
     milestone,
     entryDate: "2026-01-01",
@@ -97,6 +102,8 @@ describe("digest", () => {
     // The digest must be the same item the web feed shows first today.
     const today = todayInTimeZone(TIMEZONE);
     const expected = pickThrowbacks(POOL, today, 1)[0];
+    expect(expected.kind).toBe("milestone");
+    if (expected.kind !== "milestone") throw new Error("expected milestone fixture");
     const { content } = JSON.parse(init.body);
     expect(content).toContain(expected.milestone);
     expect(content).toContain(expected.projectName);
@@ -114,5 +121,31 @@ describe("digest", () => {
     expect(res.status).toBe(502);
     expect((await res.json()).sent).toBe(false);
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("can post a reflection as the digest top-1 without project copy", async () => {
+    const reflection: ThrowbackItem = {
+      kind: "reflection",
+      reflection: "proud of the reflection flow",
+      entryDate: "2025-07-14",
+      daysAgo: 365,
+    };
+    const combinedPool = [
+      throwback("milestone 1", "Work", 10),
+      throwback("milestone 2", "Work", 20),
+      throwback("milestone 3", "Work", 30),
+      throwback("milestone 4", "Work", 40),
+      reflection,
+    ];
+    getOwnerToday.mockResolvedValue("2026-07-02");
+    getOwnerThrowbackPool.mockResolvedValue(combinedPool);
+    expect(pickThrowbacks(combinedPool, "2026-07-02", 1)).toEqual([reflection]);
+
+    const res = await get();
+    expect(res.status).toBe(200);
+    const [, init] = fetchMock.mock.calls[0];
+    const { content } = JSON.parse(init.body);
+    expect(content).toBe("**1 year ago** - Daily reflection: proud of the reflection flow");
+    expect(content).not.toContain("Work:");
   });
 });

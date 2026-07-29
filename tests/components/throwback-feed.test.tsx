@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ThrowbackFeed } from "@/components/throwback/throwback-feed";
 import { humanizeAge, pickThrowbacks } from "@/lib/throwbacks";
-import type { ThrowbackItem } from "@/lib/types";
+import type { MilestoneThrowback, ThrowbackItem } from "@/lib/types";
 
 const getThrowbackPool = vi.fn();
 const getToday = vi.fn();
@@ -16,8 +16,9 @@ vi.mock("@/lib/queries", () => ({
   getToday: (...args: unknown[]) => getToday(...args),
 }));
 
-function item(entryId: string, milestone: string, daysAgo: number): ThrowbackItem {
+function item(entryId: string, milestone: string, daysAgo: number): MilestoneThrowback {
   return {
+    kind: "milestone",
     entryId,
     milestone,
     entryDate: "2026-01-01",
@@ -59,6 +60,8 @@ describe("throwback feed", () => {
     const rendered = screen.getAllByRole("listitem");
     expect(rendered).toHaveLength(3);
     expected.forEach((want, i) => {
+      expect(want.kind).toBe("milestone");
+      if (want.kind !== "milestone") throw new Error("expected milestone fixture");
       expect(rendered[i]).toHaveTextContent(want.milestone);
       expect(rendered[i]).toHaveTextContent(humanizeAge(want.daysAgo));
       expect(rendered[i]).toHaveTextContent(want.projectName);
@@ -81,8 +84,26 @@ describe("throwback feed", () => {
     getThrowbackPool.mockResolvedValue([]);
     render(await ThrowbackFeed());
     expect(
-      screen.getByText("Milestones you log will resurface here on future days."),
+      screen.getByText("Milestones and reflections will resurface here on future days."),
     ).toBeInTheDocument();
     expect(screen.queryByRole("listitem")).not.toBeInTheDocument();
+  });
+
+  it("renders a reflection distinctly without a project accent", async () => {
+    getThrowbackPool.mockResolvedValue([
+      {
+        kind: "reflection",
+        reflection: "proud of untangling the query seam",
+        entryDate: "2025-06-20",
+        daysAgo: 365,
+      } satisfies ThrowbackItem,
+    ]);
+    render(await ThrowbackFeed());
+
+    const item = screen.getByRole("listitem");
+    expect(item).toHaveTextContent("proud of untangling the query seam");
+    expect(item).toHaveTextContent("Daily reflection");
+    expect(item).toHaveTextContent("1 year ago");
+    expect(item.querySelector("[style]")).toBeNull();
   });
 });
