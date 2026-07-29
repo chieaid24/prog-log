@@ -25,19 +25,29 @@ const TODAY = "2026-07-14";
  * Chainable, thenable query stub: records every builder call (method + args,
  * in order) and resolves `{ data, error }` when awaited.
  */
-function fakeDb(data: unknown, error: unknown = null) {
+function fakeDb(
+  data: unknown,
+  error: unknown = null,
+  reflectionData: unknown = [],
+  reflectionError: unknown = null,
+) {
   const calls: unknown[][] = [];
-  const builder: Record<string, unknown> = {};
-  for (const method of ["select", "eq", "not", "lt", "order", "maybeSingle"]) {
-    builder[method] = (...args: unknown[]) => {
-      calls.push([method, ...args]);
-      return builder;
-    };
-  }
-  builder.then = (resolve: (value: unknown) => unknown) => resolve({ data, error });
   const db = {
     from: (table: string) => {
       calls.push(["from", table]);
+      const builder: Record<string, unknown> = {};
+      for (const method of ["select", "eq", "not", "lt", "order", "maybeSingle"]) {
+        builder[method] = (...args: unknown[]) => {
+          calls.push([method, ...args]);
+          return builder;
+        };
+      }
+      builder.then = (resolve: (value: unknown) => unknown) =>
+        resolve(
+          table === "daily_reflections"
+            ? { data: reflectionData, error: reflectionError }
+            : { data, error },
+        );
       return builder;
     },
   };
@@ -52,6 +62,7 @@ describe("throwback pool shape", () => {
     project: { name: "Work", color: "#7c8cf8" },
   };
   const item = {
+    kind: "milestone",
     entryId: "e1",
     milestone: "shipped the heatmap",
     entryDate: "2026-07-04",
@@ -59,13 +70,23 @@ describe("throwback pool shape", () => {
     color: "#7c8cf8",
     daysAgo: 10, // 2026-07-04 -> 2026-07-14
   };
+  const reflectionRow = {
+    reflection: "proud of simplifying the feed",
+    entry_date: "2026-07-03",
+  };
+  const reflectionItem = {
+    kind: "reflection",
+    reflection: "proud of simplifying the feed",
+    entryDate: "2026-07-03",
+    daysAgo: 11,
+  };
 
-  it("maps a row to a ThrowbackItem with daysAgo computed from todayISO", async () => {
-    const { db } = fakeDb([row]);
-    await expect(getThrowbackPool(db, TODAY)).resolves.toEqual([item]);
+  it("maps milestones and reflections with daysAgo computed from todayISO", async () => {
+    const { db } = fakeDb([row], null, [reflectionRow]);
+    await expect(getThrowbackPool(db, TODAY)).resolves.toEqual([reflectionItem, item]);
   });
 
-  it("RLS: milestone/date filters and date order, no user_id filter", async () => {
+  it("RLS: source filters and date order, no user_id filter", async () => {
     const { db, calls } = fakeDb([]);
     await getThrowbackPool(db, TODAY);
     expect(calls).toEqual([
@@ -74,12 +95,19 @@ describe("throwback pool shape", () => {
       ["not", "milestone", "is", null],
       ["lt", "entry_date", TODAY],
       ["order", "entry_date"],
+      ["from", "daily_reflections"],
+      ["select", "entry_date, reflection"],
+      ["lt", "entry_date", TODAY],
+      ["order", "entry_date"],
     ]);
   });
 
   it("owner: identical shape and mapping, plus the user_id filter", async () => {
-    const { db, calls } = fakeDb([row]);
-    await expect(getOwnerThrowbackPool(db, OWNER_ID, TODAY)).resolves.toEqual([item]);
+    const { db, calls } = fakeDb([row], null, [reflectionRow]);
+    await expect(getOwnerThrowbackPool(db, OWNER_ID, TODAY)).resolves.toEqual([
+      reflectionItem,
+      item,
+    ]);
     expect(calls).toEqual([
       ["from", "entries"],
       ["select", "id, milestone, entry_date, project:projects(name, color)"],
@@ -87,15 +115,23 @@ describe("throwback pool shape", () => {
       ["not", "milestone", "is", null],
       ["lt", "entry_date", TODAY],
       ["order", "entry_date"],
+      ["from", "daily_reflections"],
+      ["select", "entry_date, reflection"],
+      ["eq", "user_id", OWNER_ID],
+      ["lt", "entry_date", TODAY],
+      ["order", "entry_date"],
     ]);
   });
 
-  it("propagates a query error", async () => {
+  it("propagates errors from either source", async () => {
     const boom = new Error("boom");
     await expect(getThrowbackPool(fakeDb(null, boom).db, TODAY)).rejects.toBe(boom);
     await expect(getOwnerThrowbackPool(fakeDb(null, boom).db, OWNER_ID, TODAY)).rejects.toBe(
       boom,
     );
+    await expect(
+      getThrowbackPool(fakeDb([], null, null, boom).db, TODAY),
+    ).rejects.toBe(boom);
   });
 });
 

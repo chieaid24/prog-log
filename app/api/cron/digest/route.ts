@@ -29,7 +29,10 @@ export async function GET(req: Request): Promise<Response> {
   const [pick] = pickThrowbacks(pool, today, 1);
   if (!pick) return Response.json({ sent: false });
 
-  const content = `**${humanizeAge(pick.daysAgo)}** - ${pick.projectName}: ${pick.milestone}`;
+  const content =
+    pick.kind === "milestone"
+      ? `**${humanizeAge(pick.daysAgo)}** - ${pick.projectName}: ${pick.milestone}`
+      : `**${humanizeAge(pick.daysAgo)}** - Daily reflection: ${pick.reflection}`;
   const res = await fetch(webhookUrl, {
     method: "POST",
     headers: { "content-type": "application/json" },

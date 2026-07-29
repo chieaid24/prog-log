@@ -103,8 +103,8 @@ export async function getEntriesForDay(db: Db, date: string): Promise<EntryWithP
 }
 
 /**
- * Core shape: the Throwback candidate pool — every past Milestone (strictly
- * before today in the user's timezone), with its age precomputed (PRD 3.4).
+ * Core shape: the Throwback candidate pool - every past Milestone and
+ * Reflection, with age precomputed (PRD 3.4; ADR-0017).
  * RLS callers omit `ownerId`; service-role callers (ADR-0009) must pass it.
  */
 export async function fetchThrowbackPool(
@@ -112,21 +112,34 @@ export async function fetchThrowbackPool(
   todayISO: string,
   ownerId?: string,
 ): Promise<ThrowbackItem[]> {
-  const query = db
+  const milestoneQuery = db
     .from("entries")
     .select("id, milestone, entry_date, project:projects(name, color)");
-  const scoped = ownerId === undefined ? query : query.eq("user_id", ownerId);
-  const { data, error } = await scoped
+  const scopedMilestones =
+    ownerId === undefined ? milestoneQuery : milestoneQuery.eq("user_id", ownerId);
+  const { data: milestones, error: milestoneError } = await scopedMilestones
     .not("milestone", "is", null)
     .lt("entry_date", todayISO)
     .order("entry_date");
-  if (error) throw error;
-  return (data as unknown as Array<{
+  if (milestoneError) throw milestoneError;
+
+  const reflectionQuery = db
+    .from("daily_reflections")
+    .select("entry_date, reflection");
+  const scopedReflections =
+    ownerId === undefined ? reflectionQuery : reflectionQuery.eq("user_id", ownerId);
+  const { data: reflections, error: reflectionError } = await scopedReflections
+    .lt("entry_date", todayISO)
+    .order("entry_date");
+  if (reflectionError) throw reflectionError;
+
+  const milestoneItems: ThrowbackItem[] = (milestones as unknown as Array<{
     id: string;
     milestone: string;
     entry_date: string;
     project: { name: string; color: string | null };
   }>).map((row) => ({
+    kind: "milestone",
     entryId: row.id,
     milestone: row.milestone,
     entryDate: row.entry_date,
@@ -134,6 +147,21 @@ export async function fetchThrowbackPool(
     color: row.project.color,
     daysAgo: daysBetween(row.entry_date, todayISO),
   }));
+  const reflectionItems: ThrowbackItem[] = (reflections ?? []).map((row) => ({
+    kind: "reflection",
+    reflection: row.reflection,
+    entryDate: row.entry_date,
+    daysAgo: daysBetween(row.entry_date, todayISO),
+  }));
+
+  return [...milestoneItems, ...reflectionItems].sort(
+    (a, b) =>
+      a.entryDate.localeCompare(b.entryDate) ||
+      a.kind.localeCompare(b.kind) ||
+      (a.kind === "milestone" ? a.entryId : a.reflection).localeCompare(
+        b.kind === "milestone" ? b.entryId : b.reflection,
+      ),
+  );
 }
 
 /**

@@ -86,6 +86,7 @@ export function getThrowbackPool(todayISO: string): ThrowbackItem[] {
     .entries.filter((e) => e.milestone !== null && e.entry_date < todayISO)
     .sort(byEntryDate)
     .map((e) => ({
+      kind: "milestone",
       entryId: e.id,
       milestone: e.milestone as string,
       entryDate: e.entry_date,

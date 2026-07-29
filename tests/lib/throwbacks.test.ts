@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { humanizeAge, pickThrowbacks, seededShuffle } from "@/lib/throwbacks";
-import type { ThrowbackItem } from "@/lib/types";
+import type { MilestoneThrowback, ThrowbackItem } from "@/lib/types";
 
 describe("humanizeAge", () => {
   it("picks the nicest unit at each boundary", () => {
@@ -22,8 +22,9 @@ describe("humanizeAge", () => {
   });
 });
 
-function pool(n: number): ThrowbackItem[] {
+function pool(n: number): MilestoneThrowback[] {
   return Array.from({ length: n }, (_, i) => ({
+    kind: "milestone",
     entryId: `e${i}`,
     milestone: `milestone ${i}`,
     entryDate: "2025-01-01",
@@ -69,5 +70,18 @@ describe("pickThrowbacks", () => {
 
   it("caps at the pool size", () => {
     expect(pickThrowbacks(pool(2), "2026-07-02", 3)).toHaveLength(2);
+  });
+
+  it("can deterministically surface a reflection from the combined pool", () => {
+    const reflection: ThrowbackItem = {
+      kind: "reflection",
+      reflection: "proud of the simpler data model",
+      entryDate: "2025-01-02",
+      daysAgo: 546,
+    };
+    const items = [...pool(4), reflection];
+    const pick = pickThrowbacks(items, "2026-07-02", 1);
+    expect(pick).toEqual([reflection]);
+    expect(humanizeAge(pick[0].daysAgo)).toBe("1 year ago");
   });
 });
