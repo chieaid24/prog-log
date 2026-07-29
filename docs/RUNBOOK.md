@@ -44,16 +44,17 @@ All four must exit 0 before you deploy anything. Tests run against an embedded P
    psql "<connection-string>" -f supabase/seed.sql
    ```
 
-5. **Auth (magic link).** In **Authentication → Providers → Email**: leave email enabled,
-   disable signups if you want the app single-user after you create your account
-   (**Authentication → Settings → Allow new users to sign up → off** once you're in).
+5. **Auth (magic link).** In **Authentication → Providers → Email**, leave email enabled.
+   Create your owner account, then disable signups in **Authentication → Settings →
+   Allow new users to sign up**. The app also sets `shouldCreateUser` to false for every
+   magic-link request.
    In **Authentication → URL Configuration** set:
    - Site URL: `https://log.aidanchien.com`
    - Redirect URLs: `https://log.aidanchien.com/auth/confirm`, plus
      `http://localhost:3000/auth/confirm` for local dev.
-6. Sign in to the deployed (or local) app once via magic link, then grab your user id from
-   **Authentication → Users** → `OWNER_USER_ID`. The Discord and Apple Shortcut capture
-   paths write Entries as this user.
+6. Set `OWNER_EMAIL` to the owner account email. Copy its id from **Authentication →
+   Users** into `OWNER_USER_ID`. The login action sends magic links only to `OWNER_EMAIL`,
+   and the middleware admits only sessions matching `OWNER_USER_ID`.
 7. After the project exists, regenerate DB types and diff against the hand-maintained file
    (ADR-0006): `npx supabase gen types typescript --linked --schema public` vs
    `lib/database.types.ts`. They should match; commit any drift.
@@ -136,6 +137,7 @@ Then run the workflow once by hand (Actions → keepalive → Run workflow) to c
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → Project Settings → API | browser + server (RLS) |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Project Settings → API | admin client (capture, digest, /now) |
 | `NEXT_PUBLIC_SITE_URL` | your domain | magic-link redirects |
+| `OWNER_EMAIL` | your Supabase owner account email | magic-link allowlist |
 | `OWNER_USER_ID` | Supabase → Authentication → Users (after first login) | Discord/Shortcut writes, /now |
 | `DISCORD_PUBLIC_KEY` | Dev Portal → General Information | `/api/discord` signature check |
 | `DISCORD_APPLICATION_ID` | Dev Portal → General Information | command registration script |

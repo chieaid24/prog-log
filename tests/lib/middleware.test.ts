@@ -1,6 +1,27 @@
 import { NextRequest } from "next/server";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { isPublicPath, updateSession } from "@/lib/supabase/middleware";
+
+const { getUser, signOut } = vi.hoisted(() => ({
+  getUser: vi.fn(),
+  signOut: vi.fn(),
+}));
+
+vi.mock("@supabase/ssr", () => ({
+  createServerClient: () => ({ auth: { getUser, signOut } }),
+}));
+
+beforeEach(() => {
+  vi.stubEnv("OWNER_USER_ID", "owner-1");
+  vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://example.supabase.co");
+  vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "anon");
+  getUser.mockReset();
+  signOut.mockReset();
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
 
 describe("isPublicPath", () => {
   it("keeps login, auth plumbing, the public now page and api routes public", () => {
@@ -26,16 +47,53 @@ describe("isPublicPath", () => {
 });
 
 describe("updateSession in DEMO_MODE (ADR-0016)", () => {
-  afterEach(() => {
-    vi.unstubAllEnvs();
-  });
-
   it("serves a private path without redirecting to login and without a Supabase session", async () => {
     vi.stubEnv("DEMO_MODE", "1");
-    // No Supabase env is set: reaching createServerClient would throw, so a
-    // clean pass-through proves the demo branch short-circuits before it.
     const res = await updateSession(new NextRequest("http://localhost/monthly"));
     expect(res.status).toBe(200);
     expect(res.headers.get("location")).toBeNull();
+    expect(getUser).not.toHaveBeenCalled();
+  });
+});
+
+describe("updateSession owner gate", () => {
+  it("redirects a signed-out request from a private path", async () => {
+    getUser.mockResolvedValue({ data: { user: null } });
+
+    const res = await updateSession(new NextRequest("http://localhost/monthly"));
+
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toBe("http://localhost/login");
+    expect(signOut).not.toHaveBeenCalled();
+  });
+
+  it("serves a private path for the configured owner", async () => {
+    getUser.mockResolvedValue({ data: { user: { id: "owner-1" } } });
+
+    const res = await updateSession(new NextRequest("http://localhost/monthly"));
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("location")).toBeNull();
+    expect(signOut).not.toHaveBeenCalled();
+  });
+
+  it("signs out a non-owner session and redirects private paths", async () => {
+    getUser.mockResolvedValue({ data: { user: { id: "intruder" } } });
+
+    const res = await updateSession(new NextRequest("http://localhost/monthly?view=all"));
+
+    expect(signOut).toHaveBeenCalledOnce();
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toBe("http://localhost/login");
+  });
+
+  it("fails closed when OWNER_USER_ID is missing", async () => {
+    vi.stubEnv("OWNER_USER_ID", "");
+    getUser.mockResolvedValue({ data: { user: { id: "owner-1" } } });
+
+    const res = await updateSession(new NextRequest("http://localhost/monthly"));
+
+    expect(signOut).toHaveBeenCalledOnce();
+    expect(res.status).toBe(307);
   });
 });

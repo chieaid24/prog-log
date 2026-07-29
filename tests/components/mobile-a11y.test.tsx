@@ -22,12 +22,9 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
 }));
 
-vi.mock("@/app/actions/auth", () => ({ signOut: vi.fn() }));
+vi.mock("@/app/actions/auth", () => ({ requestMagicLink: vi.fn(), signOut: vi.fn() }));
 vi.mock("@/app/actions/entries", () => ({ logEntryAction: vi.fn() }));
 vi.mock("@/app/actions/projects", () => ({ createProjectAction: vi.fn() }));
-vi.mock("@/lib/supabase/client", () => ({
-  createClient: () => ({ auth: { signInWithOtp: vi.fn() } }),
-}));
 
 const PROJECTS: Project[] = [
   {

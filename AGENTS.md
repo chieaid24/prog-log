@@ -166,6 +166,10 @@ Tailwind · Recharts/custom SVG · Discord Interactions API + Apple Shortcuts fo
 GitHub Actions cron keep-alive. Everything runs on free tiers. Use the Supabase **service role key
 server-side only**; the browser uses the anon key + RLS.
 
+The private deployment uses a server-side `OWNER_EMAIL` allowlist for magic-link requests and
+matches every authenticated private-page session against `OWNER_USER_ID`. Both gates fail closed
+when their environment variable is missing. `DEMO_MODE=1` bypasses this session boundary.
+
 ---
 
 ## Parallel agent workflow

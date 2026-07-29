@@ -53,12 +53,22 @@ export async function updateSession(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const ownerId = process.env.OWNER_USER_ID;
+  const isOwner = Boolean(user && ownerId && user.id === ownerId);
 
-  if (!user && !isPublicPath(request.nextUrl.pathname)) {
+  if (user && !isOwner) {
+    await supabase.auth.signOut();
+  }
+
+  if (!isOwner && !isPublicPath(request.nextUrl.pathname)) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.search = "";
-    return NextResponse.redirect(url);
+    const redirectResponse = NextResponse.redirect(url);
+    supabaseResponse.cookies.getAll().forEach(({ name, value, ...options }) => {
+      redirectResponse.cookies.set(name, value, options);
+    });
+    return redirectResponse;
   }
 
   return supabaseResponse;
