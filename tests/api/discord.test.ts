@@ -1,16 +1,21 @@
 // Request tests for the Discord interactions endpoint (PRD 4.1): real
 // tweetnacl keypair for the signature, mocked admin client + owner fetches,
-// spied upsertEntry — asserting the route never writes on any rejection path.
+// spied upsertEntry and set_reflection rpc — asserting the route never
+// writes on any rejection path.
 import nacl from "tweetnacl";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Project, ProjectAlias } from "@/lib/types";
 
-const { ADMIN, upsertEntry, getOwnerActiveProjects, getOwnerAliases } = vi.hoisted(() => ({
-  ADMIN: { admin: true },
-  upsertEntry: vi.fn(),
-  getOwnerActiveProjects: vi.fn(),
-  getOwnerAliases: vi.fn(),
-}));
+const { ADMIN, rpc, upsertEntry, getOwnerActiveProjects, getOwnerAliases } = vi.hoisted(() => {
+  const rpc = vi.fn();
+  return {
+    ADMIN: { admin: true, rpc },
+    rpc,
+    upsertEntry: vi.fn(),
+    getOwnerActiveProjects: vi.fn(),
+    getOwnerAliases: vi.fn(),
+  };
+});
 
 vi.mock("@/lib/supabase/admin", () => ({ createAdminClient: () => ADMIN }));
 vi.mock("@/lib/entries", () => ({ upsertEntry }));
@@ -104,11 +109,34 @@ function autocomplete(typed: string, userId: string = OWNER_DISCORD_ID) {
   };
 }
 
+function reflectCommand(
+  options: Record<string, string>,
+  userId: string = OWNER_DISCORD_ID,
+) {
+  return {
+    type: 2,
+    member: { user: { id: userId } },
+    data: {
+      name: "reflect",
+      options: Object.entries(options).map(([name, value]) => ({ name, value })),
+    },
+  };
+}
+
+const REFLECTION_ROW = {
+  user_id: OWNER_USER_ID,
+  entry_date: "2026-07-29",
+  reflection: "shipped the reflect command",
+  created_at: "2026-07-29T00:00:00Z",
+  updated_at: "2026-07-29T00:00:00Z",
+};
+
 beforeEach(() => {
   vi.stubEnv("DISCORD_PUBLIC_KEY", PUBLIC_KEY);
   vi.stubEnv("DISCORD_OWNER_ID", OWNER_DISCORD_ID);
   vi.stubEnv("OWNER_USER_ID", OWNER_USER_ID);
   upsertEntry.mockReset().mockResolvedValue({});
+  rpc.mockReset().mockResolvedValue({ data: REFLECTION_ROW, error: null });
   getOwnerActiveProjects.mockReset().mockResolvedValue(PROJECTS);
   getOwnerAliases.mockReset().mockResolvedValue([]);
 });
@@ -273,5 +301,81 @@ describe("/log command", () => {
     const json = await res.json();
     expect(json.data.content).toContain('"huge" is not a time commitment');
     expect(upsertEntry).not.toHaveBeenCalled();
+  });
+});
+
+describe("/reflect command", () => {
+  it("401s a bad signature without writing", async () => {
+    const res = await post(reflectCommand({ reflection: "a good day" }), {
+      secretKey: wrongKeyPair.secretKey,
+    });
+    expect(res.status).toBe(401);
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it("rejects a non-owner with an ephemeral message and no write", async () => {
+    const res = await post(reflectCommand({ reflection: "a good day" }, "999"));
+    expect(await res.json()).toEqual({
+      type: 4,
+      data: { content: "not authorized", flags: 64 },
+    });
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it("upserts today's reflection via set_reflection as the owner", async () => {
+    const res = await post(reflectCommand({ reflection: "  shipped the reflect command  " }));
+    expect(rpc).toHaveBeenCalledTimes(1);
+    expect(rpc).toHaveBeenCalledWith("set_reflection", {
+      p_reflection: "shipped the reflect command",
+      p_user: OWNER_USER_ID,
+    });
+    const json = await res.json();
+    expect(json.type).toBe(4);
+    expect(json.data.flags).toBe(64);
+    expect(json.data.content).toBe("reflection saved for 2026-07-29");
+  });
+
+  it("passes an explicit date through to set_reflection", async () => {
+    await post(reflectCommand({ reflection: "backfilled", date: "2026-07-01" }));
+    expect(rpc).toHaveBeenCalledWith("set_reflection", {
+      p_reflection: "backfilled",
+      p_user: OWNER_USER_ID,
+      p_date: "2026-07-01",
+    });
+  });
+
+  it("rejects a malformed date with no write", async () => {
+    const res = await post(reflectCommand({ reflection: "typo day", date: "july 1" }));
+    const json = await res.json();
+    expect(json.data.content).toBe('"july 1" is not a date - use YYYY-MM-DD.');
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it("rejects an empty reflection with no write", async () => {
+    const res = await post(reflectCommand({ reflection: "   " }));
+    const json = await res.json();
+    expect(json.data.content).toBe("write a line first.");
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it("replies with a save failure when the rpc errors", async () => {
+    rpc.mockResolvedValue({ data: null, error: { message: "boom" } });
+    const res = await post(reflectCommand({ reflection: "a good day" }));
+    const json = await res.json();
+    expect(json.data.content).toBe("could not save the reflection - try again.");
+  });
+});
+
+describe("unknown command", () => {
+  it("replies unknown without writing", async () => {
+    const res = await post({
+      type: 2,
+      member: { user: { id: OWNER_DISCORD_ID } },
+      data: { name: "frobnicate", options: [] },
+    });
+    const json = await res.json();
+    expect(json.data.content).toBe("unknown command");
+    expect(upsertEntry).not.toHaveBeenCalled();
+    expect(rpc).not.toHaveBeenCalled();
   });
 });

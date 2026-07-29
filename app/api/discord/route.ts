@@ -1,11 +1,13 @@
 // Discord interactions endpoint (PRD 4.1, ADR-0002). Discord POSTs every
-// interaction here: PING handshakes, /log commands, and project autocomplete.
-// Ed25519 signature first, owner gate second; /log delegates resolution and
-// the write to the shared capture pipeline (captureLog, ADR-0001).
+// interaction here: PING handshakes, /log and /reflect commands, and project
+// autocomplete. Ed25519 signature first, owner gate second; /log delegates
+// resolution and the write to the shared capture pipeline (captureLog,
+// ADR-0001); /reflect writes through the set_reflection RPC (ADR-0017).
 import { captureLog } from "@/lib/capture";
 import { DEMO_WRITE_NOTE, isDemoMode } from "@/lib/demo/mode";
 import { getOwnerActiveProjects, getOwnerAliases } from "@/lib/discord/owner";
 import { verifyDiscordSignature } from "@/lib/discord/verify";
+import type { Db } from "@/lib/queries";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { TIME_SIZES, type TimeSize } from "@/lib/types";
 
@@ -80,7 +82,9 @@ export async function POST(req: Request): Promise<Response> {
 
   if (interaction.type === APPLICATION_COMMAND) {
     if (!isOwner) return reply("not authorized");
-    return handleLogCommand(interaction);
+    if (interaction.data?.name === "log") return handleLogCommand(interaction);
+    if (interaction.data?.name === "reflect") return handleReflectCommand(interaction);
+    return reply("unknown command");
   }
 
   return new Response("unsupported interaction type", { status: 400 });
@@ -118,10 +122,8 @@ async function handleAutocomplete(interaction: Interaction): Promise<Response> {
 
 /** /log: option normalization here, capture decisions in captureLog. */
 async function handleLogCommand(interaction: Interaction): Promise<Response> {
-  if (interaction.data?.name !== "log") return reply("unknown command");
-
   const opts = Object.fromEntries(
-    (interaction.data.options ?? []).map((o) => [o.name, String(o.value ?? "")]),
+    (interaction.data?.options ?? []).map((o) => [o.name, String(o.value ?? "")]),
   );
 
   const time = opts.time ?? "";
@@ -141,6 +143,37 @@ async function handleLogCommand(interaction: Interaction): Promise<Response> {
 
   const suffix = opts.milestone ? `, milestone: ${opts.milestone}` : "";
   return reply(`logged ${result.project.name} - ${time}${suffix}`);
+}
+
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * /reflect: overwrite the day's reflection through set_reflection, the sole
+ * write surface (ADR-0017). Optional date targets a past day; omitted, the
+ * RPC falls back to today in the owner's stored timezone (ADR-0004).
+ */
+async function handleReflectCommand(interaction: Interaction): Promise<Response> {
+  const opts = Object.fromEntries(
+    (interaction.data?.options ?? []).map((o) => [o.name, String(o.value ?? "")]),
+  );
+
+  const reflection = (opts.reflection ?? "").trim();
+  if (!reflection) return reply("write a line first.");
+
+  const date = (opts.date ?? "").trim();
+  if (date && !ISO_DATE.test(date)) {
+    return reply(`"${date}" is not a date - use YYYY-MM-DD.`);
+  }
+
+  const db: Db = createAdminClient();
+  const { data, error } = await db.rpc("set_reflection", {
+    p_reflection: reflection,
+    p_user: ownerId(),
+    ...(date ? { p_date: date } : {}),
+  });
+  if (error || !data) return reply("could not save the reflection - try again.");
+
+  return reply(`reflection saved for ${data.entry_date}`);
 }
 
 function ownerId(): string {
