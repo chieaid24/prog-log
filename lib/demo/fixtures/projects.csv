@@ -1,7 +1,7 @@
 id,name,category,status,color,started,description
 00000000-0000-0000-0000-000000000001,Work,Work,active,#7c8cf8,2026-01-02,Day job: shipping the product roadmap.
 00000000-0000-0000-0000-000000000002,AI-M,Research,active,#c084fc,2026-01-05,Independent ML research on evaluation.
-00000000-0000-0000-0000-000000000003,Website,Personal,active,#67e8f9,2026-01-28,Personal site and blog.
+00000000-0000-0000-0000-000000000003,Website,Personal,active,#67e8f9,2025-08-10,Personal site and blog.
 00000000-0000-0000-0000-000000000004,Turkish,Learning,active,#fbbf24,2026-01-08,Learning Turkish from scratch.
-00000000-0000-0000-0000-000000000005,Mandarin,Learning,active,#f472b6,2026-01-25,Working toward HSK1 Mandarin.
-00000000-0000-0000-0000-000000000006,Thesis,Research,archived,#94a3b8,2025-09-01,Master's thesis, now wrapped up.
+00000000-0000-0000-0000-000000000005,Mandarin,Learning,active,#f472b6,2025-10-04,Working toward HSK1 Mandarin.
+00000000-0000-0000-0000-000000000006,Thesis,Research,archived,#94a3b8,2025-01-15,"Master's thesis, defended and archived in December."

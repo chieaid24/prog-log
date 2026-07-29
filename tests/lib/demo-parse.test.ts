@@ -2,7 +2,7 @@
 // produces the same domain row shapes the Supabase queries return, maps empty
 // cells to null, and handles RFC 4180 quoting so fixture prose is safe.
 import { describe, expect, it } from "vitest";
-import { parseCsv, parseEntriesCsv, parseProjectsCsv } from "@/lib/demo/parse";
+import { parseCsv, parseEntriesCsv, parseProjectsCsv, parseReflectionsCsv } from "@/lib/demo/parse";
 import { DEMO_USER_ID } from "@/lib/demo/mode";
 import { TIME_SIZES } from "@/lib/types";
 
@@ -75,5 +75,25 @@ describe("parseEntriesCsv", () => {
   it("rejects an unknown time_spent value", () => {
     const csv = "id,project_id,entry_date,time_spent,milestone,description\ne1,p1,2026-03-03,huge,,x\n";
     expect(() => parseEntriesCsv(csv)).toThrow(/invalid time_spent "huge"/);
+  });
+});
+
+describe("parseReflectionsCsv", () => {
+  it("maps rows to Reflection domain types with owner and timestamps stamped on", () => {
+    const csv = 'entry_date,reflection\n2026-03-03,"Long day, good day."\n';
+    expect(parseReflectionsCsv(csv)).toEqual([
+      {
+        user_id: DEMO_USER_ID,
+        entry_date: "2026-03-03",
+        reflection: "Long day, good day.",
+        created_at: "2026-03-03T21:00:00Z",
+        updated_at: "2026-03-03T21:00:00Z",
+      },
+    ]);
+  });
+
+  it("rejects an empty reflection", () => {
+    const csv = "entry_date,reflection\n2026-03-03,\n";
+    expect(() => parseReflectionsCsv(csv)).toThrow(/empty reflection for 2026-03-03/);
   });
 });
