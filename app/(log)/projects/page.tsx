@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import { ProjectManager, type ProjectUsage } from "@/components/projects/project-manager";
 import { daysBetween } from "@/lib/dates";
-import { getAllProjects, getProjectAliases, getToday } from "@/lib/queries";
+import {
+  getAllProjects,
+  getEntryDatesWithProject,
+  getProjectAliases,
+  getToday,
+} from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 import type { ProjectAlias } from "@/lib/types";
 
@@ -22,10 +27,8 @@ export default async function ProjectsPage() {
   }
 
   // Usage summary per project: count + last-logged age, from real Entries.
-  const { data: entryRows, error } = await supabase
-    .from("entries")
-    .select("project_id, entry_date");
-  if (error) throw error;
+  // Through the read wrapper so DEMO_MODE answers from fixtures (ADR-0016).
+  const entryRows = await getEntryDatesWithProject(supabase);
 
   const usage: Record<string, ProjectUsage> = {};
   for (const row of entryRows) {
