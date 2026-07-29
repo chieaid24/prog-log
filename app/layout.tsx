@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist_Mono, Hanken_Grotesk } from "next/font/google";
+import { DemoBanner } from "@/components/ui/demo-banner";
 import "./globals.css";
 
 // Sans for language, mono for measurement (DESIGN.md): Hanken Grotesk carries
@@ -48,6 +49,7 @@ export default function RootLayout({
       <body
         className={`${hankenGrotesk.variable} ${geistMono.variable} antialiased`}
       >
+        <DemoBanner />
         {children}
       </body>
     </html>

@@ -1,7 +1,7 @@
 // Deterministic CSV -> domain parsing for the DEMO_MODE fixture provider
 // (ADR-0016). Pure: string in, domain rows out, no I/O. Handles RFC 4180
 // quoting (embedded commas, quotes and newlines) so fixture prose is safe.
-import { TIME_SIZES, type Entry, type Project, type TimeSize } from "../types";
+import { TIME_SIZES, type Entry, type Project, type Reflection, type TimeSize } from "../types";
 import { DEMO_USER_ID } from "./mode";
 
 /** Split CSV text into rows of raw fields (RFC 4180: quotes, commas, newlines). */
@@ -78,6 +78,22 @@ export function parseProjectsCsv(text: string): Project[] {
     description: orNull(r.description ?? ""),
     created_at: r.created_at || `${r.started || "2026-01-01"}T12:00:00Z`,
   }));
+}
+
+/** Parse the reflections fixture into `Reflection` rows; rejects an empty reflection. */
+export function parseReflectionsCsv(text: string): Reflection[] {
+  return parseCsv(text).map((r) => {
+    if (!r.reflection) {
+      throw new Error(`demo fixture: empty reflection for ${r.entry_date}`);
+    }
+    return {
+      user_id: DEMO_USER_ID,
+      entry_date: r.entry_date,
+      reflection: r.reflection,
+      created_at: r.created_at || `${r.entry_date}T21:00:00Z`,
+      updated_at: r.updated_at || `${r.entry_date}T21:00:00Z`,
+    };
+  });
 }
 
 /** Parse the entries fixture into `Entry` rows; rejects an unknown time_spent. */

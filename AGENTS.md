@@ -131,6 +131,7 @@ Guidance for the lead:
 | `build` | CI + local | every push/PR |
 | Acceptance check | PR / Issue | before a PR merges |
 | Manual/dev-server validation | local | feature & multi-file changes |
+| Demo probe (`npm run probe:demo`) | local | changes to DEMO_MODE, the demo fixtures, or the demo banner |
 
 The CI job is named `test` and runs the full gate (lint → typecheck → test → build); it is the
 required status check branch protection enforces on `main`. A lean local pre-commit hook mirrors

@@ -7,13 +7,13 @@ import "server-only";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { daysBetween } from "../dates";
-import type { EntryWithProject, Project, ProjectAlias, ThrowbackItem } from "../types";
+import type { EntryWithProject, Project, ProjectAlias, Reflection, ThrowbackItem } from "../types";
 import { DEMO_TIMEZONE } from "./mode";
-import { parseEntriesCsv, parseProjectsCsv } from "./parse";
+import { parseEntriesCsv, parseProjectsCsv, parseReflectionsCsv } from "./parse";
 
 const FIXTURE_DIR = join(process.cwd(), "lib", "demo", "fixtures");
 
-type Dataset = { projects: Project[]; entries: EntryWithProject[] };
+type Dataset = { projects: Project[]; entries: EntryWithProject[]; reflections: Reflection[] };
 
 let cache: Dataset | null = null;
 
@@ -25,7 +25,7 @@ function cmp(a: string, b: string): number {
 const byName = (a: Project, b: Project) => cmp(a.name, b.name);
 const byEntryDate = (a: EntryWithProject, b: EntryWithProject) => cmp(a.entry_date, b.entry_date);
 
-/** Parse both fixtures once, joining each entry to its project (memoized). */
+/** Parse the fixtures once, joining each entry to its project (memoized). */
 function load(): Dataset {
   if (cache) return cache;
   const projects = parseProjectsCsv(readFileSync(join(FIXTURE_DIR, "projects.csv"), "utf8"));
@@ -42,7 +42,10 @@ function load(): Dataset {
       project: { id: p.id, name: p.name, color: p.color, category: p.category, status: p.status },
     };
   });
-  cache = { projects, entries };
+  const reflections = parseReflectionsCsv(
+    readFileSync(join(FIXTURE_DIR, "reflections.csv"), "utf8"),
+  );
+  cache = { projects, entries, reflections };
   return cache;
 }
 
@@ -80,11 +83,14 @@ export function getEntriesForDay(date: string): EntryWithProject[] {
     .sort((a, b) => cmp(a.created_at, b.created_at));
 }
 
-/** Past milestones before todayISO with age precomputed (mirrors getThrowbackPool). */
+/**
+ * Past milestones and reflections before todayISO with age precomputed,
+ * blended and ordered like fetchThrowbackPool (mirrors getThrowbackPool).
+ */
 export function getThrowbackPool(todayISO: string): ThrowbackItem[] {
-  return load()
-    .entries.filter((e) => e.milestone !== null && e.entry_date < todayISO)
-    .sort(byEntryDate)
+  const { entries, reflections } = load();
+  const milestoneItems: ThrowbackItem[] = entries
+    .filter((e) => e.milestone !== null && e.entry_date < todayISO)
     .map((e) => ({
       kind: "milestone",
       entryId: e.id,
@@ -94,6 +100,23 @@ export function getThrowbackPool(todayISO: string): ThrowbackItem[] {
       color: e.project.color,
       daysAgo: daysBetween(e.entry_date, todayISO),
     }));
+  const reflectionItems: ThrowbackItem[] = reflections
+    .filter((r) => r.entry_date < todayISO)
+    .map((r) => ({
+      kind: "reflection",
+      reflection: r.reflection,
+      entryDate: r.entry_date,
+      daysAgo: daysBetween(r.entry_date, todayISO),
+    }));
+  return [...milestoneItems, ...reflectionItems].sort(
+    (a, b) =>
+      cmp(a.entryDate, b.entryDate) ||
+      cmp(a.kind, b.kind) ||
+      cmp(
+        a.kind === "milestone" ? a.entryId : a.reflection,
+        b.kind === "milestone" ? b.entryId : b.reflection,
+      ),
+  );
 }
 
 /** Every entry's (date, project) pair, date order (mirrors getEntryDatesWithProject). */
