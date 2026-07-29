@@ -25,6 +25,7 @@ vi.mock("next/navigation", () => ({
 vi.mock("@/app/actions/auth", () => ({ requestMagicLink: vi.fn(), signOut: vi.fn() }));
 vi.mock("@/app/actions/entries", () => ({ logEntryAction: vi.fn() }));
 vi.mock("@/app/actions/projects", () => ({ createProjectAction: vi.fn() }));
+vi.mock("@/app/actions/reflections", () => ({ setReflectionAction: vi.fn() }));
 
 const PROJECTS: Project[] = [
   {

@@ -3,10 +3,13 @@
 // Quick add (PRD 3.2): the common case is two picks. Project and Time
 // Commitment are the always-visible controls; Milestone is one optional line;
 // Description hides behind "+ add detail". "+ New project" creates inline
-// without leaving the flow.
+// without leaving the flow. The day's Reflection (ADR-0017) rides along:
+// inviting when unset, grayed once set, saved with the entry or on its own,
+// never required to log.
 import { useId, useRef, useState, useTransition } from "react";
 import { logEntryAction } from "@/app/actions/entries";
 import { createProjectAction } from "@/app/actions/projects";
+import { setReflectionAction } from "@/app/actions/reflections";
 import { humanDate } from "@/lib/dates";
 import { isDemoNotice } from "@/lib/demo/mode";
 import { TIME_LABEL, TIME_SIZES, type Project, type TimeSize } from "@/lib/types";
@@ -18,11 +21,18 @@ type Props = {
   projects: Project[];
   /** ISO date to log against (clicked calendar day); omitted = today. */
   date?: string;
+  /** The day's existing Reflection text; null/omitted = not set yet. */
+  reflection?: string | null;
   /** Called after a successful log (e.g. to close a day popover). */
   onLogged?: () => void;
 };
 
-export function QuickAddForm({ projects: initialProjects, date, onLogged }: Props) {
+export function QuickAddForm({
+  projects: initialProjects,
+  date,
+  reflection: initialReflection,
+  onLogged,
+}: Props) {
   // The form renders more than once per page (desktop aside + day detail +
   // the mobile sheet), so field ids must be instance-unique or labels bind
   // to the wrong (even hidden) controls.
@@ -32,6 +42,10 @@ export function QuickAddForm({ projects: initialProjects, date, onLogged }: Prop
   const [timeSpent, setTimeSpent] = useState<TimeSize | null>(null);
   const [milestone, setMilestone] = useState("");
   const [description, setDescription] = useState("");
+  const [reflection, setReflection] = useState(initialReflection ?? "");
+  // Last text known to be persisted; dirty-tracking baseline for saves.
+  const [savedReflection, setSavedReflection] = useState(initialReflection ?? "");
+  const [reflectionSaved, setReflectionSaved] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
@@ -41,6 +55,41 @@ export function QuickAddForm({ projects: initialProjects, date, onLogged }: Prop
   const [logged, setLogged] = useState(false);
   const [pending, startTransition] = useTransition();
   const loggedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reflectionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const reflectionText = reflection.trim();
+  const reflectionDirty =
+    reflectionText.length > 0 && reflectionText !== savedReflection.trim();
+  // Grayed while it just shows what is already saved; normal ink once touched.
+  const reflectionPristine = savedReflection.trim().length > 0 && !reflectionDirty;
+
+  /** Persist the Reflection via set_reflection; true on success. */
+  async function persistReflection(text: string): Promise<boolean> {
+    const result = await setReflectionAction({ reflection: text, entryDate: date });
+    if (!result.ok) {
+      if (isDemoNotice(result)) {
+        setNotice(result.error);
+        return false;
+      }
+      setError(result.error);
+      return false;
+    }
+    setSavedReflection(text);
+    return true;
+  }
+
+  /** Reflection-only save (edit any day without logging an entry). */
+  function saveReflection() {
+    if (!reflectionDirty) return;
+    setError(null);
+    setNotice(null);
+    startTransition(async () => {
+      if (!(await persistReflection(reflectionText))) return;
+      setReflectionSaved(true);
+      if (reflectionTimer.current) clearTimeout(reflectionTimer.current);
+      reflectionTimer.current = setTimeout(() => setReflectionSaved(false), 2500);
+    });
+  }
 
   function selectProject(value: string) {
     setError(null);
@@ -102,6 +151,9 @@ export function QuickAddForm({ projects: initialProjects, date, onLogged }: Prop
         setError(result.error);
         return;
       }
+      // The entry is logged either way; a failed reflection save only shows
+      // its own error (the reflection never blocks logging).
+      if (reflectionDirty && !(await persistReflection(reflectionText))) return;
       setMilestone("");
       setDescription("");
       setShowDetail(false);
@@ -245,6 +297,33 @@ export function QuickAddForm({ projects: initialProjects, date, onLogged }: Prop
         </button>
       )}
 
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor={`${uid}-reflection`} className="text-xs font-medium text-ink-muted">
+          Day reflection <span className="font-normal text-ink-muted">(optional)</span>
+        </label>
+        <input
+          id={`${uid}-reflection`}
+          value={reflection}
+          onChange={(e) => setReflection(e.target.value)}
+          placeholder={date ? "One line about this day" : "One line about today"}
+          enterKeyHint="done"
+          autoComplete="off"
+          className={`rounded-lg border border-border bg-surface px-3 py-2 text-sm placeholder:text-ink-faint focus:border-frog-green pointer-coarse:py-3 pointer-coarse:text-base ${
+            reflectionPristine ? "text-ink-muted" : "text-ink"
+          }`}
+        />
+        {reflectionDirty && (
+          <button
+            type="button"
+            onClick={saveReflection}
+            disabled={pending}
+            className="tap self-start rounded-md text-xs text-ink-muted transition-colors hover:text-ink disabled:opacity-50"
+          >
+            Save reflection
+          </button>
+        )}
+      </div>
+
       <button
         type="submit"
         disabled={pending || !projectId || !timeSpent}
@@ -258,6 +337,9 @@ export function QuickAddForm({ projects: initialProjects, date, onLogged }: Prop
         {notice && !error && <p className="text-ink-muted">{notice}</p>}
         {logged && !error && !notice && (
           <p className="font-medium text-frog-green-strong">Logged.</p>
+        )}
+        {reflectionSaved && !logged && !error && !notice && (
+          <p className="font-medium text-frog-green-strong">Reflection saved.</p>
         )}
       </div>
     </form>

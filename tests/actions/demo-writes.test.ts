@@ -21,6 +21,7 @@ import {
   setProjectStatusAction,
   updateProjectAction,
 } from "@/app/actions/projects";
+import { setReflectionAction } from "@/app/actions/reflections";
 import { updateTimezoneAction } from "@/app/actions/settings";
 import { DEMO_WRITE_NOTE } from "@/lib/demo/mode";
 
@@ -48,6 +49,7 @@ const cases: Array<[string, () => Promise<unknown>]> = [
   ["addProjectAliasAction", () => addProjectAliasAction("p1", "rk")],
   ["removeProjectAliasAction", () => removeProjectAliasAction("a1")],
   ["updateTimezoneAction", () => updateTimezoneAction("America/Toronto")],
+  ["setReflectionAction", () => setReflectionAction({ reflection: "a line" })],
   ["importEntriesAction", () => importEntriesAction(importForm())],
 ];
 

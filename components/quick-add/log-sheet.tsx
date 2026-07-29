@@ -10,7 +10,13 @@ import { useEffect, useRef, useState } from "react";
 import type { Project } from "@/lib/types";
 import { QuickAddForm } from "./quick-add-form";
 
-export function LogSheet({ projects }: { projects: Project[] }) {
+type Props = {
+  projects: Project[];
+  /** Today's existing Reflection text; null/omitted = not set yet. */
+  reflection?: string | null;
+};
+
+export function LogSheet({ projects, reflection }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [logged, setLogged] = useState(false);
 
@@ -112,7 +118,7 @@ export function LogSheet({ projects }: { projects: Project[] }) {
             &#x2715;
           </button>
         </div>
-        <QuickAddForm projects={projects} onLogged={onLogged} />
+        <QuickAddForm projects={projects} reflection={reflection} onLogged={onLogged} />
       </dialog>
     </div>
   );

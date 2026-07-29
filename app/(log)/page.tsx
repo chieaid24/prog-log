@@ -9,7 +9,7 @@ import { MomentumPanel } from "@/components/streak/momentum-panel";
 import { ThrowbackFeed } from "@/components/throwback/throwback-feed";
 import { YearHeatmap } from "@/components/heatmap/year-heatmap";
 import { addDays, endOfMonth, startOfMonth } from "@/lib/dates";
-import { getActiveProjects, getEntriesInRange, getToday } from "@/lib/queries";
+import { getActiveProjects, getDayReflection, getEntriesInRange, getToday } from "@/lib/queries";
 import { toCalendarDayProjects, toHeatmapCells } from "@/lib/rollups";
 import { createClient } from "@/lib/supabase/server";
 
@@ -40,9 +40,11 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
   // leading/trailing grid days) and today.
   const from = min(addDays(today, -371), addDays(monthStart, -7));
   const to = max(today, addDays(endOfMonth(monthStart), 7));
-  const [entries, projects] = await Promise.all([
+  const [entries, projects, todayReflection, dayReflection] = await Promise.all([
     getEntriesInRange(supabase, from, to),
     getActiveProjects(supabase),
+    getDayReflection(supabase, today),
+    selectedDay ? getDayReflection(supabase, selectedDay) : null,
   ]);
 
   const heatmapCells = toHeatmapCells(
@@ -109,10 +111,14 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
         </section>
 
         {selectedDay && (
+          // Keyed by day so switching days resets the panel's form state
+          // (draft milestone or reflection text never leaks across days).
           <DayDetail
+            key={selectedDay}
             date={selectedDay}
             entries={dayEntries}
             projects={projects}
+            reflection={dayReflection?.reflection ?? null}
             closeHref={closeHref}
           />
         )}
@@ -126,7 +132,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
           className="hidden rounded-xl border border-border bg-surface p-4 lg:block"
         >
           <h2 className="mb-3 text-sm font-semibold tracking-tight">Log today</h2>
-          <QuickAddForm projects={projects} />
+          <QuickAddForm projects={projects} reflection={todayReflection?.reflection ?? null} />
         </section>
         <ThrowbackFeed />
         <MomentumPanel />
@@ -135,7 +141,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
       {/* With a day selected, the day panel carries its own capture form on
           the same screen; the fixed button would float right over those
           controls at 390px and steal their taps. */}
-      {!selectedDay && <LogSheet projects={projects} />}
+      {!selectedDay && (
+        <LogSheet projects={projects} reflection={todayReflection?.reflection ?? null} />
+      )}
     </div>
   );
 }

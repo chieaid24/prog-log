@@ -83,6 +83,11 @@ export function getEntriesForDay(date: string): EntryWithProject[] {
     .sort((a, b) => cmp(a.created_at, b.created_at));
 }
 
+/** One day's Reflection, if any (mirrors getDayReflection). */
+export function getDayReflection(date: string): Reflection | null {
+  return load().reflections.find((r) => r.entry_date === date) ?? null;
+}
+
 /**
  * Past milestones and reflections before todayISO with age precomputed,
  * blended and ordered like fetchThrowbackPool (mirrors getThrowbackPool).

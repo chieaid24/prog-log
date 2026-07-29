@@ -10,7 +10,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types";
 import { DEFAULT_TIMEZONE, daysBetween, todayInTimeZone } from "./dates";
 import { isDemoMode } from "./demo/mode";
-import type { EntryWithProject, Project, ProjectAlias, ThrowbackItem } from "./types";
+import type { EntryWithProject, Project, ProjectAlias, Reflection, ThrowbackItem } from "./types";
 
 export type Db = SupabaseClient<Database>;
 
@@ -100,6 +100,18 @@ export async function getEntriesForDay(db: Db, date: string): Promise<EntryWithP
     .order("created_at");
   if (error) throw error;
   return data as EntryWithProject[];
+}
+
+/** One day's Reflection, or null when unset (ADR-0017; capture-flow prefill). */
+export async function getDayReflection(db: Db, date: string): Promise<Reflection | null> {
+  if (isDemoMode()) return (await demoReads()).getDayReflection(date);
+  const { data, error } = await db
+    .from("daily_reflections")
+    .select("*")
+    .eq("entry_date", date)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
 }
 
 /**
