@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-// One-shot registration of the /log slash command (PRD 4.1). Run once per
-// Discord application; re-running overwrites in place (PUT is idempotent).
+// One-shot registration of the /log and /reflect slash commands (PRD 4.1,
+// ADR-0017). Run once per Discord application; re-running overwrites in
+// place (PUT is idempotent).
 //
 //   node --env-file=.env.local scripts/register-discord-command.mjs
 //
@@ -45,6 +46,25 @@ const commands = [
         name: "description",
         type: STRING,
         description: "detail (optional)",
+        required: false,
+      },
+    ],
+  },
+  {
+    name: "reflect",
+    description: "set the day's reflection",
+    type: 1, // CHAT_INPUT
+    options: [
+      {
+        name: "reflection",
+        type: STRING,
+        description: "one line about the day",
+        required: true,
+      },
+      {
+        name: "date",
+        type: STRING,
+        description: "YYYY-MM-DD (optional, defaults to today)",
         required: false,
       },
     ],
