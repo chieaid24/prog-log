@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { requestMagicLink } from "@/app/actions/auth";
 import { Frog } from "@/components/ui/frog";
-import { createClient } from "@/lib/supabase/client";
 
 type SendState = { status: "idle" | "sending" | "sent" } | { status: "error"; message: string };
 
@@ -17,15 +17,9 @@ function LoginForm() {
   async function sendLink(event: React.FormEvent) {
     event.preventDefault();
     setState({ status: "sending" });
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/confirm`,
-      },
-    });
-    if (error) {
-      setState({ status: "error", message: error.message });
+    const result = await requestMagicLink(new FormData(event.currentTarget as HTMLFormElement));
+    if (!result.ok) {
+      setState({ status: "error", message: result.error });
     } else {
       setState({ status: "sent" });
     }
@@ -49,6 +43,7 @@ function LoginForm() {
       </label>
       <input
         id="email"
+        name="email"
         type="email"
         required
         autoFocus
