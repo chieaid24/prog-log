@@ -14,11 +14,13 @@ type Props = {
   date: string;
   entries: EntryWithProject[];
   projects: Project[];
+  /** The day's existing Reflection text; null/omitted = not set yet. */
+  reflection?: string | null;
   /** Preserved query params (view/month) for the close link. */
   closeHref: string;
 };
 
-export function DayDetail({ date, entries, projects, closeHref }: Props) {
+export function DayDetail({ date, entries, projects, reflection, closeHref }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [notice, setNotice] = useState<string | null>(null);
@@ -112,7 +114,7 @@ export function DayDetail({ date, entries, projects, closeHref }: Props) {
         </ul>
       )}
 
-      <QuickAddForm projects={projects} date={date} />
+      <QuickAddForm projects={projects} date={date} reflection={reflection} />
     </section>
   );
 }
