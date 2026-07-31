@@ -10,66 +10,7 @@
 // https://<site>/api/discord URL into the Discord Developer Portal's
 // "Interactions Endpoint URL" — Discord will PING it and expects PONG.
 
-const STRING = 3; // option type
-
-const commands = [
-  {
-    name: "log",
-    description: "log a work entry",
-    type: 1, // CHAT_INPUT
-    options: [
-      {
-        name: "project",
-        type: STRING,
-        description: "project",
-        required: true,
-        autocomplete: true,
-      },
-      {
-        name: "time",
-        type: STRING,
-        description: "time commitment",
-        required: true,
-        choices: [
-          { name: "small", value: "small" },
-          { name: "medium", value: "medium" },
-          { name: "large", value: "large" },
-        ],
-      },
-      {
-        name: "milestone",
-        type: STRING,
-        description: "milestone (optional)",
-        required: false,
-      },
-      {
-        name: "description",
-        type: STRING,
-        description: "detail (optional)",
-        required: false,
-      },
-    ],
-  },
-  {
-    name: "reflect",
-    description: "set the day's reflection",
-    type: 1, // CHAT_INPUT
-    options: [
-      {
-        name: "reflection",
-        type: STRING,
-        description: "one line about the day",
-        required: true,
-      },
-      {
-        name: "date",
-        type: STRING,
-        description: "YYYY-MM-DD (optional, defaults to today)",
-        required: false,
-      },
-    ],
-  },
-];
+import { commands } from "./discord-commands.mjs";
 
 const appId = process.env.DISCORD_APPLICATION_ID;
 const botToken = process.env.DISCORD_BOT_TOKEN;
