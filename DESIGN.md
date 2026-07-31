@@ -28,10 +28,10 @@ typography:
     fontWeight: 700
     lineHeight: 1.1
     letterSpacing: "-0.02em"
-  headline:
+  page-title:
     fontFamily: "Hanken Grotesk, ui-sans-serif, system-ui, sans-serif"
     fontSize: "1.5rem"
-    fontWeight: 600
+    fontWeight: 700
     lineHeight: 1.2
     letterSpacing: "-0.01em"
   title:
@@ -39,6 +39,18 @@ typography:
     fontSize: "1.125rem"
     fontWeight: 600
     lineHeight: 1.3
+    letterSpacing: "normal"
+  section-title:
+    fontFamily: "Hanken Grotesk, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "0.875rem"
+    fontWeight: 600
+    lineHeight: 1.4
+    letterSpacing: "normal"
+  ui-body:
+    fontFamily: "Hanken Grotesk, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "0.875rem"
+    fontWeight: 400
+    lineHeight: 1.4
     letterSpacing: "normal"
   body:
     fontFamily: "Hanken Grotesk, ui-sans-serif, system-ui, sans-serif"
@@ -53,42 +65,50 @@ typography:
     lineHeight: 1.4
     letterSpacing: "0.02em"
 rounded:
-  sm: "6px"
-  md: "8px"
-  lg: "12px"
+  sm: "4px"
+  md: "6px"
+  lg: "8px"
+  xl: "12px"
   full: "9999px"
 spacing:
-  xs: "4px"
-  sm: "8px"
-  md: "12px"
-  lg: "16px"
-  xl: "24px"
-  2xl: "32px"
-  3xl: "48px"
+  "1": "4px"
+  "1.5": "6px"
+  "2": "8px"
+  "3": "12px"
+  "4": "16px"
+  "5": "20px"
+  "6": "24px"
+  "8": "32px"
+  "12": "48px"
 components:
   button-primary:
     backgroundColor: "{colors.frog-green}"
     textColor: "{colors.on-green}"
-    rounded: "{rounded.md}"
-    padding: "10px 16px"
-    typography: "{typography.body}"
+    rounded: "{rounded.lg}"
+    padding: "8px 16px"
+    fontSize: "0.875rem"
+    fontWeight: 600
+    coarsePointerPadding: "12px 16px"
   button-primary-hover:
     backgroundColor: "{colors.frog-green-strong}"
     textColor: "{colors.on-green}"
   button-soft:
     backgroundColor: "{colors.frog-green-soft}"
     textColor: "{colors.frog-green-strong}"
-    rounded: "{rounded.md}"
-    padding: "8px 14px"
+    rounded: "{rounded.lg}"
+    padding: "6px 12px"
   button-ghost:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
-    rounded: "{rounded.md}"
-    padding: "8px 14px"
+    rounded: "{rounded.lg}"
+    padding: "8px 16px"
+  button-compact:
+    padding: "6px 12px"
+    coarsePointerMinHeight: "44px"
   input:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
-    rounded: "{rounded.md}"
+    rounded: "{rounded.lg}"
     padding: "8px 12px"
   chip:
     backgroundColor: "{colors.surface}"
@@ -98,8 +118,14 @@ components:
   card:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
-    rounded: "{rounded.lg}"
+    rounded: "{rounded.xl}"
     padding: "16px"
+  auth-panel:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.xl}"
+    padding: "32px"
+    maxWidth: "384px"
 ---
 
 # Design System: prog-log
@@ -198,10 +224,13 @@ Time Commitment, a project count, is set in the mono so numbers align and read a
 output. Sans for language, mono for measurement.
 
 ### Hierarchy
-- **Display** (700, `clamp(1.75rem, 3vw, 2.25rem)`, 1.1, `-0.02em`): page titles, the wordmark, the `/now` hero. One per view.
-- **Headline** (600, `1.5rem`, 1.2): section headers (a month name, "Throwbacks").
-- **Title** (600, `1.125rem`, 1.3): card headers, a project name in a list.
-- **Body** (400, `1rem`, 1.6): descriptions and prose. Cap measure at 65-75ch.
+- **Display** (700, `clamp(1.75rem, 3vw, 2.25rem)`, 1.1, `-0.02em`): the wordmark
+  and the `/now` hero. Reserve it for a single standout title outside the application shell.
+- **Page Title** (700, `1.5rem`, 1.2): the primary heading on an application page or month view.
+- **Title** (600, `1.125rem`, 1.3): a prominent Project or other entity title.
+- **Section Title** (600, `0.875rem`, 1.4): card headers and compact section headings.
+- **UI Body** (400, `0.875rem`, 1.4): controls, short descriptions, and interface copy.
+- **Body** (400, `1rem`, 1.6): longer prose. Cap measure at 65-75ch.
 - **Label** (Geist Mono, 500, `0.8125rem`, `0.02em`): dates, S/M/L badges, streak counts, axis ticks, metadata.
 
 ### Named Rules
@@ -231,9 +260,28 @@ space or a hairline instead.
 
 ## 5. Components
 
+### Radius
+- Use Tailwind's stock radius scale without remapping it: `rounded-sm` is 4px,
+  `rounded-md` is 6px, `rounded-lg` is 8px, and `rounded-xl` is 12px.
+- Use `rounded-sm` for tiny markers, `rounded-md` for compact controls, `rounded-lg` for
+  regular controls and inputs, and `rounded-xl` for cards and containers.
+
+### Spacing
+- Use Tailwind's stock spacing scale without custom values.
+- Use `gap-1.5` (6px) for compact form stacks, chip contents, legends, and dense controls.
+- Use `gap-5` (20px) for related card and section stacks. Use `gap-6` (24px) when major
+  regions need stronger separation.
+
 ### Buttons
-- **Shape:** gently rounded (`8px`, `rounded.md`).
-- **Primary:** `Frog Green` fill, `On Green` text, `10px 16px`. The one green thing on most screens; reserve it for the main action (log an Entry, save).
+- **Shape:** regular buttons use `8px` (`rounded-lg`); compact controls may use `6px`
+  (`rounded-md`). Use Tailwind's stock radius scale without remapping its utility names.
+- **Regular size:** `8px 16px`, 14px/600. On coarse pointers, use `12px` vertical padding
+  and keep the target at least 44px tall.
+- **Compact size:** `6px 12px`. Reserve it for low-emphasis inline controls whose context
+  makes the action clear; never use it for the primary action on a screen. Tiny actions use
+  the `tap` utility to keep a 24px fine-pointer and 44px coarse-pointer hit area.
+- **Primary:** `Frog Green` fill and `On Green` text. The one green thing on most screens;
+  reserve it for the main action (log an Entry, save).
 - **Hover / Focus:** background shifts to `Frog Green Strong`; `:focus-visible` shows a 2px `Frog Green` ring at `2px` offset. Never remove focus outlines, only restyle.
 - **Soft:** `Frog Green Soft` background, `Frog Green Strong` text, for secondary affirmatives.
 - **Ghost:** `surface` background, `1px border`, `ink` text; hover raises the border to `Border Strong`. For tertiary/quiet actions.
@@ -244,14 +292,17 @@ space or a hairline instead.
 - **State:** selected filters gain `Frog Green Soft` fill and `Frog Green Strong` text, plus a weight bump, never green-fill alone.
 
 ### Cards / Containers
-- **Corner Style:** `12px` (`rounded.lg`).
+- **Corner Style:** `12px` (`rounded-xl`).
 - **Background:** `surface` on the `paper` page.
 - **Shadow Strategy:** none (see The Flat-Paper Rule). Separation is `1px border` + spacing.
-- **Internal Padding:** `16px` (`spacing.lg`); tighter dense lists may use `12px`.
+- **Internal Padding:** `16px` (`p-4`); tighter dense lists may use `12px` (`p-3`).
+- **Auth Panel:** use the stock `max-w-sm rounded-xl p-8` recipe for a focused, standalone
+  authentication form. Do not reuse the 32px padding for ordinary data cards.
 - Nested cards are prohibited. If content inside a card needs grouping, use space or a hairline divider.
 
 ### Inputs / Fields
-- **Style:** `surface` background, `1px border`, `8px` radius, `8px 12px` padding, `Ink Faint` placeholders.
+- **Style:** `surface` background, `1px border`, `8px` radius (`rounded-lg`), `8px 12px`
+  padding, `Ink Faint` placeholders.
 - **Focus:** border shifts to `Frog Green` and the `:focus-visible` ring appears; no glow.
 - **Disabled:** `surface-sunken` background, `Ink Faint` text.
 
