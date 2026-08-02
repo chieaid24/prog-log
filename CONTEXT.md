@@ -42,3 +42,14 @@ A past Milestone resurfaced in the feed with a human relative-age label
 discovery/insights feel, not a strict same-date rule. Only Entries that carry a
 Milestone are eligible.
 _Avoid_: anniversary, on this day, memory, insight
+
+**Expedition**:
+A topic or question the owner generates through the week to later explain on
+video, tracked in a todoist-style todo list. Standalone — never tied to a Project.
+Has a one-line title and an optional short Description. Starts **open** in the
+hand-ordered todo list (new ones append to the bottom; drag to reorder); becomes
+**answered** when a YouTube video explaining it is attached — the link is required
+to answer, and answering is reversible (reopen sends it back to the bottom of the
+todo list). Answered Expeditions show most-recent-first with the video's title and
+a small thumbnail.
+_Avoid_: task, todo, question, topic, quest
