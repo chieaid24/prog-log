@@ -52,3 +52,4 @@ ls docs/adr | grep -oE '^[0-9]{4}' | sort -n | tail -1
 | [0017](0017-daily-reflection-day-table-and-throwback-blend.md) | Daily reflection is a day-level table blended into the throwback pool | accepted |
 | [0018](0018-expeditions-standalone-todo-to-video-model.md) | Expeditions are a standalone todo-to-video table with single-writer RPCs | accepted |
 | [0019](0019-youtube-metadata-via-oembed.md) | Resolve a YouTube title and thumbnail via oEmbed at answer time | accepted |
+| [0020](0020-projects-page-all-time-analytics-home.md) | The Projects page is the all-time analytics home | accepted |
