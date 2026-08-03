@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
+import { CommitmentDonut } from "@/components/projects/commitment-donut";
+import { buildDonutSegments } from "@/components/projects/prepare";
 import { ProjectManager, type ProjectUsage } from "@/components/projects/project-manager";
 import { daysBetween } from "@/lib/dates";
-import {
-  getAllProjects,
-  getEntryDatesWithProject,
-  getProjectAliases,
-  getToday,
-} from "@/lib/queries";
+import { getAllEntries, getAllProjects, getProjectAliases, getToday } from "@/lib/queries";
+import { toProjectShares } from "@/lib/rollups";
 import { createClient } from "@/lib/supabase/server";
 import type { ProjectAlias } from "@/lib/types";
 
@@ -26,12 +24,13 @@ export default async function ProjectsPage() {
     (aliases[row.project_id] ??= []).push(row);
   }
 
-  // Usage summary per project: count + last-logged age, from real Entries.
+  // One all-time fetch serves the overview charts and the usage summary.
   // Through the read wrapper so DEMO_MODE answers from fixtures (ADR-0016).
-  const entryRows = await getEntryDatesWithProject(supabase);
+  const entries = await getAllEntries(supabase);
 
+  // Usage summary per project: count + last-logged age, from real Entries.
   const usage: Record<string, ProjectUsage> = {};
-  for (const row of entryRows) {
+  for (const row of entries) {
     const u = usage[row.project_id] ?? { entries: 0, lastLoggedDaysAgo: null };
     u.entries += 1;
     const age = daysBetween(row.entry_date, today);
@@ -40,14 +39,23 @@ export default async function ProjectsPage() {
     usage[row.project_id] = u;
   }
 
+  // All-time analytics home (ADR-0020): share across active Projects only.
+  const activeEntries = entries.filter((e) => e.project.status === "active");
+  const donutSegments = buildDonutSegments(toProjectShares(activeEntries));
+  const activeProjectCount = projects.filter((p) => p.status === "active").length;
+
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
       <header>
         <h1 className="text-2xl font-bold tracking-tight text-ink">Projects</h1>
         <p className="mt-1 text-sm text-ink-muted">
-          Archive instead of deleting; history stays intact.
+          All-time analytics for your Projects, and the list itself. Archive instead of
+          deleting; history stays intact.
         </p>
       </header>
+      <section aria-label="Overview" className="flex flex-col gap-5">
+        <CommitmentDonut segments={donutSegments} activeProjectCount={activeProjectCount} />
+      </section>
       <ProjectManager projects={projects} usage={usage} aliases={aliases} />
     </div>
   );
