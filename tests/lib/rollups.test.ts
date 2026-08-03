@@ -157,4 +157,27 @@ describe("toProjectShares", () => {
   it("handles an empty month without dividing by zero", () => {
     expect(toProjectShares([], "2026-07-01")).toEqual([]);
   });
+
+  it("aggregates across months when no month is given (all-time)", () => {
+    const shares = toProjectShares([
+      entry("2026-05-01", "large", "AI-M"),
+      entry("2026-06-15", "large", "AI-M"),
+      entry("2026-07-02", "medium", "Turkish"),
+    ]);
+    expect(shares[0]).toMatchObject({ projectName: "AI-M", weight: 6, share: 0.75 });
+    expect(shares[1]).toMatchObject({ projectName: "Turkish", weight: 2, share: 0.25 });
+  });
+
+  it("orders all-time shares heaviest first, ties by name", () => {
+    const shares = toProjectShares([
+      entry("2026-05-01", "small", "Turkish"),
+      entry("2026-06-01", "small", "AI-M"),
+      entry("2026-07-01", "large", "Work"),
+    ]);
+    expect(shares.map((s) => s.projectName)).toEqual(["Work", "AI-M", "Turkish"]);
+  });
+
+  it("returns nothing all-time for no entries", () => {
+    expect(toProjectShares([])).toEqual([]);
+  });
 });
