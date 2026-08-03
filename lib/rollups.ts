@@ -180,18 +180,31 @@ export type ProjectShare = {
   share: number;
 };
 
-/** Where did the month's effort go, by Project? */
+/**
+ * Where did the effort go, by Project? Scoped to one month when `monthStart`
+ * is given, all-time otherwise. Heaviest Project first, ties by name.
+ */
 export function toProjectShares(
   entries: readonly EntryWithProject[],
-  monthStart: string,
+  monthStart?: string,
 ): ProjectShare[] {
-  const splits = toProjectMonthSplits(entries, monthStart);
-  const weights = splits.map((s) => ({
-    projectId: s.projectId,
-    projectName: s.projectName,
-    color: s.color,
-    weight: TIME_SIZES.reduce((sum, t) => sum + s.counts[t] * TIME_WEIGHT[t], 0),
-  }));
+  const month = monthStart?.slice(0, 7);
+  const byProject = new Map<string, ProjectShare>();
+  for (const e of entries) {
+    if (month !== undefined && e.entry_date.slice(0, 7) !== month) continue;
+    const share = byProject.get(e.project.id) ?? {
+      projectId: e.project.id,
+      projectName: e.project.name,
+      color: e.project.color,
+      weight: 0,
+      share: 0,
+    };
+    share.weight += TIME_WEIGHT[e.time_spent];
+    byProject.set(e.project.id, share);
+  }
+  const weights = [...byProject.values()].sort(
+    (a, b) => b.weight - a.weight || a.projectName.localeCompare(b.projectName),
+  );
   const total = weights.reduce((sum, w) => sum + w.weight, 0);
   return weights.map((w) => ({ ...w, share: total === 0 ? 0 : w.weight / total }));
 }
