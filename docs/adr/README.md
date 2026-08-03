@@ -54,3 +54,4 @@ ls docs/adr | grep -oE '^[0-9]{4}' | sort -n | tail -1
 | [0019](0019-youtube-metadata-via-oembed.md) | Resolve a YouTube title and thumbnail via oEmbed at answer time | accepted |
 | [0020](0020-projects-page-all-time-analytics-home.md) | The Projects page is the all-time analytics home | accepted |
 | [0021](0021-archived-project-hard-delete.md) | Archived Projects can be permanently deleted | accepted |
+| [0022](0022-read-only-fit-to-width-year-heatmap.md) | Make the year heatmap read-only and fit to width | accepted |

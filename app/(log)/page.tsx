@@ -1,6 +1,5 @@
-// The daily log dashboard (PRD 3.1): heatmap + calendar over the same
-// Entries, one shared day selection, quick add always at hand.
-import Link from "next/link";
+// The daily log dashboard (PRD 3.1): calendar selection plus a read-only
+// year heatmap, with quick add always at hand.
 import { DayDetail } from "@/components/day-detail/day-detail";
 import { MonthCalendar } from "@/components/calendar/month-calendar";
 import { LogSheet } from "@/components/quick-add/log-sheet";
@@ -8,6 +7,7 @@ import { QuickAddForm } from "@/components/quick-add/quick-add-form";
 import { MomentumPanel } from "@/components/streak/momentum-panel";
 import { ThrowbackFeed } from "@/components/throwback/throwback-feed";
 import { YearHeatmap } from "@/components/heatmap/year-heatmap";
+import { resolveHeatmapRange } from "@/components/heatmap/grid";
 import { addDays, endOfMonth, startOfMonth } from "@/lib/dates";
 import { getActiveProjects, getDayReflection, getEntriesInRange, getToday } from "@/lib/queries";
 import { toCalendarDayProjects, toHeatmapCells } from "@/lib/rollups";
@@ -26,20 +26,20 @@ function single(value: string | string[] | undefined): string | undefined {
 
 export default async function DashboardPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
-  const view = single(params.view) === "calendar" ? "calendar" : "heatmap";
+  const view = single(params.view) === "heatmap" ? "heatmap" : "calendar";
   const rawMonth = single(params.month);
   const rawDay = single(params.day);
-  const selectedDay = rawDay && DAY_RE.test(rawDay) ? rawDay : null;
+  const preservedDay = rawDay && DAY_RE.test(rawDay) ? rawDay : null;
+  const selectedDay = view === "calendar" ? preservedDay : null;
 
   const supabase = await createClient();
   const today = await getToday(supabase);
   const monthStart =
     rawMonth && MONTH_RE.test(rawMonth) ? `${rawMonth}-01` : startOfMonth(today);
+  const heatmapRange = resolveHeatmapRange(today, single(params.year));
 
-  // One fetch covers the trailing heatmap year, the viewed month (with its
-  // leading/trailing grid days) and today.
-  const from = min(addDays(today, -371), addDays(monthStart, -7));
-  const to = max(today, addDays(endOfMonth(monthStart), 7));
+  const from = view === "heatmap" ? heatmapRange.start : addDays(monthStart, -7);
+  const to = view === "heatmap" ? heatmapRange.end : addDays(endOfMonth(monthStart), 7);
   const [entries, projects, todayReflection, dayReflection] = await Promise.all([
     getEntriesInRange(supabase, from, to),
     getActiveProjects(supabase),
@@ -47,65 +47,39 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
     selectedDay ? getDayReflection(supabase, selectedDay) : null,
   ]);
 
-  const heatmapCells = toHeatmapCells(
-    entries.filter((e) => e.entry_date >= addDays(today, -364) && e.entry_date <= today),
-  );
+  const heatmapCells = toHeatmapCells(entries);
   const calendarCards = toCalendarDayProjects(entries);
   const dayEntries = selectedDay
     ? entries.filter((e) => e.entry_date === selectedDay)
     : [];
 
   const monthQuery = `&month=${monthStart.slice(0, 7)}`;
-  const dayQuery = selectedDay ? `&day=${selectedDay}` : "";
-  const closeHref =
-    view === "calendar" ? `/?view=calendar${monthQuery}` : `/?view=heatmap`;
+  const dayQuery = preservedDay ? `&day=${preservedDay}` : "";
+  const heatmapHref = `/?view=heatmap${monthQuery}${dayQuery}`;
+  const closeHref = `/?view=calendar${monthQuery}`;
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
       <div className="flex min-w-0 flex-col gap-5">
-        {/* A segmented pair of links, not ARIA tabs: each option is a real
-            navigation (?view=), and links don't get the arrow-key behavior
-            the tab role promises. aria-current marks the active view. */}
-        <nav
-          aria-label="Daily log view"
-          className="grid w-fit grid-cols-2 gap-1 rounded-lg bg-surface-sunken p-1 text-sm"
-        >
-          <Link
-            aria-current={view === "heatmap" ? "page" : undefined}
-            href={`/?view=heatmap${dayQuery}`}
-            className={`rounded-md px-4 py-1.5 transition-colors pointer-coarse:py-3 ${
-              view === "heatmap"
-                ? "border border-border bg-surface font-medium text-ink"
-                : "border border-transparent text-ink-muted hover:text-ink"
-            }`}
-          >
-            Heatmap
-          </Link>
-          <Link
-            aria-current={view === "calendar" ? "page" : undefined}
-            href={`/?view=calendar${monthQuery}${dayQuery}`}
-            className={`rounded-md px-4 py-1.5 transition-colors pointer-coarse:py-3 ${
-              view === "calendar"
-                ? "border border-border bg-surface font-medium text-ink"
-                : "border border-transparent text-ink-muted hover:text-ink"
-            }`}
-          >
-            Calendar
-          </Link>
-        </nav>
-
         <section
           aria-label={view === "heatmap" ? "Year heatmap" : "Month calendar"}
           className="rounded-xl border border-border bg-surface p-4"
         >
           {view === "heatmap" ? (
-            <YearHeatmap cells={heatmapCells} todayISO={today} selectedDay={selectedDay} />
+            <YearHeatmap
+              cells={heatmapCells}
+              todayISO={today}
+              range={heatmapRange}
+              calendarMonth={monthStart}
+              preservedDay={preservedDay}
+            />
           ) : (
             <MonthCalendar
               monthStart={monthStart}
               todayISO={today}
               cards={calendarCards}
               selectedDay={selectedDay}
+              heatmapHref={heatmapHref}
             />
           )}
         </section>
@@ -146,12 +120,4 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
       )}
     </div>
   );
-}
-
-function min(a: string, b: string): string {
-  return a < b ? a : b;
-}
-
-function max(a: string, b: string): string {
-  return a > b ? a : b;
 }

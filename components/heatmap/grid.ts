@@ -1,59 +1,82 @@
-// Pure grid math for the year heatmap: trailing ~52 weeks ending today,
-// Sunday-first week columns (GitHub convention), future days omitted.
 import { addDays, parseISODate } from "@/lib/dates";
 
 export type HeatmapColumn = {
-  /** ISO date of the column's Sunday. */
   weekStart: string;
-  /** Dates present in this column (up to 7; the last column stops at today). */
   days: string[];
-  /** Month label to draw above this column, or null. */
   monthLabel: string | null;
 };
 
+export type HeatmapRange = {
+  start: string;
+  end: string;
+  year: number | null;
+};
+
 const MONTH_SHORT = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
 ];
 
-/** 0 = Sunday ... 6 = Saturday. */
 function weekdaySundayFirst(iso: string): number {
   return parseISODate(iso).getUTCDay();
 }
 
-/**
- * Build the trailing-year grid: the column list starts at the Sunday on or
- * before (today - 364 days) and ends with today's (partial) week. A month
- * label appears above a column when the month of its first day differs from
- * the previous column's.
- */
-export function buildHeatmapGrid(todayISO: string): HeatmapColumn[] {
-  const start = addDays(todayISO, -364);
-  const firstSunday = addDays(start, -weekdaySundayFirst(start));
-  const columns: HeatmapColumn[] = [];
-  let prevMonth = -1;
+export function resolveHeatmapRange(
+  todayISO: string,
+  requestedYear?: string,
+): HeatmapRange {
+  const currentYear = Number(todayISO.slice(0, 4));
+  const year = requestedYear && /^\d{4}$/.test(requestedYear) ? Number(requestedYear) : NaN;
 
-  for (let weekStart = firstSunday; weekStart <= todayISO; weekStart = addDays(weekStart, 7)) {
+  if (Number.isInteger(year) && year >= 1000 && year < currentYear) {
+    return {
+      start: `${requestedYear}-01-01`,
+      end: `${requestedYear}-12-31`,
+      year,
+    };
+  }
+
+  return {
+    start: addDays(todayISO, -364),
+    end: todayISO,
+    year: null,
+  };
+}
+
+export function buildHeatmapGrid(range: Pick<HeatmapRange, "start" | "end">): HeatmapColumn[] {
+  const firstSunday = addDays(range.start, -weekdaySundayFirst(range.start));
+  const columns: HeatmapColumn[] = [];
+  let previousMonth = -1;
+
+  for (let weekStart = firstSunday; weekStart <= range.end; weekStart = addDays(weekStart, 7)) {
     const days: string[] = [];
-    for (let i = 0; i < 7; i++) {
-      const day = addDays(weekStart, i);
-      if (day > todayISO) break;
-      days.push(day);
+    for (let offset = 0; offset < 7; offset++) {
+      const day = addDays(weekStart, offset);
+      if (day >= range.start && day <= range.end) days.push(day);
     }
-    const month = parseISODate(weekStart).getUTCMonth();
+
+    const month = parseISODate(days[0]).getUTCMonth();
     columns.push({
       weekStart,
       days,
-      monthLabel: month !== prevMonth ? MONTH_SHORT[month] : null,
+      monthLabel: month !== previousMonth ? MONTH_SHORT[month] : null,
     });
-    prevMonth = month;
+    previousMonth = month;
   }
 
-  // The grid usually opens mid-month, so column 0 is a stub of the previous
-  // month; if column 1 already introduces the next month the two labels sit
-  // one column apart and collide. Drop the stub's label.
   if (columns[0]?.monthLabel && columns[1]?.monthLabel) {
     columns[0].monthLabel = null;
   }
+
   return columns;
 }
