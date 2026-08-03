@@ -3,10 +3,11 @@
 import { useState, useTransition } from "react";
 import { updateTimezoneAction } from "@/app/actions/settings";
 import { DEMO_WRITE_NOTE } from "@/lib/demo/mode";
+import type { TimeZoneOption } from "@/lib/timezones";
 
 type Props = {
   current: string;
-  timezones: string[];
+  timezones: readonly TimeZoneOption[];
 };
 
 export function TimezoneForm({ current, timezones }: Props) {
@@ -14,6 +15,9 @@ export function TimezoneForm({ current, timezones }: Props) {
   const [state, setState] = useState<"idle" | "saved" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const options = timezones.some(({ id }) => id === current)
+    ? timezones
+    : [{ id: current, label: `${current.replaceAll("_", " ")} (current)` }, ...timezones];
 
   function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -43,9 +47,9 @@ export function TimezoneForm({ current, timezones }: Props) {
         }}
         className="max-w-sm rounded-lg border border-border bg-surface px-3 py-2 text-sm focus:border-frog-green pointer-coarse:py-3 pointer-coarse:text-base"
       >
-        {timezones.map((tz) => (
-          <option key={tz} value={tz}>
-            {tz.replaceAll("_", " ")}
+        {options.map(({ id, label }) => (
+          <option key={id} value={id}>
+            {label}
           </option>
         ))}
       </select>
