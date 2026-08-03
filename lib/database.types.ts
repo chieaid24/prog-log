@@ -94,6 +94,51 @@ export type Database = {
           },
         ];
       };
+      expeditions: {
+        Row: {
+          id: string;
+          user_id: string;
+          title: string;
+          description: string | null;
+          status: Database["public"]["Enums"]["expedition_status"];
+          position: number;
+          youtube_url: string | null;
+          youtube_video_id: string | null;
+          youtube_title: string | null;
+          answered_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string;
+          title: string;
+          description?: string | null;
+          status?: Database["public"]["Enums"]["expedition_status"];
+          position: number;
+          youtube_url?: string | null;
+          youtube_video_id?: string | null;
+          youtube_title?: string | null;
+          answered_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          title?: string;
+          description?: string | null;
+          status?: Database["public"]["Enums"]["expedition_status"];
+          position?: number;
+          youtube_url?: string | null;
+          youtube_video_id?: string | null;
+          youtube_title?: string | null;
+          answered_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       project_aliases: {
         Row: {
           id: string;
@@ -167,6 +212,31 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      add_expedition: {
+        Args: {
+          p_title: string;
+          p_description?: string | null;
+          p_user?: string;
+        };
+        Returns: Database["public"]["Tables"]["expeditions"]["Row"];
+      };
+      answer_expedition: {
+        Args: {
+          p_id: string;
+          p_url: string;
+          p_video_id?: string | null;
+          p_title?: string | null;
+          p_user?: string;
+        };
+        Returns: Database["public"]["Tables"]["expeditions"]["Row"];
+      };
+      delete_expedition: {
+        Args: {
+          p_id: string;
+          p_user?: string;
+        };
+        Returns: undefined;
+      };
       log_entry: {
         Args: {
           p_project: string;
@@ -178,6 +248,20 @@ export type Database = {
         };
         Returns: Database["public"]["Tables"]["entries"]["Row"];
       };
+      reopen_expedition: {
+        Args: {
+          p_id: string;
+          p_user?: string;
+        };
+        Returns: Database["public"]["Tables"]["expeditions"]["Row"];
+      };
+      reorder_expeditions: {
+        Args: {
+          p_ids: string[];
+          p_user?: string;
+        };
+        Returns: Database["public"]["Tables"]["expeditions"]["Row"][];
+      };
       set_reflection: {
         Args: {
           p_reflection: string;
@@ -186,8 +270,18 @@ export type Database = {
         };
         Returns: Database["public"]["Tables"]["daily_reflections"]["Row"];
       };
+      update_expedition: {
+        Args: {
+          p_id: string;
+          p_title: string;
+          p_description?: string | null;
+          p_user?: string;
+        };
+        Returns: Database["public"]["Tables"]["expeditions"]["Row"];
+      };
     };
     Enums: {
+      expedition_status: "open" | "answered";
       time_size: "small" | "medium" | "large";
     };
     CompositeTypes: {

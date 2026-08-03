@@ -10,7 +10,14 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types";
 import { DEFAULT_TIMEZONE, daysBetween, todayInTimeZone } from "./dates";
 import { isDemoMode } from "./demo/mode";
-import type { EntryWithProject, Project, ProjectAlias, Reflection, ThrowbackItem } from "./types";
+import type {
+  EntryWithProject,
+  Expedition,
+  Project,
+  ProjectAlias,
+  Reflection,
+  ThrowbackItem,
+} from "./types";
 
 export type Db = SupabaseClient<Database>;
 
@@ -110,6 +117,30 @@ export async function getDayReflection(db: Db, date: string): Promise<Reflection
     .select("*")
     .eq("entry_date", date)
     .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+/** Open Expeditions in hand-ordered todo order (ADR-0018). */
+export async function getOpenExpeditions(db: Db): Promise<Expedition[]> {
+  if (isDemoMode()) return (await demoReads()).getOpenExpeditions();
+  const { data, error } = await db
+    .from("expeditions")
+    .select("*")
+    .eq("status", "open")
+    .order("position");
+  if (error) throw error;
+  return data;
+}
+
+/** Answered Expeditions, most recently answered first (ADR-0018). */
+export async function getAnsweredExpeditions(db: Db): Promise<Expedition[]> {
+  if (isDemoMode()) return (await demoReads()).getAnsweredExpeditions();
+  const { data, error } = await db
+    .from("expeditions")
+    .select("*")
+    .eq("status", "answered")
+    .order("answered_at", { ascending: false });
   if (error) throw error;
   return data;
 }
