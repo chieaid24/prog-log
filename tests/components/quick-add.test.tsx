@@ -43,13 +43,12 @@ beforeEach(() => {
 });
 
 describe("quick add", () => {
-  it("logs the common case: pick project, pick time, done", async () => {
+  it("logs the common case: pick project, done (medium is the default time)", async () => {
     logEntryAction.mockResolvedValue({ ok: true, entry: {} });
     const user = userEvent.setup();
     render(<QuickAddForm projects={PROJECTS} />);
 
     await user.selectOptions(screen.getByLabelText("Project"), "work");
-    await user.click(screen.getByRole("button", { name: "Medium" }));
     await user.click(screen.getByRole("button", { name: "Log it" }));
 
     expect(logEntryAction).toHaveBeenCalledWith({
@@ -124,16 +123,40 @@ describe("quick add", () => {
     );
   });
 
-  it("disables submit until both required picks are made", async () => {
+  it("disables submit until a project is picked; the medium default covers time", async () => {
     const user = userEvent.setup();
     render(<QuickAddForm projects={PROJECTS} />);
 
     const submit = screen.getByRole("button", { name: "Log it" });
     expect(submit).toBeDisabled();
     await user.selectOptions(screen.getByLabelText("Project"), "work");
-    expect(submit).toBeDisabled();
-    await user.click(screen.getByRole("button", { name: "Small" }));
     expect(submit).toBeEnabled();
+  });
+
+  it("initializes with Medium pre-selected, switchable, and resets to it after a submit", async () => {
+    logEntryAction.mockResolvedValue({ ok: true, entry: {} });
+    const user = userEvent.setup();
+    render(<QuickAddForm projects={PROJECTS} />);
+
+    const medium = screen.getByRole("button", { name: "Medium" });
+    const large = screen.getByRole("button", { name: "Large" });
+    expect(medium).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "Small" })).toHaveAttribute("aria-pressed", "false");
+    expect(large).toHaveAttribute("aria-pressed", "false");
+
+    await user.selectOptions(screen.getByLabelText("Project"), "work");
+    await user.click(large);
+    expect(large).toHaveAttribute("aria-pressed", "true");
+    expect(medium).toHaveAttribute("aria-pressed", "false");
+
+    await user.click(screen.getByRole("button", { name: "Log it" }));
+    expect(logEntryAction).toHaveBeenCalledWith(
+      expect.objectContaining({ timeSpent: "large" }),
+    );
+    expect(await screen.findByText("Logged.")).toBeInTheDocument();
+    // The form re-initializes to the medium default for the next entry.
+    expect(medium).toHaveAttribute("aria-pressed", "true");
+    expect(large).toHaveAttribute("aria-pressed", "false");
   });
 
   it("surfaces server errors", async () => {

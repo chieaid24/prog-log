@@ -1,7 +1,8 @@
 "use client";
 
-// Quick add (PRD 3.2): the common case is two picks. Project and Time
-// Commitment are the always-visible controls; Milestone is one optional line;
+// Quick add (PRD 3.2): the common case is one pick. Project and Time
+// Commitment are the always-visible controls, with Time Commitment defaulting
+// to Medium so a project pick alone unlocks submit; Milestone is one optional line;
 // Description hides behind "+ add detail". "+ New project" creates inline
 // without leaving the flow. The day's Reflection (ADR-0017) rides along:
 // inviting when unset, grayed once set, saved with the entry or on its own,
@@ -39,7 +40,8 @@ export function QuickAddForm({
   const uid = useId();
   const [projects, setProjects] = useState(initialProjects);
   const [projectId, setProjectId] = useState("");
-  const [timeSpent, setTimeSpent] = useState<TimeSize | null>(null);
+  // Medium default: only seeds a fresh form; peak-wins on re-log is unaffected.
+  const [timeSpent, setTimeSpent] = useState<TimeSize>("medium");
   const [milestone, setMilestone] = useState("");
   const [description, setDescription] = useState("");
   const [reflection, setReflection] = useState(initialReflection ?? "");
@@ -132,7 +134,7 @@ export function QuickAddForm({
 
   function submit(event: React.FormEvent) {
     event.preventDefault();
-    if (!projectId || !timeSpent) return;
+    if (!projectId) return;
     setError(null);
     setNotice(null);
     startTransition(async () => {
@@ -154,6 +156,7 @@ export function QuickAddForm({
       // The entry is logged either way; a failed reflection save only shows
       // its own error (the reflection never blocks logging).
       if (reflectionDirty && !(await persistReflection(reflectionText))) return;
+      setTimeSpent("medium");
       setMilestone("");
       setDescription("");
       setShowDetail(false);
@@ -326,7 +329,7 @@ export function QuickAddForm({
 
       <button
         type="submit"
-        disabled={pending || !projectId || !timeSpent}
+        disabled={pending || !projectId}
         className="rounded-lg bg-frog-green px-3 py-2 text-sm font-semibold text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-40 pointer-coarse:py-3"
       >
         {pending ? "Logging…" : "Log it"}
