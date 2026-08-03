@@ -119,7 +119,7 @@ describe("capture sheet", () => {
 
     await user.click(screen.getByRole("button", { name: /log today/i }));
     expect(dialog).toHaveAttribute("open");
-    // The full quick-add form is inside, unchanged: two-tap capture intact.
+    // The full quick-add form is inside, unchanged: quick capture intact.
     expect(
       within(dialog).getByRole("button", { name: "Log it" }),
     ).toBeInTheDocument();
