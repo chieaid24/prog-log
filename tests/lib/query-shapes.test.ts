@@ -12,6 +12,8 @@ import {
 } from "@/lib/discord/owner";
 import {
   getActiveProjects,
+  getAnsweredExpeditions,
+  getOpenExpeditions,
   getThrowbackPool,
   getToday,
   getUserTimezone,
@@ -159,6 +161,38 @@ describe("active projects shape", () => {
       ["eq", "status", "active"],
       ["order", "name"],
     ]);
+  });
+});
+
+describe("expeditions read shapes (ADR-0018)", () => {
+  const rows = [{ id: "x1", title: "why is the sky blue" }];
+
+  it("open: status filter, manual position order, no user_id filter", async () => {
+    const { db, calls } = fakeDb(rows);
+    await expect(getOpenExpeditions(db)).resolves.toEqual(rows);
+    expect(calls).toEqual([
+      ["from", "expeditions"],
+      ["select", "*"],
+      ["eq", "status", "open"],
+      ["order", "position"],
+    ]);
+  });
+
+  it("answered: status filter, most recently answered first", async () => {
+    const { db, calls } = fakeDb(rows);
+    await expect(getAnsweredExpeditions(db)).resolves.toEqual(rows);
+    expect(calls).toEqual([
+      ["from", "expeditions"],
+      ["select", "*"],
+      ["eq", "status", "answered"],
+      ["order", "answered_at", { ascending: false }],
+    ]);
+  });
+
+  it("propagates errors from either read", async () => {
+    const boom = new Error("boom");
+    await expect(getOpenExpeditions(fakeDb(null, boom).db)).rejects.toBe(boom);
+    await expect(getAnsweredExpeditions(fakeDb(null, boom).db)).rejects.toBe(boom);
   });
 });
 

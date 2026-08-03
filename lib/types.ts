@@ -28,6 +28,10 @@ export type AppSettings = Tables<"app_settings">;
 export type Reflection = Tables<"daily_reflections">;
 /** An extra name resolving to one Project during capture (ADR-0010). */
 export type ProjectAlias = Tables<"project_aliases">;
+/** Expedition lifecycle: open in the hand-ordered todo list, or answered with a video. */
+export type ExpeditionStatus = Enums<"expedition_status">;
+/** A topic to answer on video: standalone, never tied to a Project (ADR-0018). */
+export type Expedition = Tables<"expeditions">;
 
 /** An Entry joined with the Project it belongs to (feed and day views). */
 export type EntryWithProject = Entry & {

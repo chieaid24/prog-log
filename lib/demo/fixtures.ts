@@ -7,7 +7,14 @@ import "server-only";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { daysBetween } from "../dates";
-import type { EntryWithProject, Project, ProjectAlias, Reflection, ThrowbackItem } from "../types";
+import type {
+  EntryWithProject,
+  Expedition,
+  Project,
+  ProjectAlias,
+  Reflection,
+  ThrowbackItem,
+} from "../types";
 import { DEMO_TIMEZONE } from "./mode";
 import { parseEntriesCsv, parseProjectsCsv, parseReflectionsCsv } from "./parse";
 
@@ -86,6 +93,16 @@ export function getEntriesForDay(date: string): EntryWithProject[] {
 /** One day's Reflection, if any (mirrors getDayReflection). */
 export function getDayReflection(date: string): Reflection | null {
   return load().reflections.find((r) => r.entry_date === date) ?? null;
+}
+
+/** No Expeditions in the demo (mirrors getOpenExpeditions). */
+export function getOpenExpeditions(): Expedition[] {
+  return [];
+}
+
+/** No Expeditions in the demo (mirrors getAnsweredExpeditions). */
+export function getAnsweredExpeditions(): Expedition[] {
+  return [];
 }
 
 /**
