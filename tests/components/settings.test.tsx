@@ -10,7 +10,11 @@ vi.mock("@/app/actions/settings", () => ({
   updateTimezoneAction: (...args: unknown[]) => updateTimezoneAction(...args),
 }));
 
-const ZONES = ["America/Toronto", "Europe/Istanbul", "Pacific/Kiritimati"];
+const ZONES = [
+  { id: "America/Toronto", label: "(UTC-05:00) Eastern - Toronto" },
+  { id: "Europe/Istanbul", label: "(UTC+03:00) Turkey - Istanbul" },
+  { id: "Pacific/Tongatapu", label: "(UTC+13:00) Tonga - Nuku'alofa" },
+];
 
 beforeEach(() => {
   updateTimezoneAction.mockReset();
@@ -34,12 +38,34 @@ describe("timezone form", () => {
     expect(screen.getByRole("button", { name: "Save timezone" })).toBeDisabled();
   });
 
+  it("renders offset labels", () => {
+    render(<TimezoneForm current="America/Toronto" timezones={ZONES} />);
+
+    expect(screen.getByRole("option", { name: "(UTC-05:00) Eastern - Toronto" })).toHaveProperty(
+      "selected",
+      true,
+    );
+    expect(screen.getByRole("option", { name: "(UTC+03:00) Turkey - Istanbul" })).toHaveValue(
+      "Europe/Istanbul",
+    );
+  });
+
+  it("preserves a stored zone outside the curated list", () => {
+    render(<TimezoneForm current="America/Vancouver" timezones={ZONES} />);
+
+    expect(screen.getByRole("option", { name: "America/Vancouver (current)" })).toHaveProperty(
+      "selected",
+      true,
+    );
+    expect(screen.getByRole("button", { name: "Save timezone" })).toBeDisabled();
+  });
+
   it("surfaces save errors", async () => {
     updateTimezoneAction.mockResolvedValue({ ok: false, error: "Unknown timezone." });
     const user = userEvent.setup();
     render(<TimezoneForm current="America/Toronto" timezones={ZONES} />);
 
-    await user.selectOptions(screen.getByLabelText("Timezone"), "Pacific/Kiritimati");
+    await user.selectOptions(screen.getByLabelText("Timezone"), "Pacific/Tongatapu");
     await user.click(screen.getByRole("button", { name: "Save timezone" }));
 
     expect(await screen.findByText("Unknown timezone.")).toBeInTheDocument();

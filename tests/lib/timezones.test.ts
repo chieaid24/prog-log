@@ -16,9 +16,54 @@ describe("isValidTimeZone", () => {
 });
 
 describe("listTimeZones", () => {
-  it("includes the default and is usefully large", () => {
+  it("returns a curated, ordered set with unique ids and offsets", () => {
     const zones = listTimeZones();
-    expect(zones).toContain("America/Toronto");
-    expect(zones.length).toBeGreaterThan(300);
+    const offsets = zones.map(({ label }) => label.match(/^\(UTC([+-]\d{2}:\d{2})\)/)?.[1]);
+
+    expect(zones).toHaveLength(25);
+    expect(new Set(zones.map(({ id }) => id)).size).toBe(zones.length);
+    expect(zones.every(({ id }) => isValidTimeZone(id))).toBe(true);
+    expect(offsets.every(Boolean)).toBe(true);
+    expect(new Set(offsets).size).toBe(zones.length);
+    expect(offsets).toEqual([
+      "-11:00",
+      "-10:00",
+      "-09:00",
+      "-08:00",
+      "-07:00",
+      "-06:00",
+      "-05:00",
+      "-04:00",
+      "-03:00",
+      "-02:00",
+      "-01:00",
+      "+00:00",
+      "+01:00",
+      "+02:00",
+      "+03:00",
+      "+04:00",
+      "+05:00",
+      "+06:00",
+      "+07:00",
+      "+08:00",
+      "+09:00",
+      "+10:00",
+      "+11:00",
+      "+12:00",
+      "+13:00",
+    ]);
+  });
+
+  it("includes the default and maps Seattle to the Pacific IANA zone", () => {
+    const zones = listTimeZones();
+
+    expect(zones).toContainEqual({
+      id: "America/Toronto",
+      label: "(UTC-05:00) Eastern - Toronto",
+    });
+    expect(zones).toContainEqual({
+      id: "America/Los_Angeles",
+      label: "(UTC-08:00) Pacific - Seattle",
+    });
   });
 });
