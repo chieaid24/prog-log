@@ -2,7 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { demoWriteResult, isDemoMode, type DemoWriteResult } from "@/lib/demo/mode";
-import { addAlias, createProject, removeAlias, setProjectStatus } from "@/lib/projects";
+import {
+  addAlias,
+  createProject,
+  deleteProject,
+  removeAlias,
+  setProjectStatus,
+} from "@/lib/projects";
 import { createClient } from "@/lib/supabase/server";
 import type { Project, ProjectAlias } from "@/lib/types";
 
@@ -12,6 +18,10 @@ export type ProjectActionResult =
   | DemoWriteResult;
 export type AliasActionResult =
   | { ok: true; alias?: ProjectAlias }
+  | { ok: false; error: string }
+  | DemoWriteResult;
+export type DeleteProjectActionResult =
+  | { ok: true }
   | { ok: false; error: string }
   | DemoWriteResult;
 
@@ -46,7 +56,7 @@ export async function createProjectAction(input: {
   }
 }
 
-/** Archive / un-archive (never delete) — PRD 3.5. */
+/** Archive or restore a Project. */
 export async function setProjectStatusAction(
   projectId: string,
   status: "active" | "archived",
@@ -59,6 +69,18 @@ export async function setProjectStatusAction(
     return { ok: true, project };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Could not update the project." };
+  }
+}
+
+export async function deleteProjectAction(projectId: string): Promise<DeleteProjectActionResult> {
+  if (isDemoMode()) return demoWriteResult();
+  try {
+    const supabase = await createClient();
+    await deleteProject(supabase, projectId);
+    revalidatePath("/", "layout");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Could not delete the project." };
   }
 }
 

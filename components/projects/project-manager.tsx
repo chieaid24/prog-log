@@ -1,11 +1,12 @@
 "use client";
 
-// Project management (PRD 3.5): create, edit, archive — never delete.
-// Archived Projects leave the pickers but keep every Entry in history views.
-import { useState, useTransition } from "react";
+// Project management (PRD 3.5): create, edit, archive, restore, or delete.
+// Permanent deletion is available only after archive.
+import { useRef, useState, useTransition } from "react";
 import {
   addProjectAliasAction,
   createProjectAction,
+  deleteProjectAction,
   removeProjectAliasAction,
   setProjectStatusAction,
   updateProjectAction,
@@ -62,14 +63,13 @@ export function ProjectManager({ projects, usage, aliases = {} }: Props) {
         </h2>
         {archived.length === 0 ? (
           <p className="rounded-xl border border-dashed border-border bg-surface p-6 text-sm text-ink-muted">
-            Nothing archived yet. Archiving hides a project from the pickers while its entries
-            stay in the monthly breakdown and Throwbacks.
+            Nothing archived yet. Archiving hides a Project from the pickers while its Entries
+            stay in history.
           </p>
         ) : (
           <>
             <p className="text-xs text-ink-muted">
-              Archived projects stay in the monthly breakdown and Throwbacks; they just leave
-              the pickers.
+              Archived Projects keep their history unless you permanently delete them.
             </p>
             <ul className="flex flex-col gap-2">
               {archived.map((p) => (
@@ -227,8 +227,11 @@ function ProjectRow({
 }) {
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const deleteDialogRef = useRef<HTMLDialogElement>(null);
   const archived = project.status === "archived";
+  const entryCount = usage?.entries ?? 0;
 
   function toggleStatus() {
     setError(null);
@@ -238,6 +241,18 @@ function ProjectRow({
         archived ? "active" : "archived",
       );
       if (!result.ok) setError(result.error);
+    });
+  }
+
+  function deletePermanently() {
+    setDeleteError(null);
+    startTransition(async () => {
+      const result = await deleteProjectAction(project.id);
+      if (!result.ok) {
+        setDeleteError(result.error);
+        return;
+      }
+      deleteDialogRef.current?.close();
     });
   }
 
@@ -265,13 +280,15 @@ function ProjectRow({
             : "never logged"}
         </span>
         <span className="ml-auto flex gap-2">
-          <button
-            type="button"
-            onClick={() => setEditing((v) => !v)}
-            className="rounded-lg border border-border px-3 py-1.5 text-xs text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:min-h-11 pointer-coarse:px-4 pointer-coarse:py-3"
-          >
-            {editing ? "Close" : "Edit"}
-          </button>
+          {!archived && (
+            <button
+              type="button"
+              onClick={() => setEditing((v) => !v)}
+              className="rounded-lg border border-border px-3 py-1.5 text-xs text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:min-h-11 pointer-coarse:px-4 pointer-coarse:py-3"
+            >
+              {editing ? "Close" : "Edit"}
+            </button>
+          )}
           <button
             type="button"
             onClick={toggleStatus}
@@ -280,6 +297,19 @@ function ProjectRow({
           >
             {archived ? "Restore" : "Archive"}
           </button>
+          {archived && (
+            <button
+              type="button"
+              onClick={() => {
+                setDeleteError(null);
+                deleteDialogRef.current?.showModal();
+              }}
+              disabled={pending}
+              className="rounded-lg border border-danger-red px-3 py-1.5 text-xs text-danger-red transition-colors hover:bg-danger-red hover:text-on-green disabled:opacity-50 pointer-coarse:min-h-11 pointer-coarse:px-4 pointer-coarse:py-3"
+            >
+              Delete
+            </button>
+          )}
         </span>
       </div>
       {error && (
@@ -290,7 +320,51 @@ function ProjectRow({
           {error}
         </p>
       )}
-      {editing && (
+      {archived && (
+        <dialog
+          ref={deleteDialogRef}
+          aria-label={`Delete ${project.name}`}
+          className="fixed inset-0 m-auto w-[calc(100%_-_2rem)] max-w-sm rounded-xl border border-border bg-surface p-5 text-ink shadow-overlay backdrop:bg-ink/35"
+        >
+          <p className="text-sm leading-relaxed">
+            Delete &apos;{project.name}&apos;? This permanently removes{" "}
+            <span className="font-mono">{entryCount}</span>{" "}
+            {entryCount === 1 ? "entry" : "entries"}. Cannot be undone.
+          </p>
+          {deleteError && (
+            <p
+              role="alert"
+              className={`mt-3 text-sm ${
+                deleteError === DEMO_WRITE_NOTE ? "text-ink-muted" : "text-danger-red"
+              }`}
+            >
+              {deleteError}
+            </p>
+          )}
+          <div className="mt-5 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setDeleteError(null);
+                deleteDialogRef.current?.close();
+              }}
+              disabled={pending}
+              className="rounded-lg border border-border px-4 py-2 text-sm text-ink-muted transition-colors hover:border-border-strong hover:text-ink disabled:opacity-50 pointer-coarse:py-3"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={deletePermanently}
+              disabled={pending}
+              className="rounded-lg bg-danger-red px-4 py-2 text-sm font-semibold text-on-green disabled:opacity-50 pointer-coarse:py-3"
+            >
+              {pending ? "Deleting..." : "Delete"}
+            </button>
+          </div>
+        </dialog>
+      )}
+      {!archived && editing && (
         <EditProjectForm project={project} onSaved={() => setEditing(false)} />
       )}
       {!archived && <AliasEditor project={project} aliases={aliases ?? []} />}
