@@ -90,8 +90,10 @@ try {
     assert.ok(throwbacks >= 1, `throwback items >= 1 (got ${throwbacks})`);
     await shoot(home, "demo-home");
 
-    // Calendar view: the current month carries populated day cards.
-    const calendar = await openPage("/?view=calendar");
+    // Calendar view: pinned to the last curated fixture month (the fixtures
+    // end 2026-07-25), not the wall-clock month, so the probe stays green
+    // after real time rolls past the fixture window.
+    const calendar = await openPage("/?view=calendar&month=2026-07");
     const cards = await calendar.locator("[data-testid='calendar-card']").count();
     assert.ok(cards >= 5, `calendar cards >= 5 (got ${cards})`);
     await shoot(calendar, "demo-calendar");
