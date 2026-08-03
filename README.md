@@ -21,7 +21,7 @@ breakdowns, streaks — and Throwbacks: past milestones resurfacing on their ann
 - **Momentum.** Global logging streak plus per-project cadence — rising / steady /
   cooling — so daily practices (languages, habits) keep themselves honest.
 - **Yours.** CSV/JSON export and safe re-importable import; a public read-only `/now`
-  page for the portfolio; projects archive (never delete).
+  page for the portfolio; Projects archive by default and can be permanently deleted after archive.
 
 ## Stack
 

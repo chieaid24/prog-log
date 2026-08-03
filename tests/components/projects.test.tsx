@@ -1,11 +1,12 @@
 // @vitest-environment jsdom
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { ProjectManager } from "@/components/projects/project-manager";
 import type { Project, ProjectAlias } from "@/lib/types";
 
 const createProjectAction = vi.fn();
+const deleteProjectAction = vi.fn();
 const setProjectStatusAction = vi.fn();
 const updateProjectAction = vi.fn();
 const addProjectAliasAction = vi.fn();
@@ -13,6 +14,7 @@ const removeProjectAliasAction = vi.fn();
 
 vi.mock("@/app/actions/projects", () => ({
   createProjectAction: (...args: unknown[]) => createProjectAction(...args),
+  deleteProjectAction: (...args: unknown[]) => deleteProjectAction(...args),
   setProjectStatusAction: (...args: unknown[]) => setProjectStatusAction(...args),
   updateProjectAction: (...args: unknown[]) => updateProjectAction(...args),
   addProjectAliasAction: (...args: unknown[]) => addProjectAliasAction(...args),
@@ -38,6 +40,15 @@ const USAGE = {
   mandarin: { entries: 0, lastLoggedDaysAgo: null },
 };
 
+beforeAll(() => {
+  HTMLDialogElement.prototype.showModal = function showModal() {
+    this.setAttribute("open", "");
+  };
+  HTMLDialogElement.prototype.close = function close() {
+    this.removeAttribute("open");
+  };
+});
+
 function aliasRow(text: string, projectId: string): ProjectAlias {
   return {
     id: `al-${text}`,
@@ -50,6 +61,7 @@ function aliasRow(text: string, projectId: string): ProjectAlias {
 
 beforeEach(() => {
   createProjectAction.mockReset();
+  deleteProjectAction.mockReset();
   setProjectStatusAction.mockReset();
   updateProjectAction.mockReset();
   addProjectAliasAction.mockReset();
@@ -95,6 +107,68 @@ describe("project manager", () => {
 
     await user.click(screen.getByRole("button", { name: "Restore" }));
     expect(setProjectStatusAction).toHaveBeenCalledWith("mandarin", "active");
+  });
+
+  it("offers delete only for archived projects", () => {
+    render(
+      <ProjectManager
+        projects={[project("Turkish"), project("Mandarin", "archived")]}
+        usage={USAGE}
+      />,
+    );
+
+    const active = screen.getByRole("region", { name: "Active projects" });
+    const archived = screen.getByRole("region", { name: "Archived projects" });
+    expect(within(active).getByRole("button", { name: "Edit" })).toBeInTheDocument();
+    expect(within(active).getByRole("button", { name: "Archive" })).toBeInTheDocument();
+    expect(within(active).queryByRole("button", { name: "Delete" })).not.toBeInTheDocument();
+    expect(within(archived).queryByRole("button", { name: "Edit" })).not.toBeInTheDocument();
+    expect(within(archived).getByRole("button", { name: "Restore" })).toBeInTheDocument();
+    expect(within(archived).getByRole("button", { name: "Delete" })).toBeInTheDocument();
+  });
+
+  it("names the archived project and exact entry count before delete", async () => {
+    const user = userEvent.setup();
+    render(<ProjectManager projects={[project("Mandarin", "archived")]} usage={USAGE} />);
+
+    await user.click(screen.getByRole("button", { name: "Delete" }));
+    const dialog = screen.getByRole("dialog", { name: "Delete Mandarin" });
+    expect(dialog).toHaveAttribute("open");
+    expect(dialog).toHaveTextContent(
+      "Delete 'Mandarin'? This permanently removes 0 entries. Cannot be undone.",
+    );
+
+    await user.click(within(dialog).getByRole("button", { name: "Cancel" }));
+    expect(dialog).not.toHaveAttribute("open");
+    expect(deleteProjectAction).not.toHaveBeenCalled();
+  });
+
+  it("deletes the archived project only after confirmation", async () => {
+    deleteProjectAction.mockResolvedValue({ ok: true });
+    const user = userEvent.setup();
+    render(<ProjectManager projects={[project("Mandarin", "archived")]} usage={USAGE} />);
+
+    await user.click(screen.getByRole("button", { name: "Delete" }));
+    const dialog = screen.getByRole("dialog", { name: "Delete Mandarin" });
+    await user.click(within(dialog).getByRole("button", { name: "Delete" }));
+
+    expect(deleteProjectAction).toHaveBeenCalledWith("mandarin");
+    await waitFor(() => expect(dialog).not.toHaveAttribute("open"));
+  });
+
+  it("keeps the confirmation open and surfaces a delete failure", async () => {
+    deleteProjectAction.mockResolvedValue({ ok: false, error: "Project must be archived." });
+    const user = userEvent.setup();
+    render(<ProjectManager projects={[project("Mandarin", "archived")]} usage={USAGE} />);
+
+    await user.click(screen.getByRole("button", { name: "Delete" }));
+    const dialog = screen.getByRole("dialog", { name: "Delete Mandarin" });
+    await user.click(within(dialog).getByRole("button", { name: "Delete" }));
+
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent(
+      "Project must be archived.",
+    );
+    expect(dialog).toHaveAttribute("open");
   });
 
   it("edits name, category and color through the edit form", async () => {

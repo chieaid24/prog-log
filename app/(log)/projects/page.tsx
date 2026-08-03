@@ -49,8 +49,8 @@ export default async function ProjectsPage() {
       <header>
         <h1 className="text-2xl font-bold tracking-tight text-ink">Projects</h1>
         <p className="mt-1 text-sm text-ink-muted">
-          All-time analytics for your Projects, and the list itself. Archive instead of
-          deleting; history stays intact.
+          All-time analytics for your Projects, and the list itself. Archive to preserve
+          history, or permanently delete a Project after archiving it.
         </p>
       </header>
       <section aria-label="Overview" className="flex flex-col gap-5">

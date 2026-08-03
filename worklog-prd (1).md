@@ -34,7 +34,7 @@ data model or the rest of the dashboard.
 Two tables, plus a one-row per-user settings record (timezone). Everything else is a query.
 
 ### `projects`
-The master list you log against. Archive instead of delete to preserve history.
+The master list you log against. Archive preserves history; an archived Project can also be permanently deleted.
 
 | Column | Type | Notes |
 |---|---|---|
@@ -346,8 +346,8 @@ ago", "1 year ago"); no bias toward round marks; an empty pool means no feed and
 silent digest. One query/view plus a seeded pick = one source of truth for page and
 digest.
 
-### 3.5 Archive (not delete)
-Toggling a project to `archived` removes it from the quick-add picker but keeps every entry. Old projects still appear in monthly breakdowns and Throwbacks. Hard delete only via an explicit admin action.
+### 3.5 Archive and delete
+Toggling a Project to `archived` removes it from the quick-add picker but keeps every Entry. Archived Projects still appear in monthly breakdowns and Throwbacks. The archived section also offers permanent Delete behind a confirmation that names the Project and exact Entry count. Delete cascades to the Project's Entries and aliases; day-level Reflections survive.
 
 ---
 
@@ -490,7 +490,7 @@ Server route validates the shared secret, resolves the project (exact match, sam
 ## 7. Build phases
 
 1. **Foundation.** Supabase project, schema, enum, RLS, seed the 5 starter projects. Verify with the SQL editor.
-2. **Auth + project CRUD.** Magic-link login. List / create / edit / archive projects. Active-only picker component.
+2. **Auth + project CRUD.** Magic-link login. List / create / edit / archive Projects, with permanent deletion available only after archive. Active-only picker component.
 3. **Daily log core.** Quick-add form (project + time spent always visible, milestone optional,
    description tucked away), day detail view, the year heatmap, and the complete Notion-inspired
    month calendar. Build both visual views for owner review.

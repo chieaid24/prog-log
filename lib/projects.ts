@@ -167,7 +167,7 @@ export async function removeAlias(db: Db, aliasId: string): Promise<void> {
   if (error) throw error;
 }
 
-/** Archive (never delete) — drops from pickers, keeps every Entry (PRD 3.5). */
+/** Archive or restore a Project while preserving its Entries. */
 export async function setProjectStatus(
   db: Db,
   projectId: string,
@@ -181,4 +181,16 @@ export async function setProjectStatus(
     .single();
   if (error) throw error;
   return data;
+}
+
+/** Permanently delete an archived Project and its Project-scoped children. */
+export async function deleteProject(db: Db, projectId: string): Promise<void> {
+  const { error } = await db
+    .from("projects")
+    .delete()
+    .eq("id", projectId)
+    .eq("status", "archived")
+    .select("id")
+    .single();
+  if (error) throw error;
 }

@@ -17,6 +17,7 @@ import { deleteEntryAction, logEntryAction } from "@/app/actions/entries";
 import {
   addProjectAliasAction,
   createProjectAction,
+  deleteProjectAction,
   removeProjectAliasAction,
   setProjectStatusAction,
   updateProjectAction,
@@ -44,6 +45,7 @@ const cases: Array<[string, () => Promise<unknown>]> = [
   ["logEntryAction", () => logEntryAction({ projectId: "p1", timeSpent: "small" })],
   ["deleteEntryAction", () => deleteEntryAction("e1")],
   ["createProjectAction", () => createProjectAction({ name: "Rocketry" })],
+  ["deleteProjectAction", () => deleteProjectAction("p1")],
   ["setProjectStatusAction", () => setProjectStatusAction("p1", "archived")],
   ["updateProjectAction", () => updateProjectAction("p1", { name: "Renamed" })],
   ["addProjectAliasAction", () => addProjectAliasAction("p1", "rk")],

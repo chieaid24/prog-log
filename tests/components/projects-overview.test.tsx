@@ -23,6 +23,7 @@ vi.mock("@/lib/queries", () => ({
 }));
 vi.mock("@/app/actions/projects", () => ({
   createProjectAction: vi.fn(),
+  deleteProjectAction: vi.fn(),
   setProjectStatusAction: vi.fn(),
   updateProjectAction: vi.fn(),
   addProjectAliasAction: vi.fn(),

@@ -8,7 +8,9 @@ rough time commitment, with optional milestones. Doubles as a portfolio app.
 **Project**:
 The thing being tracked and logged against (e.g. Work, AI-M, Turkish). Has a
 category, a color (auto-assigned from a palette at create, overridable, never
-null), and an active/archived status. Archived (never deleted) to preserve history.
+null), and an active/archived status. Archive preserves history and stays the
+default removal path; an archived Project can be permanently deleted with all
+of its Entries and aliases.
 _Avoid_: task, activity
 
 **Entry**:
