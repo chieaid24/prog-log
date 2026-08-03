@@ -1,7 +1,7 @@
-// Month calendar (PRD 3.1.2): Notion-quiet grid, one compact card per
-// project per day (dominant first — rollup pre-orders), cap 3 + overflow.
-// Server component: all interaction is links, sharing ?day= with the heatmap.
+// Month calendar (PRD 3.1.2): one compact card per project and day,
+// dominant first, capped at three plus overflow. Date links own selection.
 import Link from "next/link";
+import { ViewToggle } from "@/components/log/view-toggle";
 import { addDays, addMonths, monthTitle, weekdayMondayFirst } from "@/lib/dates";
 import { TIME_LABEL, type CalendarDayProject } from "@/lib/types";
 
@@ -14,6 +14,7 @@ type Props = {
   todayISO: string;
   cards: CalendarDayProject[];
   selectedDay?: string | null;
+  heatmapHref?: string;
 };
 
 function monthHref(monthStart: string): string {
@@ -24,7 +25,13 @@ function dayHref(monthStart: string, day: string): string {
   return `${monthHref(monthStart)}&day=${day}`;
 }
 
-export function MonthCalendar({ monthStart, todayISO, cards, selectedDay }: Props) {
+export function MonthCalendar({
+  monthStart,
+  todayISO,
+  cards,
+  selectedDay,
+  heatmapHref = "/?view=heatmap",
+}: Props) {
   const byDate = new Map<string, CalendarDayProject[]>();
   for (const card of cards) {
     const list = byDate.get(card.date) ?? [];
@@ -51,32 +58,39 @@ export function MonthCalendar({ monthStart, todayISO, cards, selectedDay }: Prop
 
   return (
     <div>
-      <header className="mb-3 flex items-center justify-between">
+      <header className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-2xl font-semibold leading-[1.2] tracking-[-0.01em]">
           {monthTitle(monthStart)}
         </h2>
-        <nav aria-label="Calendar navigation" className="flex items-center gap-1 text-sm">
-          <Link
-            href={monthHref(addMonths(monthStart, -1))}
-            aria-label="Previous month"
-            className="rounded-md border border-border bg-surface px-2 py-1 text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:px-3 pointer-coarse:py-3"
-          >
-            ←
-          </Link>
-          <Link
-            href={monthHref(todayISO)}
-            className="rounded-md border border-border bg-surface px-2 py-1 text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:px-3 pointer-coarse:py-3"
-          >
-            Today
-          </Link>
-          <Link
-            href={monthHref(addMonths(monthStart, 1))}
-            aria-label="Next month"
-            className="rounded-md border border-border bg-surface px-2 py-1 text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:px-3 pointer-coarse:py-3"
-          >
-            →
-          </Link>
-        </nav>
+        <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
+          <nav aria-label="Calendar navigation" className="flex items-center gap-1 text-sm">
+            <Link
+              href={monthHref(addMonths(monthStart, -1))}
+              aria-label="Previous month"
+              className="rounded-md border border-border bg-surface px-2 py-1 text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:px-3 pointer-coarse:py-3"
+            >
+              &larr;
+            </Link>
+            <Link
+              href={monthHref(todayISO)}
+              className="rounded-md border border-border bg-surface px-2 py-1 text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:px-3 pointer-coarse:py-3"
+            >
+              Today
+            </Link>
+            <Link
+              href={monthHref(addMonths(monthStart, 1))}
+              aria-label="Next month"
+              className="rounded-md border border-border bg-surface px-2 py-1 text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:px-3 pointer-coarse:py-3"
+            >
+              &rarr;
+            </Link>
+          </nav>
+          <ViewToggle
+            current="calendar"
+            heatmapHref={heatmapHref}
+            calendarHref={selectedDay ? dayHref(monthStart, selectedDay) : monthHref(monthStart)}
+          />
+        </div>
       </header>
 
       <div className="overflow-x-auto">

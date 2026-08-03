@@ -1,48 +1,83 @@
-// Grid math for the trailing-year heatmap: coverage, Sunday-first alignment,
-// and the month-label placement rules (incl. the stub-first-column collision).
 import { describe, expect, it } from "vitest";
-import { buildHeatmapGrid } from "@/components/heatmap/grid";
+import {
+  buildHeatmapGrid,
+  resolveHeatmapRange,
+} from "@/components/heatmap/grid";
+
+describe("heatmap ranges", () => {
+  it("defaults to 365 days ending today", () => {
+    expect(resolveHeatmapRange("2026-07-03")).toEqual({
+      start: "2025-07-04",
+      end: "2026-07-03",
+      year: null,
+    });
+  });
+
+  it("resolves prior years to complete calendar years", () => {
+    expect(resolveHeatmapRange("2026-07-03", "2024")).toEqual({
+      start: "2024-01-01",
+      end: "2024-12-31",
+      year: 2024,
+    });
+  });
+
+  it("rejects the current year, future years, and malformed values", () => {
+    for (const value of ["0001", "2026", "2027", "26", "nope"]) {
+      const range = resolveHeatmapRange("2026-07-03", value);
+      expect(range.year).toBeNull();
+      expect(range.end).toBe("2026-07-03");
+    }
+  });
+});
 
 describe("buildHeatmapGrid", () => {
-  it("covers exactly the trailing 365 days and ends today", () => {
-    const cols = buildHeatmapGrid("2026-07-03");
-    const days = cols.flatMap((c) => c.days);
-    expect(days[0] <= "2025-07-04").toBe(true);
-    expect(days[days.length - 1]).toBe("2026-07-03");
+  it("shows only the requested trailing range and no future days", () => {
+    const range = resolveHeatmapRange("2026-07-03");
+    const days = buildHeatmapGrid(range).flatMap((column) => column.days);
+    expect(days[0]).toBe("2025-07-04");
+    expect(days.at(-1)).toBe("2026-07-03");
+    expect(days).toHaveLength(365);
     expect(new Set(days).size).toBe(days.length);
+    expect(days).not.toContain("2026-07-04");
   });
 
-  it("starts every column on a Sunday and stops the last at today", () => {
-    const cols = buildHeatmapGrid("2026-07-03");
-    for (const col of cols) {
-      expect(new Date(col.weekStart + "T00:00:00Z").getUTCDay()).toBe(0);
+  it("covers every day in a leap calendar year", () => {
+    const days = buildHeatmapGrid(resolveHeatmapRange("2026-07-03", "2024")).flatMap(
+      (column) => column.days,
+    );
+    expect(days[0]).toBe("2024-01-01");
+    expect(days.at(-1)).toBe("2024-12-31");
+    expect(days).toHaveLength(366);
+    expect(days).toContain("2024-02-29");
+  });
+
+  it("aligns columns to Sunday while clipping cells to the range", () => {
+    const columns = buildHeatmapGrid(resolveHeatmapRange("2026-07-03", "2025"));
+    for (const column of columns) {
+      expect(new Date(`${column.weekStart}T00:00:00Z`).getUTCDay()).toBe(0);
     }
-    // 2026-07-03 is a Friday: the final column holds Sun..Fri = 6 days.
-    expect(cols[cols.length - 1].days).toHaveLength(6);
+    expect(columns[0].weekStart).toBe("2024-12-29");
+    expect(columns[0].days[0]).toBe("2025-01-01");
+    expect(columns.at(-1)?.days.at(-1)).toBe("2025-12-31");
   });
 
-  it("labels a column when its month differs from the previous column", () => {
-    const cols = buildHeatmapGrid("2026-07-03");
-    const labels = cols.map((c) => c.monthLabel).filter(Boolean);
-    // A trailing year crosses 12 month boundaries at most once each.
-    expect(labels.length).toBeGreaterThanOrEqual(11);
-    expect(labels.length).toBeLessThanOrEqual(13);
-    expect(new Set(labels).size).toBe(labels.length === 13 ? 12 : labels.length);
-  });
-
-  it("drops the stub first column's label so it cannot collide with the next month", () => {
-    // Grid for 2026-07-03 opens on Sun 2025-06-28; June is a one-column stub
-    // and July starts on the very next column.
-    const cols = buildHeatmapGrid("2026-07-03");
-    expect(cols[0].monthLabel).toBeNull();
-    expect(cols[1].monthLabel).toBe("Jul");
-  });
-
-  it("keeps the first column's label when its month spans multiple columns", () => {
-    // Grid for 2026-06-27 opens on Sun 2025-06-22, and 2025-06-29 is still
-    // June — no collision, the label stays.
-    const cols = buildHeatmapGrid("2026-06-27");
-    expect(cols[0].monthLabel).toBe("Jun");
-    expect(cols[1].monthLabel).toBeNull();
+  it("places each month label once without a leading collision", () => {
+    const labels = buildHeatmapGrid(resolveHeatmapRange("2026-07-03", "2025"))
+      .map((column) => column.monthLabel)
+      .filter(Boolean);
+    expect(labels).toEqual([
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ]);
   });
 });

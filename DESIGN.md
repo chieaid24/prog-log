@@ -324,12 +324,11 @@ space or a hairline instead.
 ### Responsive & Touch
 - Breakpoints: content-driven Tailwind defaults; the nav collapse happens at `md` (768px).
   Every `lg:` two-column grid reflows to one legible column on phones; nothing horizontally
-  scrolls except wide data surfaces (heatmap, charts, calendar) inside their own
-  `overflow-x-auto` containers.
+  scrolls except wide charts and the calendar inside their own `overflow-x-auto` containers.
 - Touch targets are >=44px on coarse pointers: `pointer-coarse:` padding bumps on real
   controls, the `tap` utility (centered 44px hit-area overlay) on visually small ones.
-  Heatmap cells scale to the WCAG 2.5.8 24px-with-spacing minimum on touch; the calendar
-  carries the full-size targets for the same action.
+  Heatmap cells are read-only and scale with the full-year SVG to fit its container. Day
+  selection and its full-size touch targets live only in the calendar.
 - Form fields are >=16px font on coarse pointers (`pointer-coarse:text-base`) so iOS never
   zooms on focus; inputs declare the right `type`/`inputmode`/`autocomplete`.
 - Safe areas: the shell pads with `env(safe-area-inset-*)` so paper reaches the screen edge

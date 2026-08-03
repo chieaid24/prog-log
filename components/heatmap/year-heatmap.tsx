@@ -1,27 +1,16 @@
-"use client";
-
-// Year heatmap (PRD 3.1.1): one SVG, week columns Sunday-first, cell
-// intensity = summed Time Commitment weight bucketed onto the heat ramp.
-// Cells are keyboard-operable and select a day (?day=) shared with the
-// calendar view.
-import { useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { ViewToggle } from "@/components/log/view-toggle";
 import { Frog } from "@/components/ui/frog";
-import { useCoarsePointer } from "@/components/ui/use-coarse-pointer";
-import { humanDate } from "@/lib/dates";
+import { humanDate, parseISODate } from "@/lib/dates";
 import { intensityLevel } from "@/lib/rollups";
 import type { HeatmapCell } from "@/lib/types";
-import { buildHeatmapGrid } from "./grid";
+import { buildHeatmapGrid, resolveHeatmapRange, type HeatmapRange } from "./grid";
 
-// Touch devices get bigger cells: a year of 44px squares would be ~2600px of
-// sideways scrolling, so cells scale to the WCAG 2.5.8 24px minimum-with-
-// spacing instead, and the calendar view carries the full-size tap targets
-// for the same day-selection action.
-const FINE = { cell: 12, gap: 3, top: 18 };
-const COARSE = { cell: 22, gap: 6, top: 20 };
-const LEFT = 30; // weekday gutter
+const CELL = 12;
+const GAP = 3;
+const TOP = 18;
+const LEFT = 30;
 
-/** The DESIGN.md heat ramp: one hue climbing in lightness, heat-0..3. */
 export const LEVEL_FILL = [
   "var(--heat-0)",
   "var(--heat-1)",
@@ -32,95 +21,139 @@ export const LEVEL_FILL = [
 type Props = {
   cells: HeatmapCell[];
   todayISO: string;
-  selectedDay?: string | null;
+  range?: HeatmapRange;
+  calendarMonth?: string;
+  preservedDay?: string | null;
 };
 
-export function YearHeatmap({ cells, todayISO, selectedDay }: Props) {
-  const router = useRouter();
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  // The year ends at today (rightmost column): start there, not at last July.
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (el) el.scrollLeft = el.scrollWidth;
-  }, []);
-  const coarse = useCoarsePointer();
-  const { cell: CELL, gap: GAP, top: TOP } = coarse ? COARSE : FINE;
-  const STEP = CELL + GAP;
-  const byDate = new Map(cells.map((c) => [c.date, c]));
-  const columns = buildHeatmapGrid(todayISO);
-  const width = LEFT + columns.length * STEP;
-  const height = TOP + 7 * STEP;
-  const hasAny = cells.length > 0;
-
-  function select(day: string) {
-    router.push(`/?view=heatmap&day=${day}`, { scroll: false });
-  }
+export function YearHeatmap({
+  cells,
+  todayISO,
+  range = resolveHeatmapRange(todayISO),
+  calendarMonth,
+  preservedDay,
+}: Props) {
+  const step = CELL + GAP;
+  const byDate = new Map(cells.map((cell) => [cell.date, cell]));
+  const columns = buildHeatmapGrid(range);
+  const width = LEFT + columns.length * step;
+  const height = TOP + 7 * step;
+  const currentYear = Number(todayISO.slice(0, 4));
+  const previousYear = (range.year ?? currentYear) - 1;
+  const nextHref =
+    range.year === null
+      ? null
+      : range.year < currentYear - 1
+        ? heatmapHref(range.year + 1, calendarMonth, preservedDay)
+        : heatmapHref(undefined, calendarMonth, preservedDay);
+  const calendarHref = calendarMonth
+    ? `/?view=calendar&month=${calendarMonth.slice(0, 7)}${preservedDay ? `&day=${preservedDay}` : ""}`
+    : `/?view=calendar${preservedDay ? `&day=${preservedDay}` : ""}`;
+  const currentHeatmapHref = heatmapHref(range.year ?? undefined, calendarMonth, preservedDay);
+  const trailingHref = heatmapHref(undefined, calendarMonth, preservedDay);
 
   return (
     <div>
-      <div ref={scrollRef} className="overflow-x-auto overscroll-x-contain pb-1" data-testid="heatmap-scroll">
+      <header className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-sm font-semibold tracking-tight">Recent activity</h2>
+        <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
+          <nav aria-label="Heatmap year navigation" className="flex items-center gap-1 text-sm">
+            <Link
+              href={heatmapHref(previousYear, calendarMonth, preservedDay)}
+              aria-label={`Show ${previousYear}`}
+              className="rounded-md border border-border bg-surface px-2 py-1 text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:px-3 pointer-coarse:py-3"
+            >
+              &larr;
+            </Link>
+            <Link
+              href={trailingHref}
+              aria-current={range.year === null ? "page" : undefined}
+              className="rounded-md border border-border bg-surface px-2 py-1 text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:px-3 pointer-coarse:py-3"
+            >
+              This year
+            </Link>
+            {nextHref ? (
+              <Link
+                href={nextHref}
+                aria-label="Show next year"
+                className="rounded-md border border-border bg-surface px-2 py-1 text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:px-3 pointer-coarse:py-3"
+              >
+                &rarr;
+              </Link>
+            ) : (
+              <span
+                aria-label="No newer activity"
+                aria-disabled="true"
+                className="rounded-md border border-border bg-surface px-2 py-1 text-ink-faint pointer-coarse:px-3 pointer-coarse:py-3"
+              >
+                &rarr;
+              </span>
+            )}
+          </nav>
+          <ViewToggle
+            current="heatmap"
+            heatmapHref={currentHeatmapHref}
+            calendarHref={calendarHref}
+          />
+        </div>
+      </header>
+
+      <div data-testid="heatmap-fit" className="w-full">
         <svg
           width={width}
           height={height}
-          className="block"
+          viewBox={`0 0 ${width} ${height}`}
+          preserveAspectRatio="xMinYMin meet"
+          className="block h-auto w-full"
+          style={{ maxWidth: width }}
           aria-label={`Year heatmap of logged effort, ${cells.length} logged days`}
         >
-          {columns.map((col, x) =>
-            col.monthLabel && x < columns.length - 1 ? (
+          {columns.map((column, x) =>
+            column.monthLabel && x < columns.length - 1 ? (
               <text
-                key={`m-${col.weekStart}`}
-                x={LEFT + x * STEP}
+                key={`m-${column.weekStart}`}
+                x={LEFT + x * step}
                 y={11}
                 className="fill-[var(--ink-muted)] font-mono text-[10px]"
               >
-                {col.monthLabel}
+                {column.monthLabel}
               </text>
             ) : null,
           )}
-          {["Mon", "Wed", "Fri"].map((label, i) => (
+          {["Mon", "Wed", "Fri"].map((label, index) => (
             <text
               key={label}
               x={0}
-              y={TOP + (1 + i * 2) * STEP + Math.round(CELL * 0.75)}
+              y={TOP + (1 + index * 2) * step + Math.round(CELL * 0.75)}
               className="fill-[var(--ink-muted)] font-mono text-[9px]"
             >
               {label}
             </text>
           ))}
-          {columns.map((col, x) =>
-            col.days.map((day, y) => {
+          {columns.map((column, x) =>
+            column.days.map((day) => {
               const cell = byDate.get(day);
               const level = intensityLevel(cell?.weight ?? 0);
               const label = cell
                 ? `${humanDate(day)}: ${cell.entries} ${cell.entries === 1 ? "entry" : "entries"}, weight ${cell.weight}`
                 : `${humanDate(day)}: no entries`;
-              const selected = day === selectedDay;
+              const isToday = day === todayISO;
+
               return (
                 <rect
                   key={day}
-                  x={LEFT + x * STEP}
-                  y={TOP + y * STEP}
+                  x={LEFT + x * step}
+                  y={TOP + parseISODate(day).getUTCDay() * step}
                   width={CELL}
                   height={CELL}
                   rx={2.5}
                   fill={LEVEL_FILL[level]}
-                  stroke={selected ? "var(--ink)" : "transparent"}
-                  strokeWidth={selected ? 1.5 : 0}
+                  stroke={isToday ? "var(--ink)" : "transparent"}
+                  strokeWidth={isToday ? 1.5 : 0}
                   data-date={day}
                   data-level={level}
-                  tabIndex={0}
-                  role="button"
                   aria-label={label}
-                  aria-pressed={selected}
-                  className="cursor-pointer outline-offset-1 transition-opacity hover:opacity-80"
-                  onClick={() => select(day)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      select(day);
-                    }
-                  }}
+                  className="transition-opacity hover:opacity-80"
                 >
                   <title>{label}</title>
                 </rect>
@@ -129,8 +162,9 @@ export function YearHeatmap({ cells, todayISO, selectedDay }: Props) {
           )}
         </svg>
       </div>
+
       <div className="mt-1 flex items-center justify-between gap-3">
-        {hasAny ? (
+        {cells.length > 0 ? (
           <span />
         ) : (
           <p className="flex items-center gap-2.5 text-xs text-ink-muted">
@@ -155,4 +189,11 @@ export function YearHeatmap({ cells, todayISO, selectedDay }: Props) {
       </div>
     </div>
   );
+}
+
+function heatmapHref(year?: number, calendarMonth?: string, preservedDay?: string | null): string {
+  const yearQuery = year === undefined ? "" : `&year=${year}`;
+  const monthQuery = calendarMonth ? `&month=${calendarMonth.slice(0, 7)}` : "";
+  const dayQuery = preservedDay ? `&day=${preservedDay}` : "";
+  return `/?view=heatmap${yearQuery}${monthQuery}${dayQuery}`;
 }
