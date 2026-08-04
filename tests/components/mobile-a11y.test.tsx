@@ -54,7 +54,7 @@ beforeAll(() => {
 });
 
 describe("primary navigation", () => {
-  it("tab bar exposes all four routes as labelled links and marks the active one", () => {
+  it("tab bar exposes all five routes as labelled links and marks the active one", () => {
     pathname = "/monthly";
     render(<TabBar />);
 
@@ -64,6 +64,7 @@ describe("primary navigation", () => {
       "Log",
       "Monthly",
       "Projects",
+      "Expeditions",
       "Settings",
     ]);
     expect(within(nav).getByRole("link", { name: "Monthly" })).toHaveAttribute(
