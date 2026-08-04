@@ -16,11 +16,21 @@ import type {
   ThrowbackItem,
 } from "../types";
 import { DEMO_TIMEZONE } from "./mode";
-import { parseEntriesCsv, parseProjectsCsv, parseReflectionsCsv } from "./parse";
+import {
+  parseEntriesCsv,
+  parseExpeditionsCsv,
+  parseProjectsCsv,
+  parseReflectionsCsv,
+} from "./parse";
 
 const FIXTURE_DIR = join(process.cwd(), "lib", "demo", "fixtures");
 
-type Dataset = { projects: Project[]; entries: EntryWithProject[]; reflections: Reflection[] };
+type Dataset = {
+  projects: Project[];
+  entries: EntryWithProject[];
+  reflections: Reflection[];
+  expeditions: Expedition[];
+};
 
 let cache: Dataset | null = null;
 
@@ -52,7 +62,10 @@ function load(): Dataset {
   const reflections = parseReflectionsCsv(
     readFileSync(join(FIXTURE_DIR, "reflections.csv"), "utf8"),
   );
-  cache = { projects, entries, reflections };
+  const expeditions = parseExpeditionsCsv(
+    readFileSync(join(FIXTURE_DIR, "expeditions.csv"), "utf8"),
+  );
+  cache = { projects, entries, reflections, expeditions };
   return cache;
 }
 
@@ -95,14 +108,18 @@ export function getDayReflection(date: string): Reflection | null {
   return load().reflections.find((r) => r.entry_date === date) ?? null;
 }
 
-/** No Expeditions in the demo (mirrors getOpenExpeditions). */
+/** Open Expeditions in position order (mirrors getOpenExpeditions). */
 export function getOpenExpeditions(): Expedition[] {
-  return [];
+  return load()
+    .expeditions.filter((x) => x.status === "open")
+    .sort((a, b) => a.position - b.position);
 }
 
-/** No Expeditions in the demo (mirrors getAnsweredExpeditions). */
+/** Answered Expeditions most-recent-first (mirrors getAnsweredExpeditions). */
 export function getAnsweredExpeditions(): Expedition[] {
-  return [];
+  return load()
+    .expeditions.filter((x) => x.status === "answered")
+    .sort((a, b) => cmp(b.answered_at ?? "", a.answered_at ?? ""));
 }
 
 /**

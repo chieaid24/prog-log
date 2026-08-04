@@ -70,6 +70,7 @@ try {
   await waitReady("/");
   await waitReady("/monthly");
   await waitReady("/projects");
+  await waitReady("/expeditions");
 
   const { launch } = await import("../ui-audit/support/page-context.mjs");
   const { browser, openPage } = await launch("desktop", { authed: false });
@@ -117,8 +118,21 @@ try {
     }
     await shoot(projects, "demo-projects");
 
+    // Expeditions: fixture todo list and answered showcase both populated.
+    const expeditions = await openPage("/expeditions");
+    await assertBanner(expeditions, "/expeditions");
+    const openItems = await expeditions
+      .locator("section[aria-label='Open Expeditions'] ul li")
+      .count();
+    assert.ok(openItems >= 3, `open expeditions >= 3 (got ${openItems})`);
+    const answeredThumbs = await expeditions
+      .locator("section[aria-label='Answered Expeditions'] ul li img")
+      .count();
+    assert.ok(answeredThumbs >= 1, `answered expedition thumbnails >= 1 (got ${answeredThumbs})`);
+    await shoot(expeditions, "demo-expeditions");
+
     console.log(
-      "demo probe green: /, /monthly and /projects render populated with the demo banner",
+      "demo probe green: /, /monthly, /projects and /expeditions render populated with the demo banner",
     );
   } finally {
     await browser.close();
