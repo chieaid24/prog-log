@@ -311,7 +311,7 @@ space or a hairline instead.
   in `Ink` with a `Frog Green` underline or dot. No heavy chrome, no boxed nav bar. The wordmark
   (with the frog) sits at the left.
 - **Phones (below md):** the top nav collapses into a fixed bottom tab bar on `paper` with a
-  hairline top border: four labelled tabs with 8-bit pixel icons (Ferdy's visual language),
+  hairline top border: five labelled tabs with 8-bit pixel icons (Ferdy's visual language),
   >=56px tall plus `env(safe-area-inset-bottom)`. Active = `Ink` + a small `Frog Green` bar
   under the tab's label; never green alone. The main column reserves bottom padding so content clears
   the bar.

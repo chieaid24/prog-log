@@ -7,6 +7,7 @@ const LINKS = [
   { href: "/", label: "Log" },
   { href: "/monthly", label: "Monthly" },
   { href: "/projects", label: "Projects" },
+  { href: "/expeditions", label: "Expeditions" },
   { href: "/settings", label: "Settings" },
 ];
 
@@ -83,6 +84,20 @@ const ICONS: Record<string, readonly string[]> = {
     "XXXXXXXXXXX",
     "...........",
   ],
+  // Expeditions: a todo list, rows of checkbox + line.
+  "/expeditions": [
+    "...........",
+    "XX..XXXXXXX",
+    "XX..XXXXXXX",
+    "...........",
+    "XX..XXXXXXX",
+    "XX..XXXXXXX",
+    "...........",
+    "XX..XXXXXXX",
+    "XX..XXXXXXX",
+    "...........",
+    "...........",
+  ],
   // Settings: a pixel gear.
   "/settings": [
     "....XXX....",
@@ -130,7 +145,7 @@ function PixelIcon({ grid }: { grid: readonly string[] }) {
   );
 }
 
-// Thumb-reachable bottom tab bar for phones (ADR-0015): the four routes as
+// Thumb-reachable bottom tab bar for phones (ADR-0015): the five routes as
 // labelled >=44px targets on paper with a hairline top border. The active tab
 // is ink with a frog-green bar under its icon (never green alone); inactive
 // tabs are ink-muted. Hidden from md up, where the quiet top nav takes over.
@@ -141,7 +156,7 @@ export function TabBar() {
       aria-label="Primary"
       className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-paper pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] md:hidden"
     >
-      <ul className="mx-auto grid max-w-md grid-cols-4">
+      <ul className="mx-auto grid max-w-md grid-cols-5">
         {LINKS.map(({ href, label }) => {
           const active = pathname === href;
           return (
