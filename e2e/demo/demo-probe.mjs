@@ -75,21 +75,26 @@ try {
   const { launch } = await import("../ui-audit/support/page-context.mjs");
   const { browser, openPage } = await launch("desktop", { authed: false });
   try {
-    // Dashboard: heatmap, calendar and throwbacks all populated.
+    // Dashboard: calendar is the default view (#70); throwbacks populated.
     const home = await openPage("/");
     await assertBanner(home, "/");
-    const label = await home
-      .locator("svg[aria-label$='logged days']")
-      .getAttribute("aria-label");
-    const loggedDays = Number(/(\d+) logged days/.exec(label ?? "")?.[1]);
-    assert.ok(loggedDays >= 100, `heatmap logged days >= 100 (got ${loggedDays})`);
-    const litCells = await home.locator("rect[data-date]:not([data-level='0'])").count();
-    assert.ok(litCells >= 100, `lit heatmap cells >= 100 (got ${litCells})`);
     const throwbacks = await home
       .locator("section[aria-labelledby='throwback-feed-title'] ol li")
       .count();
     assert.ok(throwbacks >= 1, `throwback items >= 1 (got ${throwbacks})`);
     await shoot(home, "demo-home");
+
+    // Heatmap view: opt-in via ?view=heatmap since #70, pinned to the last
+    // curated fixture month so the trailing-year window keeps the fixtures.
+    const heatmap = await openPage("/?view=heatmap&month=2026-07");
+    const label = await heatmap
+      .locator("svg[aria-label$='logged days']")
+      .getAttribute("aria-label");
+    const loggedDays = Number(/(\d+) logged days/.exec(label ?? "")?.[1]);
+    assert.ok(loggedDays >= 100, `heatmap logged days >= 100 (got ${loggedDays})`);
+    const litCells = await heatmap.locator("rect[data-date]:not([data-level='0'])").count();
+    assert.ok(litCells >= 100, `lit heatmap cells >= 100 (got ${litCells})`);
+    await shoot(heatmap, "demo-heatmap");
 
     // Calendar view: pinned to the last curated fixture month (the fixtures
     // end 2026-07-25), not the wall-clock month, so the probe stays green
