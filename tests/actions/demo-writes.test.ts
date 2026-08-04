@@ -15,6 +15,14 @@ vi.mock("next/cache", () => ({ revalidatePath }));
 import { importEntriesAction } from "@/app/actions/data";
 import { deleteEntryAction, logEntryAction } from "@/app/actions/entries";
 import {
+  addExpeditionAction,
+  answerExpeditionAction,
+  deleteExpeditionAction,
+  reopenExpeditionAction,
+  reorderExpeditionsAction,
+  updateExpeditionAction,
+} from "@/app/actions/expeditions";
+import {
   addProjectAliasAction,
   createProjectAction,
   deleteProjectAction,
@@ -53,6 +61,15 @@ const cases: Array<[string, () => Promise<unknown>]> = [
   ["updateTimezoneAction", () => updateTimezoneAction("America/Toronto")],
   ["setReflectionAction", () => setReflectionAction({ reflection: "a line" })],
   ["importEntriesAction", () => importEntriesAction(importForm())],
+  ["addExpeditionAction", () => addExpeditionAction({ title: "Why do compilers inline?" })],
+  ["updateExpeditionAction", () => updateExpeditionAction("x1", { title: "Renamed" })],
+  ["deleteExpeditionAction", () => deleteExpeditionAction("x1")],
+  ["reorderExpeditionsAction", () => reorderExpeditionsAction(["x1", "x2"])],
+  [
+    "answerExpeditionAction",
+    () => answerExpeditionAction("x1", "https://youtu.be/dQw4w9WgXcQ"),
+  ],
+  ["reopenExpeditionAction", () => reopenExpeditionAction("x1")],
 ];
 
 function importForm(): FormData {

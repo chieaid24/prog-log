@@ -1,7 +1,15 @@
 // Deterministic CSV -> domain parsing for the DEMO_MODE fixture provider
 // (ADR-0016). Pure: string in, domain rows out, no I/O. Handles RFC 4180
 // quoting (embedded commas, quotes and newlines) so fixture prose is safe.
-import { TIME_SIZES, type Entry, type Project, type Reflection, type TimeSize } from "../types";
+import {
+  TIME_SIZES,
+  type Entry,
+  type Expedition,
+  type ExpeditionStatus,
+  type Project,
+  type Reflection,
+  type TimeSize,
+} from "../types";
 import { DEMO_USER_ID } from "./mode";
 
 /** Split CSV text into rows of raw fields (RFC 4180: quotes, commas, newlines). */
@@ -92,6 +100,34 @@ export function parseReflectionsCsv(text: string): Reflection[] {
       reflection: r.reflection,
       created_at: r.created_at || `${r.entry_date}T21:00:00Z`,
       updated_at: r.updated_at || `${r.entry_date}T21:00:00Z`,
+    };
+  });
+}
+
+/** Parse the expeditions fixture into `Expedition` rows; rejects a bad status or title. */
+export function parseExpeditionsCsv(text: string): Expedition[] {
+  return parseCsv(text).map((r) => {
+    if (!r.title) throw new Error(`demo fixture: empty title for expedition ${r.id}`);
+    const status = r.status as ExpeditionStatus;
+    if (status !== "open" && status !== "answered") {
+      throw new Error(`demo fixture: invalid status "${r.status}" for expedition ${r.id}`);
+    }
+    if (status === "answered" && (!r.youtube_url || !r.answered_at)) {
+      throw new Error(`demo fixture: answered expedition ${r.id} missing url or answered_at`);
+    }
+    return {
+      id: r.id,
+      user_id: DEMO_USER_ID,
+      title: r.title,
+      description: orNull(r.description ?? ""),
+      status,
+      position: Number(r.position || "0"),
+      youtube_url: orNull(r.youtube_url ?? ""),
+      youtube_video_id: orNull(r.youtube_video_id ?? ""),
+      youtube_title: orNull(r.youtube_title ?? ""),
+      answered_at: orNull(r.answered_at ?? ""),
+      created_at: r.created_at || "2026-07-01T12:00:00Z",
+      updated_at: r.updated_at || r.created_at || "2026-07-01T12:00:00Z",
     };
   });
 }

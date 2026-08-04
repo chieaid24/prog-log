@@ -1,0 +1,8 @@
+id,title,description,status,position,youtube_url,youtube_video_id,youtube_title,answered_at,created_at,updated_at
+x01,Why does gradient descent find good minima?,"Saddle points and momentum, in plain words",open,1,,,,,2026-06-30T18:00:00Z,2026-06-30T18:00:00Z
+x02,Explain RSA with numbers small enough to hand-check,,open,2,,,,,2026-07-04T20:10:00Z,2026-07-04T20:10:00Z
+x03,What makes Turkish vowel harmony tick?,Front/back and rounded/unrounded with worked examples,open,3,,,,,2026-07-09T08:30:00Z,2026-07-09T08:30:00Z
+x04,How does a CRDT merge without a server?,,open,4,,,,,2026-07-15T22:05:00Z,2026-07-15T22:05:00Z
+x05,Kalman filters as weighted averages,The one-dimensional case first,open,5,,,,,2026-07-21T19:45:00Z,2026-07-21T19:45:00Z
+x06,What is a neural network really doing?,,answered,1,https://www.youtube.com/watch?v=aircAruvnKk,aircAruvnKk,But what is a neural network? | Deep learning chapter 1,2026-07-18T17:20:00Z,2026-06-12T21:00:00Z,2026-07-18T17:20:00Z
+x07,Where does Euler's number e come from?,Compound interest as the way in,answered,2,https://www.youtube.com/watch?v=m2MIpDrF7Es,m2MIpDrF7Es,"What's so special about Euler's number e? | Chapter 5, Essence of calculus",2026-07-05T16:40:00Z,2026-06-20T09:15:00Z,2026-07-05T16:40:00Z
