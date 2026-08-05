@@ -18,6 +18,7 @@ process.env.UA_BASE = BASE;
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const SOURCE_URL = "https://github.com/chieaid24/prog-log";
+const WORK_PROJECT_ID = "00000000-0000-0000-0000-000000000001";
 const shotsDir = process.env.DEMO_PROBE_SHOTS;
 
 // Dummy Supabase values: DEMO_MODE never issues a query, the client only
@@ -70,6 +71,7 @@ try {
   await waitReady("/");
   await waitReady("/progress");
   await waitReady("/projects");
+  await waitReady(`/projects/${WORK_PROJECT_ID}`);
   await waitReady("/expeditions");
 
   const { launch } = await import("../ui-audit/support/page-context.mjs");
@@ -123,6 +125,31 @@ try {
     }
     await shoot(projects, "demo-projects");
 
+    // Project detail: one Project's four analytics regions stay populated.
+    const projectDetail = await openPage(`/projects/${WORK_PROJECT_ID}`);
+    await assertBanner(projectDetail, `/projects/${WORK_PROJECT_ID}`);
+    for (const heading of [
+      "Year heatmap",
+      "Effort trend",
+      "Time Commitment split",
+      "Milestone timeline",
+    ]) {
+      assert.ok(
+        await projectDetail.getByRole("heading", { name: heading }).isVisible(),
+        `project detail ${heading} visible`,
+      );
+    }
+    const splitRows = await projectDetail
+      .getByRole("table", { name: "All-time Time Commitment split for this Project" })
+      .getByRole("row")
+      .count();
+    assert.equal(splitRows, 4, `project detail split table has header plus 3 sizes`);
+    const milestoneItems = await projectDetail
+      .locator("section[aria-labelledby='project-milestone-title'] ol li")
+      .count();
+    assert.ok(milestoneItems >= 1, `project detail Milestones >= 1 (got ${milestoneItems})`);
+    await shoot(projectDetail, "demo-project-detail");
+
     // Expeditions: fixture todo list and answered showcase both populated.
     const expeditions = await openPage("/expeditions");
     await assertBanner(expeditions, "/expeditions");
@@ -136,12 +163,35 @@ try {
     assert.ok(answeredThumbs >= 1, `answered expedition thumbnails >= 1 (got ${answeredThumbs})`);
     await shoot(expeditions, "demo-expeditions");
 
-    console.log(
-      "demo probe green: /, /progress, /projects and /expeditions render populated with the demo banner",
-    );
   } finally {
     await browser.close();
   }
+
+  const { browser: mobileBrowser, openPage: openMobilePage } = await launch("mobile", {
+    authed: false,
+  });
+  try {
+    const mobileDetail = await openMobilePage(`/projects/${WORK_PROJECT_ID}`);
+    const viewport = await mobileDetail.evaluate(() => ({
+      innerWidth: window.innerWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+    }));
+    assert.ok(
+      viewport.scrollWidth <= viewport.innerWidth,
+      `mobile project detail has no body overflow (${viewport.scrollWidth}/${viewport.innerWidth})`,
+    );
+    assert.ok(
+      await mobileDetail.getByRole("heading", { name: "Milestone timeline" }).isVisible(),
+      "mobile project detail reaches the Milestone timeline",
+    );
+    await shoot(mobileDetail, "demo-project-detail-mobile");
+  } finally {
+    await mobileBrowser.close();
+  }
+
+  console.log(
+    "demo probe green: core routes plus desktop and mobile project detail render populated with the demo banner",
+  );
 } finally {
   process.kill(-server.pid, "SIGTERM");
 }

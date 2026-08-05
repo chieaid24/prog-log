@@ -11,6 +11,10 @@ const LINKS = [
   { href: "/settings", label: "Settings" },
 ];
 
+function isActivePath(pathname: string, href: string): boolean {
+  return href === "/" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
+}
+
 // Quiet top nav (DESIGN.md): sans labels in ink-muted, the active item in ink
 // with a frog-green underline. No boxed chrome, no pills. Desktop only; on
 // phones navigation moves to the thumb-reachable <TabBar/> below.
@@ -19,7 +23,7 @@ export function LogNav() {
   return (
     <nav aria-label="Primary" className="hidden items-center gap-4 md:flex">
       {LINKS.map(({ href, label }) => {
-        const active = pathname === href;
+        const active = isActivePath(pathname, href);
         return (
           <Link
             key={href}
@@ -158,7 +162,7 @@ export function TabBar() {
     >
       <ul className="mx-auto grid max-w-md grid-cols-5">
         {LINKS.map(({ href, label }) => {
-          const active = pathname === href;
+          const active = isActivePath(pathname, href);
           return (
             <li key={href}>
               <Link

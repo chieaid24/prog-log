@@ -68,6 +68,22 @@ describe("YearHeatmap", () => {
     );
   });
 
+  it("supports a fixed detail view without daily-log controls", () => {
+    render(
+      <YearHeatmap
+        cells={[]}
+        todayISO={TODAY}
+        title="Year heatmap"
+        showControls={false}
+        emptyMessage="Nothing logged for this Project in the trailing year."
+      />,
+    );
+    expect(screen.getByRole("heading", { name: "Year heatmap" })).toBeInTheDocument();
+    expect(screen.queryByRole("navigation", { name: "Heatmap year navigation" })).toBeNull();
+    expect(screen.queryByRole("navigation", { name: "Daily log view" })).toBeNull();
+    expect(screen.getByText("Nothing logged for this Project in the trailing year.")).toBeTruthy();
+  });
+
   it("pages historical years forward without moving beyond today", () => {
     const { rerender } = render(
       <YearHeatmap

@@ -82,6 +82,14 @@ describe("project manager", () => {
     expect(within(archived).getByText("Mandarin")).toBeInTheDocument();
     expect(within(active).getByText(/12 entries · last logged 2 days ago/)).toBeInTheDocument();
     expect(within(archived).getByText("never logged")).toBeInTheDocument();
+    expect(within(active).getByRole("link", { name: /Turkish/ })).toHaveAttribute(
+      "href",
+      "/projects/turkish",
+    );
+    expect(within(archived).getByRole("link", { name: /Mandarin/ })).toHaveAttribute(
+      "href",
+      "/projects/mandarin",
+    );
   });
 
   it("shows an empty state when nothing is archived yet", () => {

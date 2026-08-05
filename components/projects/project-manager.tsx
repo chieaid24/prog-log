@@ -3,6 +3,7 @@
 // Project management (PRD 3.5): create, edit, archive, restore, or delete.
 // Permanent deletion is available only after archive.
 import { useRef, useState, useTransition } from "react";
+import Link from "next/link";
 import {
   addProjectAliasAction,
   createProjectAction,
@@ -263,22 +264,27 @@ function ProjectRow({
       }`}
     >
       <div className="flex flex-wrap items-center gap-3">
-        <span
-          aria-hidden
-          className="h-3 w-3 shrink-0 rounded-full"
-          style={{ backgroundColor: project.color ?? "var(--ink-faint)" }}
-        />
-        <span className="font-medium">{project.name}</span>
-        {project.category && (
-          <span className="rounded-full border border-border px-2 py-0.5 text-xs text-ink-muted">
-            {project.category}
+        <Link
+          href={`/projects/${project.id}`}
+          className="flex min-w-0 flex-1 flex-wrap items-center gap-3 rounded-lg transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-frog-green pointer-coarse:min-h-11"
+        >
+          <span
+            aria-hidden
+            className="h-3 w-3 shrink-0 rounded-full"
+            style={{ backgroundColor: project.color ?? "var(--ink-faint)" }}
+          />
+          <span className="font-medium">{project.name}</span>
+          {project.category && (
+            <span className="rounded-full border border-border px-2 py-0.5 text-xs text-ink-muted">
+              {project.category}
+            </span>
+          )}
+          <span className="font-mono text-xs text-ink-muted">
+            {usage && usage.entries > 0
+              ? `${usage.entries} ${usage.entries === 1 ? "entry" : "entries"} · last logged ${humanizeAge(usage.lastLoggedDaysAgo ?? 0)}`
+              : "never logged"}
           </span>
-        )}
-        <span className="font-mono text-xs text-ink-muted">
-          {usage && usage.entries > 0
-            ? `${usage.entries} ${usage.entries === 1 ? "entry" : "entries"} · last logged ${humanizeAge(usage.lastLoggedDaysAgo ?? 0)}`
-            : "never logged"}
-        </span>
+        </Link>
         <span className="ml-auto flex gap-2">
           {!archived && (
             <button
