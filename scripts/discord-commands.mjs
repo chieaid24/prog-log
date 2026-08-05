@@ -70,4 +70,25 @@ export const commands = [
       },
     ],
   },
+  {
+    name: "expedition",
+    description: "add an expedition to the todo list",
+    type: CHAT_INPUT,
+    integration_types: integrationTypes,
+    contexts,
+    options: [
+      {
+        name: "title",
+        type: STRING,
+        description: "topic to explore",
+        required: true,
+      },
+      {
+        name: "description",
+        type: STRING,
+        description: "detail (optional)",
+        required: false,
+      },
+    ],
+  },
 ];
