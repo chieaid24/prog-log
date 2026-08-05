@@ -55,19 +55,19 @@ beforeAll(() => {
 
 describe("primary navigation", () => {
   it("tab bar exposes all five routes as labelled links and marks the active one", () => {
-    pathname = "/monthly";
+    pathname = "/progress";
     render(<TabBar />);
 
     const nav = screen.getByRole("navigation", { name: "Primary" });
     const links = within(nav).getAllByRole("link");
     expect(links.map((l) => l.textContent)).toEqual([
       "Log",
-      "Monthly",
+      "Progress",
       "Projects",
       "Expeditions",
       "Settings",
     ]);
-    expect(within(nav).getByRole("link", { name: "Monthly" })).toHaveAttribute(
+    expect(within(nav).getByRole("link", { name: "Progress" })).toHaveAttribute(
       "aria-current",
       "page",
     );

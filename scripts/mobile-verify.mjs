@@ -41,7 +41,7 @@ async function sb(path, init = {}) {
 
 const AXE_SOURCE = readFileSync("node_modules/axe-core/axe.min.js", "utf8");
 
-const AUTHED_ROUTES = ["/", "/monthly", "/projects", "/settings"];
+const AUTHED_ROUTES = ["/", "/progress", "/projects", "/settings"];
 const GUEST_ROUTES = ["/login", "/now"];
 const WIDTHS = [320, 360, 390, 414, 768];
 

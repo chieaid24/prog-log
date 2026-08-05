@@ -1,8 +1,8 @@
 # prog-log
 
 A self-hosted daily work log with an "on this day" anniversary feed. Log what you worked
-on in two taps; the log pays you back with a contribution-style heatmap, monthly
-breakdowns, streaks — and Throwbacks: past milestones resurfacing on their anniversaries.
+on in two taps; the log pays you back with a contribution-style heatmap, a Progress
+timeline, streaks — and Throwbacks: past milestones resurfacing on their anniversaries.
 
 
 ![The daily log: effort-weighted year heatmap, quick add, Throwbacks, Momentum](docs/screenshot-dashboard.png)
@@ -16,8 +16,9 @@ breakdowns, streaks — and Throwbacks: past milestones resurfacing on their ann
 - **Throwbacks.** Milestones you logged months ago resurface on the dashboard and in a
   morning Discord digest — "1 year ago today: shipped v1".
 - **A year at a glance.** Custom-SVG heatmap weighted by effort, a month calendar with
-  per-project color banners, and a monthly breakdown (stat tiles, time split, stacked
-  per-project bars, 90-day effort trend, weekday pattern).
+  per-project color banners, and a Progress view: an all-time timeline of reflections
+  and milestones over a cumulative-effort curve, with the monthly breakdown beneath
+  (stat tiles, time split, stacked per-project bars, 90-day effort trend, weekday pattern).
 - **Momentum.** Global logging streak plus per-project cadence — rising / steady /
   cooling — so daily practices (languages, habits) keep themselves honest.
 - **Yours.** CSV/JSON export and safe re-importable import; a public read-only `/now`

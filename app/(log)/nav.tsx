@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 
 const LINKS = [
   { href: "/", label: "Log" },
-  { href: "/monthly", label: "Monthly" },
+  { href: "/progress", label: "Progress" },
   { href: "/projects", label: "Projects" },
   { href: "/expeditions", label: "Expeditions" },
   { href: "/settings", label: "Settings" },
@@ -56,8 +56,8 @@ const ICONS: Record<string, readonly string[]> = {
     "XXX.XXX.XXX",
     "XXX.XXX.XXX",
   ],
-  // Monthly: ascending bars.
-  "/monthly": [
+  // Progress: ascending bars.
+  "/progress": [
     "...........",
     "........XXX",
     "........XXX",
