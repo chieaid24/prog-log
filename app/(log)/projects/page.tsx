@@ -1,10 +1,16 @@
 import type { Metadata } from "next";
 import { CommitmentDonut } from "@/components/projects/commitment-donut";
-import { buildDonutSegments } from "@/components/projects/prepare";
+import { ComparisonBar } from "@/components/projects/comparison-bar";
+import {
+  buildComparisonRows,
+  buildDonutSegments,
+  buildStreakRows,
+} from "@/components/projects/prepare";
 import { ProjectManager, type ProjectUsage } from "@/components/projects/project-manager";
+import { StreakStrip } from "@/components/projects/streak-strip";
 import { daysBetween } from "@/lib/dates";
 import { getAllEntries, getAllProjects, getProjectAliases, getToday } from "@/lib/queries";
-import { toProjectShares } from "@/lib/rollups";
+import { toProjectShares, toProjectTotals } from "@/lib/rollups";
 import { createClient } from "@/lib/supabase/server";
 import type { ProjectAlias } from "@/lib/types";
 
@@ -42,7 +48,14 @@ export default async function ProjectsPage() {
   // All-time analytics home (ADR-0020): share across active Projects only.
   const activeEntries = entries.filter((e) => e.project.status === "active");
   const donutSegments = buildDonutSegments(toProjectShares(activeEntries));
-  const activeProjectCount = projects.filter((p) => p.status === "active").length;
+  const activeProjects = projects.filter((p) => p.status === "active");
+  const activeProjectCount = activeProjects.length;
+
+  // Comparison bar + streak strip share one totals rollup (issue #63); the
+  // seed keeps zero-Entry active Projects in both.
+  const totals = toProjectTotals(activeEntries, activeProjects);
+  const comparisonRows = buildComparisonRows(totals);
+  const streakRows = buildStreakRows(totals, activeEntries, today);
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
@@ -55,6 +68,8 @@ export default async function ProjectsPage() {
       </header>
       <section aria-label="Overview" className="flex flex-col gap-5">
         <CommitmentDonut segments={donutSegments} activeProjectCount={activeProjectCount} />
+        <ComparisonBar rows={comparisonRows} activeProjectCount={activeProjectCount} />
+        <StreakStrip rows={streakRows} activeProjectCount={activeProjectCount} />
       </section>
       <ProjectManager projects={projects} usage={usage} aliases={aliases} />
     </div>
