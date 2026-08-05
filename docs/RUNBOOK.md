@@ -79,7 +79,7 @@ All four must exit 0 before you deploy anything. Tests run against an embedded P
 5. Deploy (push to `main`). Verify: `https://log.aidanchien.com/login` loads, magic link
    round-trips, and `https://log.aidanchien.com/now` renders signed-out.
 
-## 3. Discord capture (`/log` and `/reflect` from anywhere)
+## 3. Discord capture (`/log`, `/reflect` and `/expedition` from anywhere)
 
 1. Create an application at the
    [Discord Developer Portal](https://discord.com/developers/applications):
@@ -89,7 +89,8 @@ All four must exit 0 before you deploy anything. Tests run against an embedded P
      script below, never at runtime)
 2. Your own user id: Discord → Settings → Advanced → Developer Mode on, right-click
    yourself → Copy User ID → `DISCORD_OWNER_ID`. The route rejects every other user.
-3. Register the `/log` and `/reflect` commands (one-shot; re-running overwrites in place):
+3. Register the `/log`, `/reflect` and `/expedition` commands (one-shot; re-running
+   overwrites in place):
 
    ```bash
    node --env-file=.env.local scripts/register-discord-command.mjs

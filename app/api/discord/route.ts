@@ -1,11 +1,13 @@
 // Discord interactions endpoint (PRD 4.1, ADR-0002). Discord POSTs every
-// interaction here: PING handshakes, /log and /reflect commands, and project
-// autocomplete. Ed25519 signature first, owner gate second; /log delegates
-// resolution and the write to the shared capture pipeline (captureLog,
-// ADR-0001); /reflect writes through the set_reflection RPC (ADR-0017).
+// interaction here: PING handshakes, /log, /reflect and /expedition commands,
+// and project autocomplete. Ed25519 signature first, owner gate second; /log
+// delegates resolution and the write to the shared capture pipeline
+// (captureLog, ADR-0001); /reflect writes through the set_reflection RPC
+// (ADR-0017); /expedition appends through add_expedition (ADR-0018).
 import { captureLog } from "@/lib/capture";
 import { DEMO_WRITE_NOTE, isDemoMode } from "@/lib/demo/mode";
 import { getOwnerActiveProjects, getOwnerAliases } from "@/lib/discord/owner";
+import { addExpedition } from "@/lib/expeditions";
 import { verifyDiscordSignature } from "@/lib/discord/verify";
 import type { Db } from "@/lib/queries";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -84,6 +86,7 @@ export async function POST(req: Request): Promise<Response> {
     if (!isOwner) return reply("not authorized");
     if (interaction.data?.name === "log") return handleLogCommand(interaction);
     if (interaction.data?.name === "reflect") return handleReflectCommand(interaction);
+    if (interaction.data?.name === "expedition") return handleExpeditionCommand(interaction);
     return reply("unknown command");
   }
 
@@ -174,6 +177,31 @@ async function handleReflectCommand(interaction: Interaction): Promise<Response>
   if (error || !data) return reply("could not save the reflection - try again.");
 
   return reply(`reflection saved for ${data.entry_date}`);
+}
+
+/**
+ * /expedition: append an open Expedition to the bottom of the todo list
+ * through add_expedition, the single write path (ADR-0018). Discord only
+ * adds; answering and reordering stay in the web UI.
+ */
+async function handleExpeditionCommand(interaction: Interaction): Promise<Response> {
+  const opts = Object.fromEntries(
+    (interaction.data?.options ?? []).map((o) => [o.name, String(o.value ?? "")]),
+  );
+
+  const title = (opts.title ?? "").trim();
+  if (!title) return reply("write a topic first.");
+
+  try {
+    const expedition = await addExpedition(createAdminClient(), {
+      userId: ownerId(),
+      title,
+      description: (opts.description ?? "").trim() || null,
+    });
+    return reply(`expedition added: ${expedition.title}`);
+  } catch {
+    return reply("could not add the expedition - try again.");
+  }
 }
 
 function ownerId(): string {

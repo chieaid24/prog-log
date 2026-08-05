@@ -123,6 +123,35 @@ function reflectCommand(
   };
 }
 
+function expeditionCommand(
+  options: Record<string, string>,
+  userId: string = OWNER_DISCORD_ID,
+) {
+  return {
+    type: 2,
+    member: { user: { id: userId } },
+    data: {
+      name: "expedition",
+      options: Object.entries(options).map(([name, value]) => ({ name, value })),
+    },
+  };
+}
+
+const EXPEDITION_ROW = {
+  id: "exp-1",
+  user_id: OWNER_USER_ID,
+  title: "how do black holes evaporate",
+  description: null,
+  status: "open",
+  position: 4,
+  youtube_url: null,
+  youtube_video_id: null,
+  youtube_title: null,
+  answered_at: null,
+  created_at: "2026-08-01T00:00:00Z",
+  updated_at: "2026-08-01T00:00:00Z",
+};
+
 const REFLECTION_ROW = {
   user_id: OWNER_USER_ID,
   entry_date: "2026-07-29",
@@ -363,6 +392,82 @@ describe("/reflect command", () => {
     const res = await post(reflectCommand({ reflection: "a good day" }));
     const json = await res.json();
     expect(json.data.content).toBe("could not save the reflection - try again.");
+  });
+});
+
+describe("/expedition command", () => {
+  beforeEach(() => {
+    rpc.mockResolvedValue({ data: EXPEDITION_ROW, error: null });
+  });
+
+  it("401s a bad signature without writing", async () => {
+    const res = await post(expeditionCommand({ title: "black holes" }), {
+      secretKey: wrongKeyPair.secretKey,
+    });
+    expect(res.status).toBe(401);
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it("rejects a non-owner with an ephemeral message and no write", async () => {
+    const res = await post(expeditionCommand({ title: "black holes" }, "999"));
+    expect(await res.json()).toEqual({
+      type: 4,
+      data: { content: "not authorized", flags: 64 },
+    });
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it("no-ops with the demo sentinel in DEMO_MODE, without writing (ADR-0016)", async () => {
+    vi.stubEnv("DEMO_MODE", "1");
+    try {
+      const res = await post(expeditionCommand({ title: "black holes" }));
+      expect(res.status).toBe(200);
+      expect(await res.json()).toMatchObject({ ok: false, demo: true });
+      expect(rpc).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it("appends through add_expedition as the owner and confirms ephemerally", async () => {
+    const res = await post(
+      expeditionCommand({ title: "  how do black holes evaporate  " }),
+    );
+    expect(rpc).toHaveBeenCalledTimes(1);
+    expect(rpc).toHaveBeenCalledWith("add_expedition", {
+      p_title: "how do black holes evaporate",
+      p_description: null,
+      p_user: OWNER_USER_ID,
+    });
+    const json = await res.json();
+    expect(json.type).toBe(4);
+    expect(json.data.flags).toBe(64);
+    expect(json.data.content).toBe("expedition added: how do black holes evaporate");
+  });
+
+  it("passes an optional description through to add_expedition", async () => {
+    await post(
+      expeditionCommand({ title: "hawking radiation", description: "start with the paradox" }),
+    );
+    expect(rpc).toHaveBeenCalledWith("add_expedition", {
+      p_title: "hawking radiation",
+      p_description: "start with the paradox",
+      p_user: OWNER_USER_ID,
+    });
+  });
+
+  it("rejects an empty title with no write", async () => {
+    const res = await post(expeditionCommand({ title: "   " }));
+    const json = await res.json();
+    expect(json.data.content).toBe("write a topic first.");
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it("replies with a save failure when the rpc errors", async () => {
+    rpc.mockResolvedValue({ data: null, error: { message: "boom" } });
+    const res = await post(expeditionCommand({ title: "black holes" }));
+    const json = await res.json();
+    expect(json.data.content).toBe("could not add the expedition - try again.");
   });
 });
 
