@@ -209,6 +209,67 @@ export function toProjectShares(
   return weights.map((w) => ({ ...w, share: total === 0 ? 0 : w.weight / total }));
 }
 
+export type ProjectTotals = {
+  projectId: string;
+  projectName: string;
+  color: string | null;
+  entries: number;
+  weight: number;
+  /** Share of the total weight, 0..1 (0 when the total is 0). */
+  share: number;
+  /** ISO date of the earliest Entry, or null with none. */
+  firstLogged: string | null;
+  /** ISO date of the latest Entry, or null with none. */
+  lastLogged: string | null;
+  milestones: number;
+};
+
+/**
+ * All-time per-Project totals (ADR-0020). Seeded from `projects` so a Project
+ * with no Entries still gets a zeroed row; an Entry whose Project is not in
+ * the seed list still produces one. Dominant Project first (weight, then
+ * entries, then name).
+ */
+export function toProjectTotals(
+  entries: readonly EntryWithProject[],
+  projects: readonly Pick<EntryWithProject["project"], "id" | "name" | "color">[] = [],
+): ProjectTotals[] {
+  const byProject = new Map<string, ProjectTotals>();
+  const row = (id: string, name: string, color: string | null): ProjectTotals => {
+    let t = byProject.get(id);
+    if (!t) {
+      t = {
+        projectId: id,
+        projectName: name,
+        color,
+        entries: 0,
+        weight: 0,
+        share: 0,
+        firstLogged: null,
+        lastLogged: null,
+        milestones: 0,
+      };
+      byProject.set(id, t);
+    }
+    return t;
+  };
+  for (const p of projects) row(p.id, p.name, p.color);
+  for (const e of entries) {
+    const t = row(e.project.id, e.project.name, e.project.color);
+    t.entries += 1;
+    t.weight += TIME_WEIGHT[e.time_spent];
+    if (t.firstLogged === null || e.entry_date < t.firstLogged) t.firstLogged = e.entry_date;
+    if (t.lastLogged === null || e.entry_date > t.lastLogged) t.lastLogged = e.entry_date;
+    if (e.milestone !== null) t.milestones += 1;
+  }
+  const totals = [...byProject.values()].sort(
+    (a, b) =>
+      b.weight - a.weight || b.entries - a.entries || a.projectName.localeCompare(b.projectName),
+  );
+  const total = totals.reduce((sum, t) => sum + t.weight, 0);
+  return totals.map((t) => ({ ...t, share: total === 0 ? 0 : t.weight / total }));
+}
+
 /** Convenience: per-day weight map for arbitrary custom views. */
 export function weightByDay(entries: readonly EntryLike[]): Map<string, number> {
   const map = new Map<string, number>();
