@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
+// The monthly analytics components, retained beneath the Progress timeline
+// (ADR-0023); page-level assembly is covered by tests/components/progress.test.tsx.
 import { render, screen, within } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
-import MonthlyPage from "@/app/(log)/monthly/page";
+import { describe, expect, it } from "vitest";
 import { EffortTrend } from "@/components/monthly/effort-trend";
 import { MilestoneList } from "@/components/monthly/milestone-list";
 import { ProjectShare } from "@/components/monthly/project-share";
@@ -14,38 +15,6 @@ import {
   buildWeekdayRows,
 } from "@/components/monthly/prepare";
 import type { TrendPoint } from "@/lib/rollups";
-import type { EntryWithProject } from "@/lib/types";
-
-const getEntriesInRange = vi.fn();
-const getToday = vi.fn();
-
-vi.mock("@/lib/supabase/server", () => ({
-  createClient: vi.fn(async () => ({})),
-}));
-vi.mock("@/lib/queries", () => ({
-  getEntriesInRange: (...args: unknown[]) => getEntriesInRange(...args),
-  getToday: (...args: unknown[]) => getToday(...args),
-}));
-
-function entry(
-  overrides: Partial<EntryWithProject> & { entry_date: string },
-): EntryWithProject {
-  return {
-    id: `e-${overrides.entry_date}-${overrides.project?.name ?? "aim"}`,
-    user_id: "u1",
-    project_id: "p1",
-    time_spent: "medium",
-    milestone: null,
-    description: null,
-    created_at: "2026-06-01T12:00:00Z",
-    project: { id: "p1", name: "AI-M", color: "#7c8cf8", category: null, status: "active" },
-    ...overrides,
-  };
-}
-
-afterEach(() => {
-  vi.clearAllMocks();
-});
 
 describe("stat tiles", () => {
   it("shows the month's headline numbers and split", () => {
@@ -217,52 +186,3 @@ describe("milestone list", () => {
   });
 });
 
-describe("monthly page", () => {
-  it("fetches one union range and renders the requested month", async () => {
-    getToday.mockResolvedValue("2026-06-20");
-    getEntriesInRange.mockResolvedValue([
-      entry({ entry_date: "2026-05-04", milestone: "wired the schema" }),
-      entry({ entry_date: "2026-05-04", time_spent: "large" }),
-      entry({
-        entry_date: "2026-06-02",
-        project: { id: "p2", name: "Turkish", color: "#34d399", category: null, status: "active" },
-      }),
-    ]);
-
-    render(
-      await MonthlyPage({ searchParams: Promise.resolve({ month: "2026-05" }) }),
-    );
-
-    // One fetch, spanning the union of May and the 90-day trend ending today.
-    expect(getEntriesInRange).toHaveBeenCalledTimes(1);
-    expect(getEntriesInRange).toHaveBeenCalledWith({}, "2026-03-23", "2026-06-20");
-
-    expect(screen.getByRole("heading", { name: "May 2026" })).toBeInTheDocument();
-    // May stats: 2 entries on 1 day, 1 large, 1 milestone — June's entry excluded.
-    expect(screen.getByText("Days worked").nextElementSibling).toHaveTextContent("1");
-    expect(screen.getByText("Entries").nextElementSibling).toHaveTextContent("2");
-    expect(screen.getByText("wired the schema")).toBeInTheDocument();
-    // Month nav: May is not the current month, so "This month" escape shows.
-    expect(screen.getByRole("link", { name: "This month" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Previous month" })).toHaveAttribute(
-      "href",
-      "/monthly?month=2026-04",
-    );
-    expect(screen.getByRole("link", { name: "Next month" })).toHaveAttribute(
-      "href",
-      "/monthly?month=2026-06",
-    );
-  });
-
-  it("defaults to today's month in the stored timezone with quiet empty states", async () => {
-    getToday.mockResolvedValue("2026-06-20");
-    getEntriesInRange.mockResolvedValue([]);
-
-    render(await MonthlyPage({ searchParams: Promise.resolve({}) }));
-
-    expect(screen.getByRole("heading", { name: "June 2026" })).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "This month" })).not.toBeInTheDocument();
-    expect(screen.getAllByText("No Entries this month.").length).toBeGreaterThanOrEqual(3);
-    expect(screen.getByText("No Milestones this month.")).toBeInTheDocument();
-  });
-});

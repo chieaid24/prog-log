@@ -68,7 +68,7 @@ async function shoot(page, name) {
 
 try {
   await waitReady("/");
-  await waitReady("/monthly");
+  await waitReady("/progress");
   await waitReady("/projects");
   await waitReady("/expeditions");
 
@@ -104,15 +104,15 @@ try {
     assert.ok(cards >= 5, `calendar cards >= 5 (got ${cards})`);
     await shoot(calendar, "demo-calendar");
 
-    // Monthly breakdown: the shared fetch feeds every chart.
-    const monthly = await openPage("/monthly");
-    await assertBanner(monthly, "/monthly");
-    const monthlyText = await monthly.locator("body").innerText();
-    assert.ok(
-      !monthlyText.includes("Nothing logged in the last 90 days."),
-      "monthly effort trend populated",
-    );
-    await shoot(monthly, "demo-monthly");
+    // Progress: the timeline renders moments and the retained monthly
+    // analytics stay populated from the same all-time fetch.
+    const progress = await openPage("/progress");
+    await assertBanner(progress, "/progress");
+    const momentCards = await progress
+      .locator("section[aria-label='Progress timeline'] article")
+      .count();
+    assert.ok(momentCards >= 1, `progress timeline moments >= 1 (got ${momentCards})`);
+    await shoot(progress, "demo-progress");
 
     // Projects: fixture projects listed, archived history included.
     const projects = await openPage("/projects");
@@ -137,7 +137,7 @@ try {
     await shoot(expeditions, "demo-expeditions");
 
     console.log(
-      "demo probe green: /, /monthly, /projects and /expeditions render populated with the demo banner",
+      "demo probe green: /, /progress, /projects and /expeditions render populated with the demo banner",
     );
   } finally {
     await browser.close();
