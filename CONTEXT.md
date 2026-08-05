@@ -38,6 +38,13 @@ An optional, deemphasized longer "what I actually did" note on an Entry. Rarely
 filled. Distinct from a Milestone — a Description is not surfaced as an Anniversary.
 _Avoid_: notes, detail
 
+**Reflection**:
+A single free-text sentence about the day as a whole — one per day, day-level
+rather than tied to any Project or Entry (ADR-0017; sole write path
+`set_reflection`). Blended with Milestones into the Throwback pool, and, like a
+Milestone, its presence makes a day appear on the Progress timeline.
+_Avoid_: journal, note, diary, summary
+
 **Throwback**:
 A past Milestone resurfaced in the feed with a human relative-age label
 ("3 months ago", "2 years ago"). Selection is intentionally loose and varied — a
@@ -55,3 +62,11 @@ to answer, and answering is reversible (reopen sends it back to the bottom of th
 todo list). Answered Expeditions show most-recent-first with the video's title and
 a small thumbnail.
 _Avoid_: task, todo, question, topic, quest
+
+**Progress**:
+The deliberate all-time browse of the qualitative record at `/progress`
+(ADR-0023): a reverse-chronological timeline of days carrying a Reflection or
+Milestones, topped with streaks and a cumulative-effort curve, with the month's
+analytics retained below. Replaces the old Monthly view (`/monthly` redirects).
+Throwback stays the serendipitous resurface; Progress is the deliberate one.
+_Avoid_: monthly view, history, feed

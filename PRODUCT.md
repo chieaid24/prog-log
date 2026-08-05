@@ -11,8 +11,9 @@ One person: the developer who owns this log (self-hosted, single-user). Two cont
 - **Capture** — logging what they worked on today, usually in a spare few seconds, from
   wherever they are: the web dashboard, a Discord `/log` slash command, or an iPhone
   share-sheet Shortcut. The job is *record it before I forget*, at almost zero friction.
-- **Reflection** — coming back to the dashboard to see the year at a glance (heatmap),
-  monthly breakdowns, momentum/streaks, and Throwbacks (past milestones resurfacing on
+- **Reflection** — coming back to see the year at a glance (heatmap), the Progress
+  timeline (Reflections and Milestones over all time, with monthly breakdowns beneath),
+  momentum/streaks, and Throwbacks (past milestones resurfacing on
   their anniversaries). The job is *feel the accumulation and be reminded of what I've done*.
 
 A secondary, read-only audience sees the public `/now` snapshot as a lightweight portfolio.
@@ -22,13 +23,14 @@ It inherits the same design system rather than getting a separate marketing skin
 
 A self-hosted daily work log and project tracker. Log which Projects got worked on each day
 at a rough Time Commitment (Small / Medium / Large), with optional Milestones. The log then
-pays that back as insight: an effort-weighted contribution heatmap, monthly breakdowns, a
+pays that back as insight: an effort-weighted contribution heatmap, a Progress timeline of
+Reflections and Milestones (with monthly breakdowns beneath it), a
 global streak plus per-project cadence, and Throwbacks. Success is: capture stays effortless
 enough that it actually happens daily, and the accumulated history is rewarding enough to keep
 the habit honest. It runs entirely on free tiers, built to be operated autonomously by agents.
 
 Domain language is fixed in [CONTEXT.md](CONTEXT.md): Project, Entry, Time Commitment,
-Milestone, Description, Throwback. Use those terms exactly; honor their `Avoid` lists.
+Milestone, Description, Reflection, Throwback. Use those terms exactly; honor their `Avoid` lists.
 
 ## Brand Personality
 
