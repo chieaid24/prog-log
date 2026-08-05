@@ -3,8 +3,14 @@ import { render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import ProjectsPage from "@/app/(log)/projects/page";
 import { CommitmentDonut } from "@/components/projects/commitment-donut";
-import { buildDonutSegments } from "@/components/projects/prepare";
-import { toProjectShares } from "@/lib/rollups";
+import { ComparisonBar } from "@/components/projects/comparison-bar";
+import {
+  buildComparisonRows,
+  buildDonutSegments,
+  buildStreakRows,
+} from "@/components/projects/prepare";
+import { StreakStrip } from "@/components/projects/streak-strip";
+import { toProjectShares, toProjectTotals } from "@/lib/rollups";
 import type { EntryWithProject, Project } from "@/lib/types";
 
 const getAllProjects = vi.fn();
@@ -109,6 +115,110 @@ describe("commitment donut", () => {
   });
 });
 
+describe("comparison bar", () => {
+  const aim = project("AI-M");
+  const turkish = { ...project("Turkish"), color: "#bf5b76" };
+  const rows = buildComparisonRows(
+    toProjectTotals(
+      [
+        entry("2026-05-01", "large", aim),
+        entry("2026-06-01", "large", aim),
+        entry("2026-07-01", "medium", turkish),
+      ],
+      [aim, turkish],
+    ),
+  );
+
+  it("mirrors both metrics per project in a screen-reader table", () => {
+    render(<ComparisonBar rows={rows} activeProjectCount={2} />);
+    const table = screen.getByRole("table", {
+      name: "All-time Entries and effort weight per active Project",
+    });
+    const row = within(table).getByRole("rowheader", { name: "AI-M" }).closest("tr")!;
+    const cells = within(row).getAllByRole("cell");
+    expect(cells.map((c) => c.textContent)).toEqual(["2", "6"]);
+  });
+
+  it("keeps a zero-entry active project in the table", () => {
+    const withIdle = buildComparisonRows(
+      toProjectTotals([entry("2026-07-01", "small", aim)], [aim, project("Idle")]),
+    );
+    render(<ComparisonBar rows={withIdle} activeProjectCount={2} />);
+    const table = screen.getByRole("table");
+    const row = within(table).getByRole("rowheader", { name: "Idle" }).closest("tr")!;
+    expect(within(row).getAllByRole("cell").map((c) => c.textContent)).toEqual(["0", "0"]);
+  });
+
+  it("legends the two metrics", () => {
+    render(<ComparisonBar rows={rows} activeProjectCount={2} />);
+    // Once in the visible legend, once as an sr-table column header.
+    expect(screen.getAllByText("Entries")).toHaveLength(2);
+    expect(screen.getAllByText("Effort weight")).toHaveLength(2);
+  });
+
+  it("asks for a first project when none are active", () => {
+    render(<ComparisonBar rows={[]} activeProjectCount={0} />);
+    expect(screen.getByText(/No active Projects yet/)).toBeInTheDocument();
+  });
+
+  it("asks for a first entry when projects exist but nothing is logged", () => {
+    const idleRows = buildComparisonRows(toProjectTotals([], [project("Idle")]));
+    render(<ComparisonBar rows={idleRows} activeProjectCount={1} />);
+    expect(screen.getByText("No Entries logged yet.")).toBeInTheDocument();
+  });
+});
+
+describe("streak strip", () => {
+  const today = "2026-07-10";
+  const aim = project("AI-M");
+  const turkish = { ...project("Turkish"), color: "#bf5b76" };
+
+  function rowsFor(entries: EntryWithProject[], projects: Project[]) {
+    const totals = toProjectTotals(entries, projects);
+    return buildStreakRows(totals, entries, today);
+  }
+
+  it("shows a 2+ day streak clearly with its momentum direction", () => {
+    const rows = rowsFor(
+      [
+        entry("2026-07-08", "small", aim),
+        entry("2026-07-09", "small", aim),
+        entry("2026-07-10", "small", aim),
+        entry("2026-06-20", "small", turkish),
+      ],
+      [aim, turkish],
+    );
+    render(<StreakStrip rows={rows} activeProjectCount={2} />);
+    const list = screen.getByRole("list");
+    const items = within(list).getAllByRole("listitem");
+    expect(items[0]).toHaveTextContent("AI-M");
+    expect(within(items[0]).getByText("3d streak")).toBeInTheDocument();
+    expect(within(items[0]).getByText("3/14")).toBeInTheDocument();
+    expect(within(items[0]).getByText("rising")).toBeInTheDocument();
+    expect(within(items[1]).getByText("0d streak")).toBeInTheDocument();
+    expect(within(items[1]).getByText("cooling")).toBeInTheDocument();
+  });
+
+  it("marks a project with no entries instead of a zero streak", () => {
+    const rows = rowsFor([entry("2026-07-10", "small", aim)], [aim, project("Idle")]);
+    render(<StreakStrip rows={rows} activeProjectCount={2} />);
+    const items = within(screen.getByRole("list")).getAllByRole("listitem");
+    expect(items[1]).toHaveTextContent("Idle");
+    expect(within(items[1]).getByText("No Entries yet")).toBeInTheDocument();
+  });
+
+  it("asks for a first project when none are active", () => {
+    render(<StreakStrip rows={[]} activeProjectCount={0} />);
+    expect(screen.getByText(/No active Projects yet/)).toBeInTheDocument();
+  });
+
+  it("asks for a first entry when projects exist but nothing is logged", () => {
+    const rows = rowsFor([], [project("Idle")]);
+    render(<StreakStrip rows={rows} activeProjectCount={1} />);
+    expect(screen.getByText("No Entries logged yet.")).toBeInTheDocument();
+  });
+});
+
 describe("projects page", () => {
   it("renders the overview above the retained management list", async () => {
     const aim = project("AI-M");
@@ -127,8 +237,15 @@ describe("projects page", () => {
     expect(
       within(overview).getByRole("heading", { name: "Time Commitment share" }),
     ).toBeInTheDocument();
+    expect(
+      within(overview).getByRole("heading", { name: "Project comparison" }),
+    ).toBeInTheDocument();
+    expect(
+      within(overview).getByRole("heading", { name: "Streaks and momentum" }),
+    ).toBeInTheDocument();
     // Archived projects stay out of the all-time donut...
-    const legend = within(overview).getByRole("list");
+    const donut = within(overview).getByRole("region", { name: "Time Commitment share" });
+    const legend = within(donut).getByRole("list");
     expect(within(legend).getByText("AI-M").textContent).toContain("100%");
     expect(within(legend).queryByText("Retired")).not.toBeInTheDocument();
     // ...but the management list below keeps them, with usage intact.

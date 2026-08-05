@@ -6,6 +6,7 @@ import {
   toMonthlyStats,
   toProjectMonthSplits,
   toProjectShares,
+  toProjectTotals,
   toTrend,
   toWeekdayPattern,
 } from "@/lib/rollups";
@@ -179,5 +180,86 @@ describe("toProjectShares", () => {
 
   it("returns nothing all-time for no entries", () => {
     expect(toProjectShares([])).toEqual([]);
+  });
+});
+
+describe("toProjectTotals", () => {
+  const seed = (name: string) => ({ id: `p-${name}`, name, color: "#7c8cf8" });
+
+  it("returns nothing for no entries and no seed projects", () => {
+    expect(toProjectTotals([])).toEqual([]);
+  });
+
+  it("zeroes a seeded project with no entries", () => {
+    expect(toProjectTotals([], [seed("Idle")])).toEqual([
+      {
+        projectId: "p-Idle",
+        projectName: "Idle",
+        color: "#7c8cf8",
+        entries: 0,
+        weight: 0,
+        share: 0,
+        firstLogged: null,
+        lastLogged: null,
+        milestones: 0,
+      },
+    ]);
+  });
+
+  it("totals a single dense project: counts, weight, span, milestones, full share", () => {
+    const totals = toProjectTotals([
+      entry("2026-07-01", "small", "AI-M"),
+      entry("2026-07-02", "medium", "AI-M", "shipped v1"),
+      entry("2026-07-03", "large", "AI-M"),
+      entry("2026-07-04", "large", "AI-M", "shipped v2"),
+    ]);
+    expect(totals).toEqual([
+      expect.objectContaining({
+        projectName: "AI-M",
+        entries: 4,
+        weight: 9,
+        share: 1,
+        firstLogged: "2026-07-01",
+        lastLogged: "2026-07-04",
+        milestones: 2,
+      }),
+    ]);
+  });
+
+  it("splits shares across sparse projects and keeps a zero-entry seed last", () => {
+    const totals = toProjectTotals(
+      [
+        entry("2026-01-05", "large", "AI-M"),
+        entry("2026-06-20", "large", "AI-M"),
+        entry("2026-03-10", "medium", "Turkish"),
+      ],
+      [seed("AI-M"), seed("Turkish"), seed("Idle")],
+    );
+    expect(totals.map((t) => t.projectName)).toEqual(["AI-M", "Turkish", "Idle"]);
+    expect(totals[0]).toMatchObject({
+      weight: 6,
+      share: 0.75,
+      firstLogged: "2026-01-05",
+      lastLogged: "2026-06-20",
+    });
+    expect(totals[1]).toMatchObject({ weight: 2, share: 0.25 });
+    expect(totals[2]).toMatchObject({ entries: 0, weight: 0, share: 0 });
+  });
+
+  it("orders dominant first: weight, then entries, then name", () => {
+    const totals = toProjectTotals([
+      entry("2026-07-01", "small", "Turkish"),
+      entry("2026-07-02", "small", "Turkish"),
+      entry("2026-07-01", "medium", "AI-M"),
+      entry("2026-07-03", "small", "Work"),
+      entry("2026-07-04", "small", "Alpha"),
+    ]);
+    expect(totals.map((t) => t.projectName)).toEqual(["Turkish", "AI-M", "Alpha", "Work"]);
+  });
+
+  it("counts an entry whose project is missing from the seed list", () => {
+    const totals = toProjectTotals([entry("2026-07-01", "small", "Stray")], [seed("Idle")]);
+    expect(totals.map((t) => t.projectName)).toEqual(["Stray", "Idle"]);
+    expect(totals[0]).toMatchObject({ entries: 1, weight: 1, share: 1 });
   });
 });
