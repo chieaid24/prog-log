@@ -26,11 +26,13 @@ timeline, streaks — and Throwbacks: past milestones resurfacing on their anniv
 
 ## Stack
 
-Next.js 15 (App Router, TypeScript) · Supabase (Postgres, RLS, magic-link auth) ·
+Next.js 16 (App Router, TypeScript) · Supabase (Postgres, RLS, magic-link auth) ·
 Tailwind · Recharts + custom SVG · Discord Interactions API · Vercel (Hobby) + GitHub
 Actions. Runs entirely on free tiers.
 
 ## Development
+
+Use Node.js 20.9 or newer.
 
 ```bash
 npm ci

@@ -155,6 +155,15 @@ describe("reordering the open list", () => {
     );
     expect(openTitles()).toEqual(["Beta", "Alpha", "Gamma"]);
   });
+
+  it("replaces optimistic order after server revalidation", () => {
+    const [a, b] = [expedition("Alpha"), expedition("Beta")];
+    const { rerender } = render(<ExpeditionManager open={[a, b]} answered={[]} />);
+
+    rerender(<ExpeditionManager open={[b, a]} answered={[]} />);
+
+    expect(openTitles()).toEqual(["Beta", "Alpha"]);
+  });
 });
 
 describe("answering an Expedition", () => {

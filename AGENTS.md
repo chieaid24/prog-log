@@ -4,7 +4,7 @@ This project is built to be run **autonomously by agents**. The human is a revie
 Everything below exists so that any agent can cold-start, know the state of the world, do real
 work, prove it, and leave a trail. **These rules are non-negotiable. Follow them exactly.**
 
-> What we're building: a self-hosted daily work log (Next.js 15 + Supabase) with an "on this day"
+> What we're building: a self-hosted daily work log (Next.js 16 + Supabase) with an "on this day"
 > anniversary feed, a contribution-style heatmap, and zero-friction capture from a Discord bot and
 > an Apple Shortcut. Full spec: **[`worklog-prd (1).md`](worklog-prd%20(1).md)** — the PRD is the
 > source of truth for *what* to build (see §7 for the build phases).
@@ -162,7 +162,7 @@ docs/
 
 ## Stack (from the PRD)
 
-Next.js 15 (App Router) on Vercel Hobby · Supabase (Postgres + Auth, magic link) with RLS ·
+Next.js 16 (App Router, Node.js 20.9+) on Vercel Hobby · Supabase (Postgres + Auth, magic link) with RLS ·
 Tailwind · Recharts/custom SVG · Discord Interactions API + Apple Shortcuts for capture ·
 GitHub Actions cron keep-alive. Everything runs on free tiers. Use the Supabase **service role key
 server-side only**; the browser uses the anon key + RLS.
@@ -212,3 +212,13 @@ Work is a **dependency-aware GitHub Issues queue** (on `origin`), not a `/tasks`
 - `DESIGN.md` (repo root) is the **binding design system** — every agent touching UI reads it first and conforms. A request that conflicts with it is flagged, not silently diverged from. It is committed and shared alongside `PRODUCT.md` (the strategic context) and this operating manual.
 - Evolve the system by re-running the design interview and editing `DESIGN.md` in a PR — never fork design choices per feature.
 - If `/impeccable` is installed, drive UI work through it (`/impeccable craft`, `critique`, `polish`, `document`); it auto-loads `DESIGN.md` from the repo root.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

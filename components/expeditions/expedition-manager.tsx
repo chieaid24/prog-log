@@ -22,7 +22,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import {
   addExpeditionAction,
   answerExpeditionAction,
@@ -45,9 +45,17 @@ type Props = {
 export function ExpeditionManager({ open: openProp, answered: answeredProp }: Props) {
   const [open, setOpen] = useState(openProp);
   const [answered, setAnswered] = useState(answeredProp);
-  // Re-sync after each server revalidation so the optimistic lists never drift.
-  useEffect(() => setOpen(openProp), [openProp]);
-  useEffect(() => setAnswered(answeredProp), [answeredProp]);
+  const [lastOpenProp, setLastOpenProp] = useState(openProp);
+  const [lastAnsweredProp, setLastAnsweredProp] = useState(answeredProp);
+
+  if (openProp !== lastOpenProp) {
+    setLastOpenProp(openProp);
+    setOpen(openProp);
+  }
+  if (answeredProp !== lastAnsweredProp) {
+    setLastAnsweredProp(answeredProp);
+    setAnswered(answeredProp);
+  }
 
   const [reorderError, setReorderError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
