@@ -3,6 +3,7 @@
 // comparison bar): current consecutive-day run plus rising/steady/cooling
 // from two trailing 14-day windows (shared ADR-0011 math). Identity is the
 // chip (dot + name); direction pairs a glyph with its word, never color alone.
+import Link from "next/link";
 import { ProjectChip } from "@/components/ui/project-chip";
 import type { StreakRow } from "./prepare";
 
@@ -57,13 +58,14 @@ export function StreakStrip({ rows, activeProjectCount }: Props) {
           {rows.map((row) => {
             const d = DIRECTION[row.momentum.direction];
             return (
-              <li
-                key={row.projectId}
-                className="flex items-center gap-2 py-2 first:pt-0 last:pb-0"
-              >
-                <ProjectChip name={row.name} color={row.color} />
-                {row.hasEntries ? (
-                  <span className="ml-auto flex items-center gap-3 font-mono text-xs tabular-nums">
+              <li key={row.projectId} className="py-1 first:pt-0 last:pb-0">
+                <Link
+                  href={`/projects/${row.projectId}`}
+                  className="flex min-w-0 flex-wrap items-center gap-2 rounded-lg py-1 transition-colors hover:bg-surface-sunken focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-frog-green pointer-coarse:min-h-11"
+                >
+                  <ProjectChip name={row.name} color={row.color} />
+                  {row.hasEntries ? (
+                    <span className="ml-auto flex items-center gap-3 font-mono text-xs tabular-nums">
                     <span
                       className={row.streak >= 2 ? "text-frog-green-strong" : "text-ink-muted"}
                       title={`${row.streak} consecutive logged ${row.streak === 1 ? "day" : "days"}`}
@@ -82,10 +84,11 @@ export function StreakStrip({ rows, activeProjectCount }: Props) {
                       </svg>
                       {d.label}
                     </span>
-                  </span>
-                ) : (
-                  <span className="ml-auto text-xs text-ink-muted">No Entries yet</span>
-                )}
+                    </span>
+                  ) : (
+                    <span className="ml-auto text-xs text-ink-muted">No Entries yet</span>
+                  )}
+                </Link>
               </li>
             );
           })}

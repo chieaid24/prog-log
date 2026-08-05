@@ -24,6 +24,9 @@ type Props = {
   range?: HeatmapRange;
   calendarMonth?: string;
   preservedDay?: string | null;
+  title?: string;
+  showControls?: boolean;
+  emptyMessage?: string;
 };
 
 export function YearHeatmap({
@@ -32,6 +35,9 @@ export function YearHeatmap({
   range = resolveHeatmapRange(todayISO),
   calendarMonth,
   preservedDay,
+  title = "Recent activity",
+  showControls = true,
+  emptyMessage = "Nothing logged yet. Ferdy is waiting for your first Entry.",
 }: Props) {
   const step = CELL + GAP;
   const byDate = new Map(cells.map((cell) => [cell.date, cell]));
@@ -55,47 +61,49 @@ export function YearHeatmap({
   return (
     <div>
       <header className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-sm font-semibold tracking-tight">Recent activity</h2>
-        <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
-          <nav aria-label="Heatmap year navigation" className="flex items-center gap-1 text-sm">
-            <Link
-              href={heatmapHref(previousYear, calendarMonth, preservedDay)}
-              aria-label={`Show ${previousYear}`}
-              className="rounded-md border border-border bg-surface px-2 py-1 text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:px-3 pointer-coarse:py-3"
-            >
-              &larr;
-            </Link>
-            <Link
-              href={trailingHref}
-              aria-current={range.year === null ? "page" : undefined}
-              className="rounded-md border border-border bg-surface px-2 py-1 text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:px-3 pointer-coarse:py-3"
-            >
-              This year
-            </Link>
-            {nextHref ? (
+        <h2 className="text-sm font-semibold tracking-tight">{title}</h2>
+        {showControls && (
+          <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
+            <nav aria-label="Heatmap year navigation" className="flex items-center gap-1 text-sm">
               <Link
-                href={nextHref}
-                aria-label="Show next year"
+                href={heatmapHref(previousYear, calendarMonth, preservedDay)}
+                aria-label={`Show ${previousYear}`}
                 className="rounded-md border border-border bg-surface px-2 py-1 text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:px-3 pointer-coarse:py-3"
               >
-                &rarr;
+                &larr;
               </Link>
-            ) : (
-              <span
-                aria-label="No newer activity"
-                aria-disabled="true"
-                className="rounded-md border border-border bg-surface px-2 py-1 text-ink-faint pointer-coarse:px-3 pointer-coarse:py-3"
+              <Link
+                href={trailingHref}
+                aria-current={range.year === null ? "page" : undefined}
+                className="rounded-md border border-border bg-surface px-2 py-1 text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:px-3 pointer-coarse:py-3"
               >
-                &rarr;
-              </span>
-            )}
-          </nav>
-          <ViewToggle
-            current="heatmap"
-            heatmapHref={currentHeatmapHref}
-            calendarHref={calendarHref}
-          />
-        </div>
+                This year
+              </Link>
+              {nextHref ? (
+                <Link
+                  href={nextHref}
+                  aria-label="Show next year"
+                  className="rounded-md border border-border bg-surface px-2 py-1 text-ink-muted transition-colors hover:border-border-strong hover:text-ink pointer-coarse:px-3 pointer-coarse:py-3"
+                >
+                  &rarr;
+                </Link>
+              ) : (
+                <span
+                  aria-label="No newer activity"
+                  aria-disabled="true"
+                  className="rounded-md border border-border bg-surface px-2 py-1 text-ink-faint pointer-coarse:px-3 pointer-coarse:py-3"
+                >
+                  &rarr;
+                </span>
+              )}
+            </nav>
+            <ViewToggle
+              current="heatmap"
+              heatmapHref={currentHeatmapHref}
+              calendarHref={calendarHref}
+            />
+          </div>
+        )}
       </header>
 
       <div data-testid="heatmap-fit" className="w-full">
@@ -169,7 +177,7 @@ export function YearHeatmap({
         ) : (
           <p className="flex items-center gap-2.5 text-xs text-ink-muted">
             <Frog size={28} />
-            Nothing logged yet. Ferdy is waiting for your first Entry.
+            {emptyMessage}
           </p>
         )}
         <div

@@ -205,6 +205,17 @@ describe("streak strip", () => {
     const items = within(screen.getByRole("list")).getAllByRole("listitem");
     expect(items[1]).toHaveTextContent("Idle");
     expect(within(items[1]).getByText("No Entries yet")).toBeInTheDocument();
+    expect(within(items[1]).getByRole("link")).toHaveAttribute("href", "/projects/idle");
+  });
+
+  it("links every streak row to its Project detail", () => {
+    const rows = rowsFor([entry("2026-07-10", "small", aim)], [aim, turkish]);
+    render(<StreakStrip rows={rows} activeProjectCount={2} />);
+    const links = within(screen.getByRole("list")).getAllByRole("link");
+    expect(links.map((link) => link.getAttribute("href"))).toEqual([
+      "/projects/ai-m",
+      "/projects/turkish",
+    ]);
   });
 
   it("asks for a first project when none are active", () => {

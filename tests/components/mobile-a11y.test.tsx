@@ -76,6 +76,26 @@ describe("primary navigation", () => {
     );
   });
 
+  it("keeps Projects active on a Project detail route", () => {
+    pathname = "/projects/p1";
+    render(
+      <div>
+        <LogNav />
+        <TabBar />
+      </div>,
+    );
+
+    for (const nav of screen.getAllByRole("navigation", { name: "Primary" })) {
+      expect(within(nav).getByRole("link", { name: "Projects" })).toHaveAttribute(
+        "aria-current",
+        "page",
+      );
+      expect(within(nav).getByRole("link", { name: "Log" })).not.toHaveAttribute(
+        "aria-current",
+      );
+    }
+  });
+
   it("collapses responsively: tab bar is phone-only, top nav is md-up", () => {
     render(
       <div>
