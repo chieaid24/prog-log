@@ -263,7 +263,9 @@ describe("projects page", () => {
     const active = screen.getByRole("region", { name: "Active projects" });
     const archived = screen.getByRole("region", { name: "Archived projects" });
     expect(within(active).getByText("AI-M")).toBeInTheDocument();
-    expect(within(active).getByText(/1 entry/)).toBeInTheDocument();
+    expect(
+      within(active).getByText("1", { selector: ".font-mono" }).parentElement,
+    ).toHaveTextContent(/1 entry\b/);
     expect(within(archived).getByText("Retired")).toBeInTheDocument();
   });
 });

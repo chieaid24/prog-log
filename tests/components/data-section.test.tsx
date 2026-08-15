@@ -33,6 +33,13 @@ describe("data section", () => {
     );
   });
 
+  it("renders import as a secondary action, not a second green primary (UA-029)", () => {
+    render(<DataSection />);
+    const importButton = screen.getByRole("button", { name: "Import" });
+    expect(importButton).not.toHaveClass("bg-frog-green");
+    expect(importButton).toHaveClass("border-border");
+  });
+
   it("disables import until a file is chosen, then posts it and shows the summary", async () => {
     importEntriesAction.mockResolvedValue({
       ok: true,

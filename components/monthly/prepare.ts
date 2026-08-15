@@ -31,27 +31,35 @@ export function parseMonthParam(param: string | undefined, todayISO: string): st
   return `${todayISO.slice(0, 7)}-01`;
 }
 
-/** Days covered by the effort trend, ending today (inclusive). */
+/** Days covered by the effort trend, ending at the trend anchor (inclusive). */
 export const TREND_DAYS = 90;
 
 export type MonthWindow = {
   monthStart: string;
   monthEnd: string;
-  /** First day of the effort trend (TREND_DAYS ending today). */
+  /** First day of the effort trend (TREND_DAYS ending at trendTo). */
   trendFrom: string;
+  /** Last day of the effort trend: month end for past months, today otherwise. */
+  trendTo: string;
   /** Single fetch range covering both the displayed month and the trend. */
   from: string;
   to: string;
 };
 
-/** One fetch serves the whole page: the union of month and trend ranges. */
+/**
+ * One fetch serves the whole page: the union of month and trend ranges.
+ * The trend anchors to the browsed month so past months show their own
+ * 90-day run-up, not a duplicate of today's.
+ */
 export function monthWindow(monthStart: string, todayISO: string): MonthWindow {
   const monthEnd = endOfMonth(monthStart);
-  const trendFrom = addDays(todayISO, -(TREND_DAYS - 1));
+  const trendTo = monthEnd < todayISO ? monthEnd : todayISO;
+  const trendFrom = addDays(trendTo, -(TREND_DAYS - 1));
   return {
     monthStart,
     monthEnd,
     trendFrom,
+    trendTo,
     from: monthStart < trendFrom ? monthStart : trendFrom,
     to: monthEnd > todayISO ? monthEnd : todayISO,
   };

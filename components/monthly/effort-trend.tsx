@@ -7,6 +7,8 @@ import { CHART_GRID, CHART_TEXT, monthTicks, shortDate, shortMonthLabel } from "
 
 type Props = {
   points: TrendPoint[];
+  /** Window description; defaults to the today-anchored copy. */
+  subtitle?: string;
 };
 
 const WIDTH = 720;
@@ -15,10 +17,10 @@ const PAD_TOP = 8;
 const PAD_BOTTOM = 20;
 const PLOT_HEIGHT = HEIGHT - PAD_TOP - PAD_BOTTOM;
 
-const BAR_COLOR = "var(--heat-1)";
+const BAR_COLOR = "var(--heat-2)";
 const LINE_COLOR = "var(--frog-green-strong)";
 
-export function EffortTrend({ points }: Props) {
+export function EffortTrend({ points, subtitle = "Last 90 days. Is my effort rising or falling?" }: Props) {
   const empty = points.every((p) => p.weight === 0);
   const max = Math.max(...points.map((p) => Math.max(p.weight, p.rolling)), 1);
   const step = WIDTH / Math.max(points.length, 1);
@@ -44,7 +46,7 @@ export function EffortTrend({ points }: Props) {
           <h2 id="effort-trend-title" className="text-sm font-semibold text-ink">
             Effort trend
           </h2>
-          <p className="text-xs text-ink-muted">Last 90 days. Is my effort rising or falling?</p>
+          <p className="text-xs text-ink-muted">{subtitle}</p>
         </div>
         {!empty && latest && (
           <p className="text-xs text-ink-muted">
@@ -56,7 +58,7 @@ export function EffortTrend({ points }: Props) {
         )}
       </div>
       {empty ? (
-        <p className="mt-3 text-sm text-ink-muted">Nothing logged in the last 90 days.</p>
+        <p className="mt-3 text-sm text-ink-muted">Nothing logged in these 90 days.</p>
       ) : (
         <>
           {/* 90 daily bars need real width to stay legible: on narrow

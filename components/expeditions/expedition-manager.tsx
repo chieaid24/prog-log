@@ -228,7 +228,7 @@ function Composer({ onAdded }: { onAdded: (x: Expedition) => void }) {
         <button
           type="submit"
           disabled={pending || title.trim().length === 0}
-          className="rounded-lg bg-frog-green px-4 py-2 text-sm font-semibold text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-40 pointer-coarse:py-3"
+          className="rounded-lg bg-frog-green px-4 py-2 text-sm font-semibold text-on-green transition-colors enabled:hover:bg-frog-green-strong disabled:bg-surface-sunken disabled:text-ink-faint pointer-coarse:py-3"
         >
           {pending ? "Adding..." : "Add Expedition"}
         </button>
@@ -407,7 +407,7 @@ function AnswerForm({
       <button
         type="submit"
         disabled={pending || url.trim().length === 0}
-        className="rounded-lg bg-frog-green px-4 py-2 text-sm font-semibold text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-40 pointer-coarse:py-3"
+        className="rounded-lg bg-frog-green px-4 py-2 text-sm font-semibold text-on-green transition-colors enabled:hover:bg-frog-green-strong disabled:bg-surface-sunken disabled:text-ink-faint pointer-coarse:py-3"
       >
         {pending ? "Attaching..." : "Attach video"}
       </button>
@@ -476,7 +476,7 @@ function EditForm({
         <button
           type="submit"
           disabled={pending || title.trim().length === 0}
-          className="rounded-lg bg-frog-green px-4 py-2 text-sm font-semibold text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-40 pointer-coarse:py-3"
+          className="rounded-lg bg-frog-green px-4 py-2 text-sm font-semibold text-on-green transition-colors enabled:hover:bg-frog-green-strong disabled:bg-surface-sunken disabled:text-ink-faint pointer-coarse:py-3"
         >
           {pending ? "Saving..." : "Save"}
         </button>

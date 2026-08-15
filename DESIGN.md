@@ -285,6 +285,7 @@ space or a hairline instead.
 - **Hover / Focus:** background shifts to `Frog Green Strong`; `:focus-visible` shows a 2px `Frog Green` ring at `2px` offset. Never remove focus outlines, only restyle.
 - **Soft:** `Frog Green Soft` background, `Frog Green Strong` text, for secondary affirmatives.
 - **Ghost:** `surface` background, `1px border`, `ink` text; hover raises the border to `Border Strong`. For tertiary/quiet actions.
+- **Disabled:** a primary drops its green entirely: `surface-sunken` background, `Ink Faint` text (matching disabled inputs). Never a dimmed green fill, which reads as an active button with an illegible label. Ghost/soft variants dim to 50% opacity instead.
 
 ### Chips
 - **Style:** `surface` background, `1px border`, `Ink Muted` text, fully rounded (`full`), `2px 8px`, mono-ish label size.
@@ -336,7 +337,7 @@ space or a hairline instead.
 
 ### The Frog (signature)
 - An **8-bit / pixel-art frog on a log**, rendered as crisp pixel SVG (`image-rendering: pixelated`, `shape-rendering: crispEdges`), green body over `Log Brown`.
-- **Where it appears:** the wordmark, empty states ("no Entries yet, the frog is waiting"), the milestone moment, the `/now` portfolio header, and 404/loading. One frog per view, never a field of them.
+- **Where it appears:** the wordmark, full-page or whole-card empty states ("no Entries yet, the frog is waiting"), the milestone moment, the `/now` portfolio header, and 404/loading. Narrow in-card empties (a day panel, a single chart) stay plain `Ink Muted` text. One frog per view, never a field of them.
 - **Motion:** at most a small idle blink or a single hop when a milestone lands. Fully governed by `prefers-reduced-motion`, which drops it to a static frog.
 - **A11y:** decorative beside text, `aria-hidden`; standalone, a short `alt`.
 

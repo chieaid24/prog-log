@@ -78,7 +78,7 @@ export default async function ProgressPage({ searchParams }: { searchParams: Sea
   const stackRows = buildStackRows(toProjectMonthSplits(entries, monthStart));
   const shareSegments = buildShareSegments(toProjectShares(entries, monthStart));
   const weekdayRows = buildWeekdayRows(toWeekdayPattern(inMonth));
-  const trendPoints = toTrend(entries, window.trendFrom, today);
+  const trendPoints = toTrend(entries, window.trendFrom, window.trendTo);
   const milestoneRows = buildMilestoneRows(inMonth);
 
   return (
@@ -137,7 +137,14 @@ export default async function ProgressPage({ searchParams }: { searchParams: Sea
 
         <StatTiles stat={stat} split={split} />
 
-        <EffortTrend points={trendPoints} />
+        <EffortTrend
+          points={trendPoints}
+          subtitle={
+            nav.isCurrentMonth
+              ? undefined
+              : `The 90 days to the end of ${nav.title}. Was my effort rising or falling?`
+          }
+        />
 
         <div className="grid gap-5 lg:grid-cols-[repeat(2,minmax(0,1fr))]">
           <ProjectStack rows={stackRows} />

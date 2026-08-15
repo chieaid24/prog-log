@@ -166,7 +166,7 @@ export function MonthCalendar({
                               <span
                                 aria-label="Has milestone"
                                 title="Milestone"
-                                className="text-[9px] text-frog-green-strong"
+                                className="text-[11px] text-frog-green-strong"
                               >
                                 ✦
                               </span>

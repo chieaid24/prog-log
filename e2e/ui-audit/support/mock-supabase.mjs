@@ -149,7 +149,38 @@ const project_aliases = [
   { id: uuidFrom("alias:aim"), user_id: OWNER, project_id: active[1].id, alias: "aim", created_at: `${addDays(TODAY, -300)}T12:00:00+00:00` },
 ];
 
-const TABLES = { projects, entries, app_settings, project_aliases, daily_reflections };
+const expeditions = [
+  {
+    id: uuidFrom("exp:open"),
+    user_id: OWNER,
+    title: "Can the capture flow go fully hands-free?",
+    description: "Try voice-only logging for a week.",
+    status: "open",
+    position: 1,
+    youtube_url: null,
+    youtube_video_id: null,
+    youtube_title: null,
+    answered_at: null,
+    created_at: `${addDays(TODAY, -40)}T12:00:00+00:00`,
+    updated_at: `${addDays(TODAY, -40)}T12:00:00+00:00`,
+  },
+  {
+    id: uuidFrom("exp:answered"),
+    user_id: OWNER,
+    title: "Does a daily digest keep the streak alive?",
+    description: null,
+    status: "answered",
+    position: 2,
+    youtube_url: null,
+    youtube_video_id: null,
+    youtube_title: null,
+    answered_at: `${addDays(TODAY, -12)}T12:00:00+00:00`,
+    created_at: `${addDays(TODAY, -60)}T12:00:00+00:00`,
+    updated_at: `${addDays(TODAY, -12)}T12:00:00+00:00`,
+  },
+];
+
+const TABLES = { projects, entries, app_settings, project_aliases, daily_reflections, expeditions };
 
 // --- GoTrue subset -------------------------------------------------------
 
