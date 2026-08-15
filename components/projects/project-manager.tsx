@@ -279,10 +279,16 @@ function ProjectRow({
               {project.category}
             </span>
           )}
-          <span className="font-mono text-xs text-ink-muted">
-            {usage && usage.entries > 0
-              ? `${usage.entries} ${usage.entries === 1 ? "entry" : "entries"} · last logged ${humanizeAge(usage.lastLoggedDaysAgo ?? 0)}`
-              : "never logged"}
+          <span className="text-xs text-ink-muted">
+            {usage && usage.entries > 0 ? (
+              <>
+                <span className="font-mono">{usage.entries}</span>{" "}
+                {usage.entries === 1 ? "entry" : "entries"} · last logged{" "}
+                {humanizeAge(usage.lastLoggedDaysAgo ?? 0)}
+              </>
+            ) : (
+              "never logged"
+            )}
           </span>
         </Link>
         <span className="ml-auto flex gap-2">

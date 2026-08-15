@@ -80,7 +80,11 @@ describe("project manager", () => {
     const archived = screen.getByRole("region", { name: "Archived projects" });
     expect(within(active).getByText("Turkish")).toBeInTheDocument();
     expect(within(archived).getByText("Mandarin")).toBeInTheDocument();
-    expect(within(active).getByText(/12 entries · last logged 2 days ago/)).toBeInTheDocument();
+    // Mono-for-Measurement: the counted number is mono, the words around it sans.
+    const count = within(active).getByText("12");
+    expect(count).toHaveClass("font-mono");
+    expect(count.parentElement).not.toHaveClass("font-mono");
+    expect(count.parentElement).toHaveTextContent("12 entries · last logged 2 days ago");
     expect(within(archived).getByText("never logged")).toBeInTheDocument();
     expect(within(active).getByRole("link", { name: /Turkish/ })).toHaveAttribute(
       "href",
