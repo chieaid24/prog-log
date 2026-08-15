@@ -86,7 +86,7 @@ export function DataSection() {
           <button
             type="submit"
             disabled={pending || !fileName}
-            className="rounded-lg bg-frog-green px-4 py-2 text-sm font-semibold text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-40 pointer-coarse:py-3"
+            className="rounded-lg border border-border px-4 py-2 text-sm text-ink-muted transition-colors enabled:hover:border-border-strong enabled:hover:text-ink disabled:opacity-50 pointer-coarse:py-3"
           >
             {pending ? "Importing…" : "Import"}
           </button>
