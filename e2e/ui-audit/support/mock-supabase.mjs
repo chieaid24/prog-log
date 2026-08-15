@@ -128,12 +128,59 @@ putEntry(yearAgo, active[2], "large", "finished the thesis proposal draft", null
 
 const app_settings = [{ user_id: OWNER, timezone: TZ }];
 
+// Reflections on ~1 in 5 fixture days (ADR-0017), deterministic like entries.
+const daily_reflections = [];
+for (let i = 420; i >= 0; i--) {
+  const day = addDays(TODAY, -i);
+  const roll = hash(day + "|reflection") % 100;
+  if (roll < 20) {
+    daily_reflections.push({
+      user_id: OWNER,
+      entry_date: day,
+      reflection: roll < 5 ? "long day but the pieces finally fit" : "steady progress, nothing dramatic",
+      created_at: `${day}T21:00:00+00:00`,
+      updated_at: `${day}T21:00:00+00:00`,
+    });
+  }
+}
+
 const project_aliases = [
   { id: uuidFrom("alias:pl"), user_id: OWNER, project_id: active[0].id, alias: "pl", created_at: `${addDays(TODAY, -300)}T12:00:00+00:00` },
   { id: uuidFrom("alias:aim"), user_id: OWNER, project_id: active[1].id, alias: "aim", created_at: `${addDays(TODAY, -300)}T12:00:00+00:00` },
 ];
 
-const TABLES = { projects, entries, app_settings, project_aliases };
+const expeditions = [
+  {
+    id: uuidFrom("exp:open"),
+    user_id: OWNER,
+    title: "Can the capture flow go fully hands-free?",
+    description: "Try voice-only logging for a week.",
+    status: "open",
+    position: 1,
+    youtube_url: null,
+    youtube_video_id: null,
+    youtube_title: null,
+    answered_at: null,
+    created_at: `${addDays(TODAY, -40)}T12:00:00+00:00`,
+    updated_at: `${addDays(TODAY, -40)}T12:00:00+00:00`,
+  },
+  {
+    id: uuidFrom("exp:answered"),
+    user_id: OWNER,
+    title: "Does a daily digest keep the streak alive?",
+    description: null,
+    status: "answered",
+    position: 2,
+    youtube_url: null,
+    youtube_video_id: null,
+    youtube_title: null,
+    answered_at: `${addDays(TODAY, -12)}T12:00:00+00:00`,
+    created_at: `${addDays(TODAY, -60)}T12:00:00+00:00`,
+    updated_at: `${addDays(TODAY, -12)}T12:00:00+00:00`,
+  },
+];
+
+const TABLES = { projects, entries, app_settings, project_aliases, daily_reflections, expeditions };
 
 // --- GoTrue subset -------------------------------------------------------
 
