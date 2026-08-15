@@ -131,7 +131,21 @@ describe("effort trend", () => {
         ]}
       />,
     );
-    expect(screen.getByText("Nothing logged in the last 90 days.")).toBeInTheDocument();
+    expect(screen.getByText("Nothing logged in these 90 days.")).toBeInTheDocument();
+  });
+
+  it("shows the default subtitle, overridden when browsing a past month", () => {
+    const { rerender } = render(<EffortTrend points={points} />);
+    expect(screen.getByText("Last 90 days. Is my effort rising or falling?")).toBeInTheDocument();
+    rerender(
+      <EffortTrend
+        points={points}
+        subtitle="The 90 days to the end of March 2026. Was my effort rising or falling?"
+      />,
+    );
+    expect(
+      screen.getByText("The 90 days to the end of March 2026. Was my effort rising or falling?"),
+    ).toBeInTheDocument();
   });
 
   it("keeps a month tick near the left edge inside the viewBox", () => {

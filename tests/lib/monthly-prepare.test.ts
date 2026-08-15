@@ -163,16 +163,19 @@ describe("buildShareSegments", () => {
 });
 
 describe("monthWindow", () => {
-  it("unions the displayed month with the 90-day trend range", () => {
+  it("anchors the trend to a past month's end, not today", () => {
     const w = monthWindow("2026-03-01", TODAY);
     expect(w.monthEnd).toBe("2026-03-31");
-    expect(w.trendFrom).toBe("2026-04-04"); // 90 days ending 2026-07-02
-    expect(w.from).toBe("2026-03-01"); // month is earlier than the trend
+    expect(w.trendTo).toBe("2026-03-31"); // browsed month is over: trend ends with it
+    expect(w.trendFrom).toBe("2026-01-01"); // 90 days ending 2026-03-31
+    expect(w.from).toBe("2026-01-01"); // trend start is earlier than the month
     expect(w.to).toBe(TODAY); // today is later than the month end
   });
 
-  it("covers the trend alone when viewing the current month", () => {
+  it("anchors the trend to today when viewing the current month", () => {
     const w = monthWindow("2026-07-01", TODAY);
+    expect(w.trendTo).toBe(TODAY);
+    expect(w.trendFrom).toBe("2026-04-04"); // 90 days ending 2026-07-02
     expect(w.from).toBe("2026-04-04");
     expect(w.to).toBe("2026-07-31"); // month end is later than today
   });
