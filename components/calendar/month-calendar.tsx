@@ -93,8 +93,11 @@ export function MonthCalendar({
         </div>
       </header>
 
+      {/* 700px floor = 100px columns: typical names stay whole beside the
+          time letter or a milestone star; at the old 640px floor roughly half
+          of them ellipsized (issue #22). */}
       <div className="overflow-x-auto">
-        <div className="min-w-[640px]">
+        <div className="min-w-[700px]">
           <div className="grid grid-cols-7 border-b border-border pb-1">
             {WEEKDAYS.map((w) => (
               <div key={w} className="px-2 text-right font-mono text-[11px] font-medium text-ink-muted">
@@ -145,6 +148,7 @@ export function MonthCalendar({
                             key={card.projectId}
                             href={dayHref(monthStart, day)}
                             data-testid="calendar-card"
+                            title={card.projectName}
                             aria-label={`${card.projectName}, ${TIME_LABEL[card.timeSpent]}${
                               card.hasMilestone ? ", milestone" : ""
                             }`}
@@ -167,9 +171,15 @@ export function MonthCalendar({
                                 ✦
                               </span>
                             )}
-                            <span className="font-mono text-[10px] font-semibold uppercase text-ink-muted group-hover:text-ink">
-                              {card.timeSpent[0]}
-                            </span>
+                            {/* Card extras rank name > star > S/M/L letter; a card
+                                shows at most one so the name never pays for both.
+                                aria-label and the day panel keep a starred card's
+                                Time Commitment reachable. */}
+                            {!card.hasMilestone && (
+                              <span className="font-mono text-[10px] font-semibold uppercase text-ink-muted group-hover:text-ink">
+                                {card.timeSpent[0]}
+                              </span>
+                            )}
                           </Link>
                         ))}
                         {overflow > 0 && (

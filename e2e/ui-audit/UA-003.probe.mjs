@@ -6,9 +6,10 @@ import { launch } from "./support/page-context.mjs";
 
 const { browser, openPage } = await launch("mobile", { authed: true });
 try {
-  const page = await openPage("/monthly?month=2024-01");
+  // The monthly view moved to /progress (issue #73); the month nav came along.
+  const page = await openPage("/progress?month=2024-01");
   const boxes = await page.evaluate(() => {
-    const h1 = document.querySelector('nav[aria-label="Month"] h1');
+    const h1 = document.querySelector('nav[aria-label="Month"] h2');
     const link = [...document.querySelectorAll('nav[aria-label="Month"] a')].find((a) =>
       a.textContent.includes("This month"),
     );
