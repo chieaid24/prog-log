@@ -285,6 +285,7 @@ space or a hairline instead.
 - **Hover / Focus:** background shifts to `Frog Green Strong`; `:focus-visible` shows a 2px `Frog Green` ring at `2px` offset. Never remove focus outlines, only restyle.
 - **Soft:** `Frog Green Soft` background, `Frog Green Strong` text, for secondary affirmatives.
 - **Ghost:** `surface` background, `1px border`, `ink` text; hover raises the border to `Border Strong`. For tertiary/quiet actions.
+- **Disabled:** a primary drops its green entirely: `surface-sunken` background, `Ink Faint` text (matching disabled inputs). Never a dimmed green fill, which reads as an active button with an illegible label. Ghost/soft variants dim to 50% opacity instead.
 
 ### Chips
 - **Style:** `surface` background, `1px border`, `Ink Muted` text, fully rounded (`full`), `2px 8px`, mono-ish label size.

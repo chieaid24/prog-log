@@ -201,7 +201,7 @@ function CreateProjectForm() {
       <button
         type="submit"
         disabled={pending || name.trim().length === 0}
-        className="rounded-lg bg-frog-green px-4 py-2 text-sm font-semibold text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-40 pointer-coarse:py-3"
+        className="rounded-lg bg-frog-green px-4 py-2 text-sm font-semibold text-on-green transition-colors enabled:hover:bg-frog-green-strong disabled:bg-surface-sunken disabled:text-ink-faint pointer-coarse:py-3"
       >
         {pending ? "Creating…" : "Create"}
       </button>
@@ -446,7 +446,7 @@ function AliasEditor({ project, aliases }: { project: Project; aliases: ProjectA
         <button
           type="submit"
           disabled={pending || draft.trim().length === 0}
-          className="rounded-full border border-border px-2.5 py-0.5 text-xs text-ink-muted transition-colors hover:border-border-strong hover:text-ink disabled:opacity-40 pointer-coarse:min-h-11 pointer-coarse:px-4 pointer-coarse:py-3"
+          className="rounded-full border border-border px-2.5 py-0.5 text-xs text-ink-muted transition-colors hover:border-border-strong hover:text-ink disabled:opacity-50 pointer-coarse:min-h-11 pointer-coarse:px-4 pointer-coarse:py-3"
         >
           Add
         </button>
@@ -530,7 +530,7 @@ function EditProjectForm({ project, onSaved }: { project: Project; onSaved: () =
       <button
         type="submit"
         disabled={pending || name.trim().length === 0}
-        className="rounded-lg bg-frog-green px-4 py-2 text-sm font-semibold text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-40 pointer-coarse:py-3"
+        className="rounded-lg bg-frog-green px-4 py-2 text-sm font-semibold text-on-green transition-colors enabled:hover:bg-frog-green-strong disabled:bg-surface-sunken disabled:text-ink-faint pointer-coarse:py-3"
       >
         {pending ? "Saving…" : "Save"}
       </button>

@@ -38,6 +38,13 @@ describe("timezone form", () => {
     expect(screen.getByRole("button", { name: "Save timezone" })).toBeDisabled();
   });
 
+  it("drops the green fill while disabled instead of dimming it (UA-030)", () => {
+    render(<TimezoneForm current="America/Toronto" timezones={ZONES} />);
+    const save = screen.getByRole("button", { name: "Save timezone" });
+    expect(save).toHaveClass("disabled:bg-surface-sunken", "disabled:text-ink-faint");
+    expect(save.className).not.toContain("disabled:opacity");
+  });
+
   it("renders offset labels", () => {
     render(<TimezoneForm current="America/Toronto" timezones={ZONES} />);
 

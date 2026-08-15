@@ -330,7 +330,7 @@ export function QuickAddForm({
       <button
         type="submit"
         disabled={pending || !projectId}
-        className="rounded-lg bg-frog-green px-3 py-2 text-sm font-semibold text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-40 pointer-coarse:py-3"
+        className="rounded-lg bg-frog-green px-3 py-2 text-sm font-semibold text-on-green transition-colors enabled:hover:bg-frog-green-strong disabled:bg-surface-sunken disabled:text-ink-faint pointer-coarse:py-3"
       >
         {pending ? "Logging…" : "Log it"}
       </button>

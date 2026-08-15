@@ -61,7 +61,7 @@ export function TimezoneForm({ current, timezones }: Props) {
         <button
           type="submit"
           disabled={pending || timezone === current}
-          className="self-start rounded-lg bg-frog-green px-4 py-2 text-sm font-semibold text-on-green transition-colors hover:bg-frog-green-strong disabled:opacity-40 pointer-coarse:py-3"
+          className="self-start rounded-lg bg-frog-green px-4 py-2 text-sm font-semibold text-on-green transition-colors enabled:hover:bg-frog-green-strong disabled:bg-surface-sunken disabled:text-ink-faint pointer-coarse:py-3"
         >
           {pending ? "Saving…" : "Save timezone"}
         </button>
