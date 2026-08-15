@@ -57,3 +57,4 @@ ls docs/adr | grep -oE '^[0-9]{4}' | sort -n | tail -1
 | [0022](0022-read-only-fit-to-width-year-heatmap.md) | Make the year heatmap read-only and fit to width | accepted |
 | [0023](0023-progress-timeline-replaces-monthly-view.md) | The monthly view becomes the Progress timeline | accepted |
 | [0024](0024-app-side-vercel-cron-keepalive.md) | Supabase keep-alive runs as an app-side Vercel Cron | accepted |
+| [0025](0025-calendar-day-cards-keep-names-whole.md) | Calendar day-cards keep names whole: 700px floor, star replaces the letter | accepted |
