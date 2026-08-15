@@ -7,7 +7,11 @@ import { launch } from "./support/page-context.mjs";
 
 const { browser, openPage } = await launch("desktop", { authed: true });
 try {
-  const page = await openPage("/?view=heatmap&day=2026-07-14");
+  // The day panel opens from the calendar view now; reach it through a card
+  // so the day is guaranteed to have entries whatever today's fixture date is.
+  const page = await openPage("/?view=calendar");
+  await page.locator('[data-testid="calendar-card"]').first().click();
+  await page.waitForSelector('section[aria-label^="Entries for"] button[aria-label^="Delete"]');
   const hit = await page.evaluate(() => {
     const el = document.querySelector('section[aria-label^="Entries for"] button[aria-label^="Delete"]');
     const own = el.getBoundingClientRect();
