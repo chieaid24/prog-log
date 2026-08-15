@@ -119,16 +119,19 @@ All four must exit 0 before you deploy anything. Tests run against an embedded P
 3. Errors come back as JSON: unknown project → 404 with a did-you-mean hint (resolution
    never guesses); bad secret → 401; bad `time` → 400.
 
-## 5. GitHub Actions keep-alive
+## 5. Supabase keep-alive (Vercel Cron)
 
-Supabase Free pauses projects idle for ~7 days; `.github/workflows/keepalive.yml` pings
-PostgREST twice a week. In the GitHub repo → Settings → Secrets and variables → Actions,
-add:
+Supabase Free pauses projects idle for ~7 days; the `/api/cron/keepalive` route (ADR-0024) runs a
+trivial DB read on a Vercel Cron daily to reset that timer. It needs no new secrets — it reuses the
+`CRON_SECRET` and `SUPABASE_SERVICE_ROLE_KEY` that already power the digest cron. On a failed read
+it best-effort posts to `DISCORD_DIGEST_WEBHOOK_URL`, so a broken keep-alive is not silent.
 
-- `SUPABASE_URL` — same value as `NEXT_PUBLIC_SUPABASE_URL`
-- `SUPABASE_ANON_KEY` — same value as `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+The cron registers automatically on the next Vercel deploy (from `vercel.json`). To confirm: Vercel
+→ project → Settings → Cron Jobs lists `/api/cron/keepalive` daily; trigger it once and expect
+`{"ok":true}`.
 
-Then run the workflow once by hand (Actions → keepalive → Run workflow) to confirm green.
+A keep-alive only *prevents* pausing — it cannot resume an already-paused project. If the DB is
+paused, resume it once from the Supabase dashboard first.
 
 ## 6. Env var reference
 
@@ -144,11 +147,9 @@ Then run the workflow once by hand (Actions → keepalive → Run workflow) to c
 | `DISCORD_APPLICATION_ID` | Dev Portal → General Information | command registration script |
 | `DISCORD_BOT_TOKEN` | Dev Portal → Bot | command registration script only |
 | `DISCORD_OWNER_ID` | Discord client → Copy User ID | `/api/discord` owner gate |
-| `DISCORD_DIGEST_WEBHOOK_URL` | channel → Integrations → Webhooks | `/api/cron/digest` |
+| `DISCORD_DIGEST_WEBHOOK_URL` | channel → Integrations → Webhooks | `/api/cron/digest`; `/api/cron/keepalive` failure alert |
 | `SHORTCUT_SECRET` | `openssl rand -hex 32` | `/api/log` bearer check |
-| `CRON_SECRET` | `openssl rand -hex 32` (set in Vercel env) | `/api/cron/digest` gate |
-
-GitHub Actions secrets (repo settings, not Vercel): `SUPABASE_URL`, `SUPABASE_ANON_KEY`.
+| `CRON_SECRET` | `openssl rand -hex 32` (set in Vercel env) | `/api/cron/digest` + `/api/cron/keepalive` gate |
 
 ## 7. Local development
 
@@ -171,4 +172,4 @@ localhost if you added the redirect URL in step 1.5). For a fully offline stack,
 - [ ] Apple Shortcut logs from the share sheet
 - [ ] `/now` renders signed-out; nothing private (no Descriptions) is visible
 - [ ] Next morning: digest posted to the Discord channel (or nothing, if no Milestones yet)
-- [ ] GitHub Actions keepalive ran green (check after Monday/Thursday 09:17 UTC)
+- [ ] Vercel Cron keepalive returns `{"ok":true}` (Vercel → Settings → Cron Jobs → `/api/cron/keepalive`)

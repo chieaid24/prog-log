@@ -153,8 +153,9 @@ docs/
 .github/
   ISSUE_TEMPLATE/      ← agent task Issue template
   workflows/ci.yml     ← verification pipeline (required `test` check)
-  workflows/keepalive.yml ← supabase free-tier keep-alive ping
 ```
+> Supabase free-tier keep-alive is a Vercel Cron (`app/api/cron/keepalive`, ADR-0024), not a
+> GitHub Actions workflow.
 
 > **Work is tracked in GitHub Issues on `origin`, not a folder in this repo.** The dependency-aware
 > queue (labels, `blocked-by` edges, claim mutex, self-merge gate) is the [Parallel agent
@@ -164,7 +165,7 @@ docs/
 
 Next.js 16 (App Router, Node.js 20.9+) on Vercel Hobby · Supabase (Postgres + Auth, magic link) with RLS ·
 Tailwind · Recharts/custom SVG · Discord Interactions API + Apple Shortcuts for capture ·
-GitHub Actions cron keep-alive. Everything runs on free tiers. Use the Supabase **service role key
+Vercel Cron keep-alive. Everything runs on free tiers. Use the Supabase **service role key
 server-side only**; the browser uses the anon key + RLS.
 
 The private deployment uses a server-side `OWNER_EMAIL` allowlist for magic-link requests and
