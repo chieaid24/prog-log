@@ -337,7 +337,7 @@ space or a hairline instead.
 
 ### The Frog (signature)
 - An **8-bit / pixel-art frog on a log**, rendered as crisp pixel SVG (`image-rendering: pixelated`, `shape-rendering: crispEdges`), green body over `Log Brown`.
-- **Where it appears:** the wordmark, empty states ("no Entries yet, the frog is waiting"), the milestone moment, the `/now` portfolio header, and 404/loading. One frog per view, never a field of them.
+- **Where it appears:** the wordmark, full-page or whole-card empty states ("no Entries yet, the frog is waiting"), the milestone moment, the `/now` portfolio header, and 404/loading. Narrow in-card empties (a day panel, a single chart) stay plain `Ink Muted` text. One frog per view, never a field of them.
 - **Motion:** at most a small idle blink or a single hop when a milestone lands. Fully governed by `prefers-reduced-motion`, which drops it to a static frog.
 - **A11y:** decorative beside text, `aria-hidden`; standalone, a short `alt`.
 
